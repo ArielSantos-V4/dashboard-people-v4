@@ -50,10 +50,12 @@ elif authentication_status:
         "Próximo passo: conectar Google Sheets e construir os gráficos."
     )
 
-    # KPIs de exemplo
+    # KPIs (placeholders)
     col1, col2, col3, col4 = st.columns(4)
 
     col1.metric("Headcount Total", "—")
     col2.metric("% PJ vs CLT", "—")
     col3.metric("Média Salarial", "—")
-    col4.metric("D
+    col4.metric("Total de Desligamentos", "—")
+
+    st.markdown("###
