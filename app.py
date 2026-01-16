@@ -115,7 +115,7 @@ clt = len(df[df["Modelo de contrato"] == "CLT"])
 estagio = len(df[df["Modelo de contrato"] == "Estágio"])
 
 # Média de admissões por mês
-df_adm = df.dropna(subset=["Data de admissão"])
+df_adm = df.dropna(subset=["Data Início"])
 media_admissoes = (
     df_adm
     .groupby(df_adm["Data de admissão"].dt.to_period("M"))
