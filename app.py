@@ -1,78 +1,148 @@
 import streamlit as st
 import pandas as pd
 from datetime import datetime, timedelta
-import urllib.parse
 
+# --------------------------------------------------
+# CONFIGURAÇÃO DA PÁGINA
+# --------------------------------------------------
 st.set_page_config(
-    page_title="People Dashboard",
-    layout="wide"
+    page_title="Dashboard People | V4 Company",
+    layout="wide",
+    page_icon="🔴"
 )
 
-# ===============================
-# GOOGLE SHEETS CONFIG
-# ===============================
-SHEET_ID = "13EPwhiXgh8BkbhyrEy2aCy3cv1O8npxJ_hA-HmLZ-pY"
-SHEET_NAME = "Ativos"
+# --------------------------------------------------
+# ESTILO (PRETO + VERMELHO)
+# --------------------------------------------------
+st.markdown("""
+<style>
+.main { background-color: #0e0e0e; }
+h1, h2, h3 { color: #E30613; }
+div[data-testid="metric-container"] {
+    background-color: #1a1a1a;
+    border: 1px solid #E30613;
+    padding: 16px;
+    border-radius: 12px;
+}
+section[data-testid="stSidebar"] {
+    background-color: #111111;
+    border-right: 2px solid #E30613;
+}
+.stButton > button {
+    background-color: #E30613;
+    color: white;
+    border-radius: 8px;
+}
+</style>
+""", unsafe_allow_html=True)
 
-@st.cache_data(ttl=300)
+# --------------------------------------------------
+# LOGIN SIMPLES (st.secrets)
+# --------------------------------------------------
+def check_password(username, password):
+    users = st.secrets["users"]
+    if username not in users:
+        return False, None
+    return password == users[username]["password"], users[username]["name"]
+
+if "authenticated" not in st.session_state:
+    st.session_state.authenticated = False
+
+if not st.session_state.authenticated:
+    st.title("🔐 Login — Dashboard People V4")
+
+    username = st.text_input("Usuário")
+    password = st.text_input("Senha", type="password")
+
+    if st.button("Entrar"):
+        valid, name = check_password(username, password)
+        if valid:
+            st.session_state.authenticated = True
+            st.session_state.user_name = name
+            st.rerun()
+        else:
+            st.error("Usuário ou senha inválidos")
+
+    st.stop()
+
+# --------------------------------------------------
+# GOOGLE SHEETS
+# --------------------------------------------------
+@st.cache_data(ttl=600)
 def load_google_sheet():
-    sheet_name_encoded = urllib.parse.quote(SHEET_NAME)
-    url = (
-        f"https://docs.google.com/spreadsheets/d/{SHEET_ID}/gviz/tq"
-        f"?tqx=out:csv&sheet={sheet_name_encoded}"
-    )
+    sheet_id = "13EPwhiXgh8BkbhyrEy2aCy3cv1O8npxJ_hA-HmLZ-pY"
+    gid = "2056973316"
+    url = f"https://docs.google.com/spreadsheets/d/{sheet_id}/export?format=csv&gid={gid}"
     return pd.read_csv(url)
 
-# ===============================
-# LOAD DATA
-# ===============================
 df = load_google_sheet()
+
+# --------------------------------------------------
+# TRATAMENTO DE DADOS
+# --------------------------------------------------
 df.columns = df.columns.str.strip()
 
-# ===============================
-# DATE TREATMENT
-# ===============================
-df["Térm previsto"] = pd.to_datetime(
-    df["Térm previsto"],
-    errors="coerce",
-    dayfirst=True
-)
+# Datas
+df["Térm previsto"] = pd.to_datetime(df["Térm previsto"], errors="coerce")
+df["Data de admissão"] = pd.to_datetime(df["Data de admissão"], errors="coerce")
 
 hoje = datetime.today()
-em_30_dias = hoje + timedelta(days=30)
+prox_30_dias = hoje + timedelta(days=30)
 
-# ===============================
+# --------------------------------------------------
 # KPIs
-# ===============================
+# --------------------------------------------------
 headcount = len(df)
 
-contratos_30_dias = df[
+contratos_vencer = df[
+    (df["Térm previsto"].notna()) &
     (df["Térm previsto"] >= hoje) &
-    (df["Térm previsto"] <= em_30_dias)
+    (df["Térm previsto"] <= prox_30_dias)
 ]
 
-contratos_vencidos = df[df["Térm previsto"] < hoje]
+contratos_vencidos = df[
+    (df["Térm previsto"].notna()) &
+    (df["Térm previsto"] < hoje)
+]
 
-pj = len(df[df["Tipo de contrato"] == "PJ"])
-clt = len(df[df["Tipo de contrato"] == "CLT"])
-estagio = len(df[df["Tipo de contrato"] == "Estágio"])
+pj = len(df[df["Modelo de contrato"] == "PJ"])
+clt = len(df[df["Modelo de contrato"] == "CLT"])
+estagio = len(df[df["Modelo de contrato"] == "Estágio"])
 
-# ===============================
-# UI
-# ===============================
-st.title("📊 People Dashboard")
-
-col1, col2, col3, col4 = st.columns(4)
-
-col1.metric("👥 Headcount", headcount)
-col2.metric("⏳ Contratos (30 dias)", len(contratos_30_dias))
-col3.metric("⚠️ Contratos vencidos", len(contratos_vencidos))
-col4.metric("📎 PJ | CLT | Estágio", f"{pj} | {clt} | {estagio}")
-
-st.divider()
-st.subheader("📋 Base de colaboradores")
-
-st.dataframe(
-    df.sort_values("Térm previsto"),
-    use_container_width=True
+# Média de admissões por mês
+df_adm = df.dropna(subset=["Data de admissão"])
+media_admissoes = (
+    df_adm
+    .groupby(df_adm["Data de admissão"].dt.to_period("M"))
+    .size()
+    .mean()
 )
+
+# --------------------------------------------------
+# SIDEBAR
+# --------------------------------------------------
+st.sidebar.success(f"Bem-vindo(a), {st.session_state.user_name}")
+
+if st.sidebar.button("Logout"):
+    st.session_state.authenticated = False
+    st.rerun()
+
+if st.sidebar.button("🔄 Atualizar dados"):
+    st.cache_data.clear()
+    st.rerun()
+
+# --------------------------------------------------
+# DASHBOARD
+# --------------------------------------------------
+st.title("📊 Dashboard People — V4 Company")
+st.markdown("---")
+
+col1, col2, col3, col4, col5 = st.columns(5)
+
+col1.metric("Headcount", headcount)
+col2.metric("Contratos vencendo (30 dias)", len(contratos_vencer))
+col3.metric("Contratos vencidos", len(contratos_vencidos))
+col4.metric("PJ / CLT / Estágio", f"{pj} / {clt} / {estagio}")
+col5.metric("Média admissões / mês", f"{media_admissoes:.1f}")
+
+st.success("✅ Dashboard conectado ao Google Sheets com sucesso.")
