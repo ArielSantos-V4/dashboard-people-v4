@@ -275,7 +275,7 @@ st.subheader("🔍 Consulta individual de investidor")
 
 nome_selecionado = st.selectbox(
     "Digite ou selecione o nome",
-    sorted(df_tabela["Nome completo"].dropna().unique())
+    sorted(df_tabela["Nome"].dropna().unique())
 )
 
 linha = df_tabela[df_tabela["Nome completo"] == nome_selecionado].iloc[0]
