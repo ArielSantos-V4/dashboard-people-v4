@@ -13,28 +13,50 @@ st.set_page_config(
 )
 
 # --------------------------------------------------
-# ESTILO (PRETO + VERMELHO)
+# ESTILO GLOBAL
 # --------------------------------------------------
 st.markdown("""
 <style>
 .main { background-color: #0e0e0e; }
-h1, h2, h3 { color: #E30613; }
-div[data-testid="metric-container"] {
-    background-color: #1a1a1a;
-    border: 1px solid #E30613;
-    padding: 16px;
-    border-radius: 12px;
+h1, h2, h3, h4 { color: #E30613; }
+
+.field {
+    background:#1a1a1a;
+    padding:8px 10px;
+    border-radius:6px;
+    border:1px solid #333;
+    color:#fff;
+    font-size:13px;
+    position:relative;
 }
-section[data-testid="stSidebar"] {
-    background-color: #111111;
-    border-right: 2px solid #E30613;
+
+.field:hover .copy-btn {
+    opacity:1;
 }
-.stButton > button {
-    background-color: #E30613;
-    color: white;
-    border-radius: 8px;
+
+.label {
+    font-size:11px;
+    color:#999;
+    margin-bottom:2px;
+}
+
+.copy-btn {
+    position:absolute;
+    right:8px;
+    top:8px;
+    cursor:pointer;
+    opacity:0;
+    transition:0.2s;
+    font-size:14px;
+    color:#E30613;
 }
 </style>
+
+<script>
+function copyText(text) {
+    navigator.clipboard.writeText(text);
+}
+</script>
 """, unsafe_allow_html=True)
 
 # --------------------------------------------------
@@ -51,7 +73,6 @@ if "authenticated" not in st.session_state:
 
 if not st.session_state.authenticated:
     st.title("🔐 Login — Dashboard People V4")
-
     username = st.text_input("Usuário")
     password = st.text_input("Senha", type="password")
 
@@ -63,7 +84,6 @@ if not st.session_state.authenticated:
             st.rerun()
         else:
             st.error("Usuário ou senha inválidos")
-
     st.stop()
 
 # --------------------------------------------------
@@ -80,258 +100,110 @@ df = load_google_sheet()
 df.columns = df.columns.str.strip()
 
 # --------------------------------------------------
-# DATAS (TRATAMENTO DUPLO)
+# DATAS
 # --------------------------------------------------
-df["Térm previsto_exibicao"] = df["Térm previsto"].astype(str)
-
 df["Térm previsto"] = pd.to_datetime(df["Térm previsto"], errors="coerce")
 df["Data Início"] = pd.to_datetime(df["Data Início"], errors="coerce")
-
-df["Térm previsto_exibicao"] = (
-    df["Térm previsto"]
-    .dt.strftime("%d/%m/%Y")
-    .fillna(df["Térm previsto_exibicao"])
-)
-
-df["Data Início_exibicao"] = df["Data Início"].dt.strftime("%d/%m/%Y")
-
-hoje = datetime.today()
-prox_30_dias = hoje + timedelta(days=30)
+df["Nascimento"] = pd.to_datetime(df.get("Data de nascimento"), errors="coerce")
 
 # --------------------------------------------------
-# KPIs
+# FUNÇÕES AUXILIARES
 # --------------------------------------------------
-headcount = len(df)
+def v(valor):
+    return "" if pd.isna(valor) else str(valor)
 
-contratos_vencer = df[
-    (df["Térm previsto"].notna()) &
-    (df["Térm previsto"] >= hoje) &
-    (df["Térm previsto"] <= prox_30_dias)
-]
+def idade(data):
+    if pd.isna(data): return ""
+    hoje = datetime.today()
+    return hoje.year - data.year - ((hoje.month, hoje.day) < (data.month, data.day))
 
-contratos_vencidos = df[
-    (df["Térm previsto"].notna()) &
-    (df["Térm previsto"] < hoje)
-]
+def tempo_casa(data):
+    if pd.isna(data): return ""
+    delta = relativedelta(datetime.today(), data)
+    return f"{delta.years}a {delta.months}m {delta.days}d"
 
-pj = len(df[df["Modelo de contrato"] == "PJ"])
-clt = len(df[df["Modelo de contrato"] == "CLT"])
-estagio = len(df[df["Modelo de contrato"] == "Estágio"])
+from dateutil.relativedelta import relativedelta
 
-df_adm = df.dropna(subset=["Data Início"])
-media_admissoes = (
-    df_adm
-    .groupby(df_adm["Data Início"].dt.to_period("M"))
-    .size()
-    .mean()
-)
-
-# --------------------------------------------------
-# SIDEBAR
-# --------------------------------------------------
-st.sidebar.success(f"Bem-vindo(a), {st.session_state.user_name}")
-
-if st.sidebar.button("🔄 Atualizar dados"):
-    st.cache_data.clear()
-    st.rerun()
-
-if st.sidebar.button("Logout"):
-    st.session_state.authenticated = False
-    st.rerun()
+def campo(label, valor):
+    return f"""
+    <div>
+        <div class="label">{label}</div>
+        <div class="field">
+            {valor}
+            <span class="copy-btn" onclick="copyText('{valor}')">📋</span>
+        </div>
+    </div>
+    """
 
 # --------------------------------------------------
-# TOPO
+# CONSULTA INDIVIDUAL
 # --------------------------------------------------
-col_logo, col_title = st.columns([1, 6])
+st.markdown("## 🔎 Consulta individual do investidor")
 
-with col_logo:
-    st.image("LOGO VERMELHO.png", width=120)
+nomes = sorted(df["Nome"].dropna().astype(str).unique())
+nome = st.selectbox("Buscar investidor", [""] + nomes)
 
-with col_title:
-    st.markdown(
-        "<h1>Dashboard People</h1><h3 style='color:#cccccc;'>V4 Company</h3>",
-        unsafe_allow_html=True
-    )
+if nome:
+    linha = df[df["Nome"] == nome].iloc[0]
 
-st.markdown("---")
+    col1, col2, col3 = st.columns([4, 3, 2])
 
-# --------------------------------------------------
-# KPIs
-# --------------------------------------------------
-c1, c2, c3, c4, c5 = st.columns(5)
+    # ---------- COLUNA 1 ----------
+    with col1:
+        st.markdown("### Dados principais")
 
-c1.metric("Headcount", headcount)
-c2.metric("Contratos vencendo (30 dias)", len(contratos_vencer))
-c3.metric("Contratos vencidos", len(contratos_vencidos))
-c4.metric("PJ / CLT / Estágio", f"{pj} / {clt} / {estagio}")
-c5.metric("Média admissões / mês", f"{media_admissoes:.1f}")
+        st.markdown(campo("BP", v(linha.get("BP"))) + campo("Matrícula", v(linha.get("Matrícula"))) + campo("Situação", v(linha.get("Situação"))), unsafe_allow_html=True)
+        st.markdown(campo("Data contrato", v(linha.get("Data Início").strftime("%d/%m/%Y") if pd.notna(linha.get("Data Início")) else "")) + campo("Término previsto", v(linha.get("Térm previsto").strftime("%d/%m/%Y") if pd.notna(linha.get("Térm previsto")) else "")) + campo("Modelo contrato", v(linha.get("Modelo de contrato"))), unsafe_allow_html=True)
+        st.markdown(campo("Unidade", v(linha.get("Unidade/Atuação"))) + campo("Modalidade (PJ)", v(linha.get("Modalidade"))), unsafe_allow_html=True)
+        st.markdown(campo("E-mail corporativo", v(linha.get("E-mail corporativo"))), unsafe_allow_html=True)
+        st.markdown(campo("Início na V4", v(linha.get("Data Início").strftime("%d/%m/%Y") if pd.notna(linha.get("Data Início")) else "")) + campo("Tempo de casa", tempo_casa(linha.get("Data Início"))), unsafe_allow_html=True)
+        st.markdown(campo("CNPJ", v(linha.get("CNPJ"))) + campo("Razão social", v(linha.get("Razão social"))), unsafe_allow_html=True)
+        st.markdown(campo("Cargo", v(linha.get("Cargo"))) + campo("Remuneração", v(linha.get("Remuneração"))), unsafe_allow_html=True)
+        st.markdown(campo("CBO", v(linha.get("CBO"))) + campo("Descrição CBO", v(linha.get("Descrição CBO"))), unsafe_allow_html=True)
 
-st.markdown("---")
+    # ---------- COLUNA 2 ----------
+    with col2:
+        st.markdown("### Dados pessoais")
 
-# --------------------------------------------------
-# GRÁFICOS
-# --------------------------------------------------
-g1, g2 = st.columns(2)
-
-with g1:
-    st.subheader("📃 Modelo de contrato")
-    contrato_df = df["Modelo de contrato"].value_counts().reset_index()
-    contrato_df.columns = ["Modelo", "Quantidade"]
-
-    chart_pizza = (
-        alt.Chart(contrato_df)
-        .mark_arc(innerRadius=60)
-        .encode(
-            theta="Quantidade:Q",
-            color=alt.Color(
-                "Modelo:N",
-                scale=alt.Scale(range=["#E30613", "#B0000A", "#FF4C4C"])
-            ),
-            tooltip=["Modelo", "Quantidade"]
+        st.markdown(
+            campo("CPF", v(linha.get("CPF"))) +
+            campo("Data nascimento", v(linha.get("Data de nascimento"))) +
+            campo("Idade", idade(linha.get("Nascimento"))),
+            unsafe_allow_html=True
         )
-    )
-    st.altair_chart(chart_pizza, use_container_width=True)
 
-with g2:
-    st.subheader("📍 Local de atuação dos investidores")
-    local_df = df["Unidade/Atuação"].dropna().value_counts().reset_index()
-    local_df.columns = ["Local", "Quantidade"]
-
-    chart_local = (
-        alt.Chart(local_df)
-        .mark_bar(color="#E30613")
-        .encode(
-            x=alt.X("Local:N", sort="-y", axis=alt.Axis(labelAngle=-30)),
-            y="Quantidade:Q",
-            tooltip=["Local", "Quantidade"]
+        st.markdown(
+            campo("CEP", v(linha.get("CEP"))) +
+            campo("Escolaridade", v(linha.get("Escolaridade"))) +
+            campo("Telefone pessoal", v(linha.get("Telefone pessoal"))),
+            unsafe_allow_html=True
         )
-    )
-    st.altair_chart(chart_local, use_container_width=True)
 
-# --------------------------------------------------
-# ADMISSÕES
-# --------------------------------------------------
-st.subheader("📈 Admissões por mês")
+        st.markdown(campo("E-mail pessoal", v(linha.get("E-mail pessoal"))), unsafe_allow_html=True)
 
-adm_mes = (
-    df_adm
-    .assign(Mes=df_adm["Data Início"].dt.strftime("%b/%Y"))
-    .groupby("Mes")
-    .size()
-    .reset_index(name="Quantidade")
-)
+    # ---------- COLUNA 3 ----------
+    with col3:
+        if pd.notna(linha.get("Foto")):
+            st.image(linha.get("Foto"), width=180)
 
-chart_adm = (
-    alt.Chart(adm_mes)
-    .mark_line(color="#E30613", point=True)
-    .encode(
-        x="Mes:N",
-        y="Quantidade:Q",
-        tooltip=["Mes", "Quantidade"]
-    )
-)
+        st.markdown("### Benefícios")
+        st.markdown(
+            campo("Situação plano", v(linha.get("Situação plano"))) +
+            campo("Solicitar documentação", v(linha.get("Solicitar documentação"))) +
+            campo("Enviar no EB", v(linha.get("Enviar no EB"))),
+            unsafe_allow_html=True
+        )
 
-st.altair_chart(chart_adm, use_container_width=True)
+        st.markdown(
+            campo("Carteirinha médico", v(linha.get("Carteirinha médico"))) +
+            campo("Operadora médico", v(linha.get("Operadora médico"))),
+            unsafe_allow_html=True
+        )
 
-# --------------------------------------------------
-# CONSULTA INDIVIDUAL DE INVESTIDOR
-# --------------------------------------------------
-st.markdown("---")
-st.markdown("## 👤 Consulta individual do investidor")
-st.markdown("Selecione um investidor para visualizar todos os dados consolidados.")
+        st.markdown(
+            campo("Carteirinha odonto", v(linha.get("Carteirinha odonto"))) +
+            campo("Operadora odonto", v(linha.get("Operadora odonto"))),
+            unsafe_allow_html=True
+        )
 
-def valor_limpo(valor):
-    if pd.isna(valor) or str(valor).lower() == "none":
-        return ""
-    return str(valor)
-
-df_consulta = df.copy()
-coluna_nome = "Nome"
-coluna_foto = "Foto"
-
-lista_nomes = (
-    df_consulta[coluna_nome]
-    .dropna()
-    .astype(str)
-    .sort_values()
-    .unique()
-    .tolist()
-)
-
-nome_selecionado = st.selectbox(
-    "Nome do investidor",
-    options=[""] + lista_nomes
-)
-
-if nome_selecionado:
-    linha = df_consulta[df_consulta[coluna_nome] == nome_selecionado].iloc[0]
-
-    col_esq, col_dir = st.columns([3, 2])
-
-    with col_esq:
-        c1, c2 = st.columns(2)
-        c1.text_input("Nome completo", valor_limpo(linha.get("Nome")), disabled=True)
-        c2.text_input("BP", valor_limpo(linha.get("BP")), disabled=True)
-
-        c3, c4 = st.columns(2)
-        c3.text_input("Matrícula", valor_limpo(linha.get("Matrícula")), disabled=True)
-        c4.text_input("Situação", valor_limpo(linha.get("Situação")), disabled=True)
-
-        c5, c6 = st.columns(2)
-        c5.text_input("Modelo de contrato", valor_limpo(linha.get("Modelo de contrato")), disabled=True)
-        c6.text_input("Unidade de atuação", valor_limpo(linha.get("Unidade/Atuação")), disabled=True)
-
-        c7, c8 = st.columns(2)
-        c7.text_input("Data início", valor_limpo(linha.get("Data Início_exibicao")), disabled=True)
-        c8.text_input("Término previsto", valor_limpo(linha.get("Térm previsto_exibicao")), disabled=True)
-
-        st.text_input("Cargo", valor_limpo(linha.get("Cargo")), disabled=True)
-        st.text_input("E-mail corporativo", valor_limpo(linha.get("E-mail corporativo")), disabled=True)
-
-    with col_dir:
-        if pd.notna(linha.get(coluna_foto)):
-            st.image(linha[coluna_foto], width=180)
-
-        d1, d2 = st.columns(2)
-        d1.text_input("CPF", valor_limpo(linha.get("CPF")), disabled=True)
-        d2.text_input("Nascimento", valor_limpo(linha.get("Data de nascimento")), disabled=True)
-
-        d3, d4 = st.columns(2)
-        d3.text_input("CEP", valor_limpo(linha.get("CEP")), disabled=True)
-        d4.text_input("Escolaridade", valor_limpo(linha.get("Escolaridade")), disabled=True)
-
-        st.text_input("E-mail pessoal", valor_limpo(linha.get("E-mail pessoal")), disabled=True)
-        st.text_input("Telefone", valor_limpo(linha.get("Telefone pessoal")), disabled=True)
-
-# --------------------------------------------------
-# TABELA COM BUSCA
-# --------------------------------------------------
-st.markdown("### 📋 Base de investidores")
-
-busca = st.text_input("🔍 Buscar na tabela")
-
-df_tabela = df.copy()
-df_tabela["Término do contrato"] = df_tabela["Térm previsto_exibicao"]
-df_tabela["Data de início"] = df_tabela["Data Início_exibicao"]
-
-if busca:
-    df_filtrado = df_tabela[
-        df_tabela.astype(str)
-        .apply(lambda linha: linha.str.contains(busca, case=False, na=False).any(), axis=1)
-    ]
-else:
-    df_filtrado = df_tabela
-
-st.dataframe(
-    df_filtrado.drop(
-        columns=[
-            "Térm previsto",
-            "Térm previsto_exibicao",
-            "Data Início",
-            "Data Início_exibicao"
-        ],
-        errors="ignore"
-    ),
-    use_container_width=True,
-    hide_index=True
-)
+        st.markdown(campo("Link Drive", v(linha.get("Link Drive"))), unsafe_allow_html=True)
