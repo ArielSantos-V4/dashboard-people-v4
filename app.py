@@ -39,7 +39,7 @@ if not st.session_state.authenticated:
         if valid:
             st.session_state.authenticated = True
             st.session_state.user_name = name
-            st.experimental_rerun()
+            st.rerun()
         else:
             st.error("Usuário ou senha inválidos")
 
