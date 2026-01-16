@@ -73,7 +73,6 @@ if not st.session_state.authenticated:
 def load_google_sheet():
     sheet_id = "13EPwhiXgh8BkbhyrEy2aCy3cv1O8npxJ_hA-HmLZ-pY"
     gid = "2056973316"
-
     url = f"https://docs.google.com/spreadsheets/d/{sheet_id}/gviz/tq?gid={gid}&tqx=out:csv"
     return pd.read_csv(url)
 
@@ -174,15 +173,9 @@ st.markdown("---")
 # --------------------------------------------------
 g1, g2 = st.columns(2)
 
-# PIZZA - MODELO DE CONTRATO
 with g1:
     st.subheader("📃 Modelo de contrato")
-
-    contrato_df = (
-        df["Modelo de contrato"]
-        .value_counts()
-        .reset_index()
-    )
+    contrato_df = df["Modelo de contrato"].value_counts().reset_index()
     contrato_df.columns = ["Modelo", "Quantidade"]
 
     chart_pizza = (
@@ -192,25 +185,16 @@ with g1:
             theta="Quantidade:Q",
             color=alt.Color(
                 "Modelo:N",
-                scale=alt.Scale(range=["#E30613", "#B0000A", "#FF4C4C"]),
-                legend=alt.Legend(title="Contrato")
+                scale=alt.Scale(range=["#E30613", "#B0000A", "#FF4C4C"])
             ),
             tooltip=["Modelo", "Quantidade"]
         )
     )
-
     st.altair_chart(chart_pizza, use_container_width=True)
 
-# BARRAS - LOCAL DE ATUAÇÃO
 with g2:
     st.subheader("📍 Local de atuação dos investidores")
-
-    local_df = (
-        df["Unidade/Atuação"]
-        .dropna()
-        .value_counts()
-        .reset_index()
-    )
+    local_df = df["Unidade/Atuação"].dropna().value_counts().reset_index()
     local_df.columns = ["Local", "Quantidade"]
 
     chart_local = (
@@ -218,11 +202,10 @@ with g2:
         .mark_bar(color="#E30613")
         .encode(
             x=alt.X("Local:N", sort="-y", axis=alt.Axis(labelAngle=-30)),
-            y=alt.Y("Quantidade:Q"),
+            y="Quantidade:Q",
             tooltip=["Local", "Quantidade"]
         )
     )
-
     st.altair_chart(chart_local, use_container_width=True)
 
 # --------------------------------------------------
@@ -249,19 +232,20 @@ chart_adm = (
 )
 
 st.altair_chart(chart_adm, use_container_width=True)
+
 # --------------------------------------------------
-# CONSULTA INDIVIDUAL DE INVESTIDOR (LAYOUT SISTEMA)
+# CONSULTA INDIVIDUAL DE INVESTIDOR
 # --------------------------------------------------
+st.markdown("---")
+st.markdown("## 👤 Consulta individual do investidor")
+st.markdown("Selecione um investidor para visualizar todos os dados consolidados.")
+
 def valor_limpo(valor):
     if pd.isna(valor) or str(valor).lower() == "none":
         return ""
     return str(valor)
-    
-st.markdown("## 👤 Consulta individual do investidor")
-st.markdown("Selecione um investidor para visualizar todos os dados consolidados.")
 
 df_consulta = df.copy()
-
 coluna_nome = "Nome"
 coluna_foto = "Foto"
 
@@ -282,52 +266,43 @@ nome_selecionado = st.selectbox(
 if nome_selecionado:
     linha = df_consulta[df_consulta[coluna_nome] == nome_selecionado].iloc[0]
 
-    # ---------- LAYOUT PRINCIPAL ----------
     col_esq, col_dir = st.columns([3, 2])
 
-    # ---------- COLUNA ESQUERDA ----------
     with col_esq:
-        st.markdown("##### Dados principais")
-
         c1, c2 = st.columns(2)
         c1.text_input("Nome completo", valor_limpo(linha.get("Nome")), disabled=True)
-        c2.text_input("BP", linha.get("BP", ""), disabled=True)
+        c2.text_input("BP", valor_limpo(linha.get("BP")), disabled=True)
 
         c3, c4 = st.columns(2)
-        c3.text_input("Matrícula", linha.get("Matrícula", ""), disabled=True)
-        c4.text_input("Situação", linha.get("Situação", ""), disabled=True)
+        c3.text_input("Matrícula", valor_limpo(linha.get("Matrícula")), disabled=True)
+        c4.text_input("Situação", valor_limpo(linha.get("Situação")), disabled=True)
 
         c5, c6 = st.columns(2)
-        c5.text_input("Modelo de contrato", linha.get("Modelo de contrato", ""), disabled=True)
-        c6.text_input("Unidade de atuação", linha.get("Unidade/Atuação", ""), disabled=True)
+        c5.text_input("Modelo de contrato", valor_limpo(linha.get("Modelo de contrato")), disabled=True)
+        c6.text_input("Unidade de atuação", valor_limpo(linha.get("Unidade/Atuação")), disabled=True)
 
         c7, c8 = st.columns(2)
-        c7.text_input("Data início", linha.get("Data Início_exibicao", ""), disabled=True)
-        c8.text_input("Término previsto", linha.get("Térm previsto_exibicao", ""), disabled=True)
+        c7.text_input("Data início", valor_limpo(linha.get("Data Início_exibicao")), disabled=True)
+        c8.text_input("Término previsto", valor_limpo(linha.get("Térm previsto_exibicao")), disabled=True)
 
-        st.text_input("Cargo", linha.get("Cargo", ""), disabled=True)
-        st.text_input("E-mail corporativo", linha.get("E-mail corporativo", ""), disabled=True)
+        st.text_input("Cargo", valor_limpo(linha.get("Cargo")), disabled=True)
+        st.text_input("E-mail corporativo", valor_limpo(linha.get("E-mail corporativo")), disabled=True)
 
-    # ---------- COLUNA DIREITA ----------
     with col_dir:
-        st.markdown("#####")
-
         if pd.notna(linha.get(coluna_foto)):
             st.image(linha[coluna_foto], width=180)
 
-        st.markdown("##### Dados pessoais")
-
         d1, d2 = st.columns(2)
-        d1.text_input("CPF", linha.get("CPF", ""), disabled=True)
-        d2.text_input("Nascimento", linha.get("Data de nascimento", ""), disabled=True)
+        d1.text_input("CPF", valor_limpo(linha.get("CPF")), disabled=True)
+        d2.text_input("Nascimento", valor_limpo(linha.get("Data de nascimento")), disabled=True)
 
         d3, d4 = st.columns(2)
-        d3.text_input("CEP", linha.get("CEP", ""), disabled=True)
-        d4.text_input("Escolaridade", linha.get("Escolaridade", ""), disabled=True)
+        d3.text_input("CEP", valor_limpo(linha.get("CEP")), disabled=True)
+        d4.text_input("Escolaridade", valor_limpo(linha.get("Escolaridade")), disabled=True)
 
-        st.text_input("E-mail pessoal", linha.get("E-mail pessoal", ""), disabled=True)
-        st.text_input("Telefone", linha.get("Telefone pessoal", ""), disabled=True)
-        
+        st.text_input("E-mail pessoal", valor_limpo(linha.get("E-mail pessoal")), disabled=True)
+        st.text_input("Telefone", valor_limpo(linha.get("Telefone pessoal")), disabled=True)
+
 # --------------------------------------------------
 # TABELA COM BUSCA
 # --------------------------------------------------
