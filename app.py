@@ -89,7 +89,7 @@ df.columns = df.columns.str.strip()
 
 # Datas
 df["Térm previsto"] = pd.to_datetime(df["Térm previsto"], errors="coerce")
-df["Data de admissão"] = pd.to_datetime(df["Data de admissão"], errors="coerce")
+df["Data Início"] = pd.to_datetime(df["Data Início"], errors="coerce")
 
 hoje = datetime.today()
 prox_30_dias = hoje + timedelta(days=30)
