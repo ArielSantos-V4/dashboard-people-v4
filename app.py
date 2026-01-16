@@ -1,3 +1,5 @@
+from geopy.geocoders import Nominatim
+import time
 import streamlit as st
 import pandas as pd
 import altair as alt
@@ -173,6 +175,25 @@ c5.metric("Média admissões / mês", f"{media_admissoes:.1f}")
 
 st.markdown("---")
 
+@st.cache_data
+def cep_para_latlon(ceps):
+    geolocator = Nominatim(user_agent="dashboard_v4")
+    dados = []
+
+    for cep in ceps:
+        try:
+            location = geolocator.geocode(f"{cep}, Brasil")
+            if location:
+                dados.append({
+                    "CEP": cep,
+                    "lat": location.latitude,
+                    "lon": location.longitude
+                })
+            time.sleep(1)  # evita bloqueio da API
+        except:
+            pass
+
+    return pd.DataFrame(dados)
 # --------------------------------------------------
 # GRÁFICOS LADO A LADO
 # --------------------------------------------------
@@ -237,29 +258,46 @@ with g2:
     st.altair_chart(chart_local, use_container_width=True)
 
 # --------------------------------------------------
-# ADMISSÕES
+# ADMISSÕES + MAPA
 # --------------------------------------------------
-st.subheader("📈 Admissões por mês")
+g3, g4 = st.columns(2)
 
-adm_mes = (
-    df_adm
-    .assign(Mes=df_adm["Data Início"].dt.strftime("%b/%Y"))
-    .groupby("Mes")
-    .size()
-    .reset_index(name="Quantidade")
-)
+# -------- ADMISSÕES
+with g3:
+    st.subheader("📈 Admissões por mês")
 
-chart_adm = (
-    alt.Chart(adm_mes)
-    .mark_line(color="#E30613", point=True)
-    .encode(
-        x=alt.X("Mes:N", title="Mês"),
-        y=alt.Y("Quantidade:Q", title="Qtd"),
-        tooltip=["Mes", "Quantidade"]
+    adm_mes = (
+        df_adm
+        .assign(Mes=df_adm["Data Início"].dt.strftime("%b/%Y"))
+        .groupby("Mes")
+        .size()
+        .reset_index(name="Quantidade")
     )
-)
 
-st.altair_chart(chart_adm, use_container_width=True)
+    chart_adm = (
+        alt.Chart(adm_mes)
+        .mark_line(color="#E30613", point=True)
+        .encode(
+            x=alt.X("Mes:N", title="Mês"),
+            y=alt.Y("Quantidade:Q", title="Qtd"),
+            tooltip=["Mes", "Quantidade"]
+        )
+    )
+
+    st.altair_chart(chart_adm, use_container_width=True)
+
+# -------- MAPA DE CEP
+with g4:
+    st.subheader("🗺️ Localização dos investidores")
+
+    df_cep = df[["CEP"]].dropna().drop_duplicates()
+
+    mapa_df = cep_para_latlon(df_cep["CEP"].astype(str).tolist())
+
+    if not mapa_df.empty:
+        st.map(mapa_df)
+    else:
+        st.info("Não foi possível gerar o mapa com os CEPs disponíveis.")
 
 # --------------------------------------------------
 # TABELA
