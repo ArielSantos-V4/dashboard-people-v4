@@ -1,121 +1,109 @@
 import streamlit as st
 import pandas as pd
+from datetime import datetime, timedelta
 
-# ==============================
-# CONFIGURAÇÃO DA PÁGINA
-# ==============================
 st.set_page_config(
-    page_title="Dashboard People | V4 Company",
-    layout="wide",
-    page_icon="🔴"
+    page_title="People Dashboard",
+    layout="wide"
 )
 
-# ==============================
-# ESTILO VISUAL (PRETO + VERMELHO)
-# ==============================
-st.markdown("""
-<style>
-.main {
-    background-color: #0E1117;
-    color: white;
-}
+# ===============================
+# CONFIGURAÇÕES GOOGLE SHEETS
+# ===============================
+SHEET_ID = "SEU_SHEET_ID_AQUI"
+GID = "2056973316"
 
-section[data-testid="stSidebar"] {
-    background-color: #111827;
-}
-
-div[data-testid="metric-container"] {
-    background-color: #161B22;
-    border: 1px solid #E30613;
-    padding: 16px;
-    border-radius: 12px;
-}
-
-h1, h2, h3 {
-    color: #E30613;
-}
-
-.stButton > button {
-    background-color: #E30613;
-    color: white;
-    border-radius: 8px;
-}
-</style>
-""", unsafe_allow_html=True)
-
-# ==============================
-# LOGIN SIMPLES
-# ==============================
-def check_password(username, password):
-    users = st.secrets["users"]
-
-    if username not in users:
-        return False, None
-
-    return password == users[username]["password"], users[username]["name"]
-
-if "authenticated" not in st.session_state:
-    st.session_state.authenticated = False
-
-if not st.session_state.authenticated:
-    st.title("🔐 Login — Dashboard People V4")
-
-    username = st.text_input("Usuário")
-    password = st.text_input("Senha", type="password")
-
-    if st.button("Entrar"):
-        valid, name = check_password(username, password)
-
-        if valid:
-            st.session_state.authenticated = True
-            st.session_state.user_name = name
-            st.rerun()
-        else:
-            st.error("Usuário ou senha inválidos")
-
-    st.stop()
-
-# ==============================
-# SIDEBAR
-# ==============================
-st.sidebar.success(f"Bem-vindo(a), {st.session_state.user_name}")
-
-if st.sidebar.button("Logout"):
-    st.session_state.authenticated = False
-    st.rerun()
-
-# ==============================
-# CARREGAR GOOGLE SHEETS (COMO ESTAVA)
-# ==============================
-@st.cache_data
+@st.cache_data(ttl=300)
 def load_google_sheet():
-    url = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRWduIT16goCiVCD4eBSUswOF7rUQH08StTTf3ayIjm0T_YI3UVi7vqvjsrCSOL4Lx_m9HqWPICUs7K/pub?gid=2056973316&single=true&output=csv"
-    df = pd.read_csv(url)
-    df.columns = df.columns.str.strip()
-    return df
+    try:
+        url = (
+            f"https://docs.google.com/spreadsheets/d/{SHEET_ID}/export"
+            f"?format=csv&gid={GID}"
+        )
+        df = pd.read_csv(url)
+        return df
+    except Exception as e:
+        st.error("❌ Não foi possível carregar a planilha do Google Sheets")
+        raise e
 
+
+# ===============================
+# LOAD DATA
+# ===============================
 df = load_google_sheet()
 
-# ==============================
-# KPIs BÁSICOS (SEM ALTERAÇÕES)
-# ==============================
-st.title("📊 Dashboard People - V4 Company")
-st.markdown("---")
+# ===============================
+# TRATAMENTO DE DADOS
+# ===============================
+df.columns = df.columns.str.strip()
 
+# Converter data de término
+df["Térm previsto"] = pd.to_datetime(
+    df["Térm previsto"],
+    errors="coerce",
+    dayfirst=True
+)
+
+hoje = datetime.today()
+em_30_dias = hoje + timedelta(days=30)
+
+# ===============================
+# KPIs
+# ===============================
 headcount = len(df)
 
-if "Modelo de contrato" in df.columns:
-    pj = df[df["Modelo de contrato"].str.contains("PJ", case=False, na=False)].shape[0]
-    clt = df[df["Modelo de contrato"].str.contains("CLT", case=False, na=False)].shape[0]
-else:
-    pj, clt = 0, 0
+contratos_30_dias = df[
+    (df["Térm previsto"] >= hoje) &
+    (df["Térm previsto"] <= em_30_dias)
+]
 
-col1, col2, col3 = st.columns(3)
+contratos_vencidos = df[
+    df["Térm previsto"] < hoje
+]
 
-col1.metric("Headcount Total", headcount)
-col2.metric("PJs", pj)
-col3.metric("CLTs", clt)
+# Tipos de contrato
+pj = len(df[df["Tipo de contrato"] == "PJ"])
+clt = len(df[df["Tipo de contrato"] == "CLT"])
+estagio = len(df[df["Tipo de contrato"] == "Estágio"])
 
-st.markdown("---")
+# ===============================
+# UI
+# ===============================
+st.title("📊 People Dashboard")
 
-st.dataframe(df, use_container_width=True)
+col1, col2, col3, col4 = st.columns(4)
+
+with col1:
+    st.metric(
+        label="👥 Headcount Total",
+        value=headcount
+    )
+
+with col2:
+    st.metric(
+        label="⏳ Contratos (próx. 30 dias)",
+        value=len(contratos_30_dias)
+    )
+
+with col3:
+    st.metric(
+        label="⚠️ Contratos Vencidos",
+        value=len(contratos_vencidos)
+    )
+
+with col4:
+    st.metric(
+        label="📎 PJ | CLT | Estágio",
+        value=f"{pj} | {clt} | {estagio}"
+    )
+
+# ===============================
+# TABELA DETALHADA
+# ===============================
+st.divider()
+st.subheader("📋 Base completa")
+
+st.dataframe(
+    df.sort_values("Térm previsto"),
+    use_container_width=True
+)
