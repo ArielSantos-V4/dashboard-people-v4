@@ -72,7 +72,12 @@ if not st.session_state.authenticated:
 def load_google_sheet():
     sheet_id = "13EPwhiXgh8BkbhyrEy2aCy3cv1O8npxJ_hA-HmLZ-pY"
     gid = "2056973316"
-    url = f"https://docs.google.com/spreadsheets/d/{sheet_id}/export?format=csv&gid={gid}"
+
+    url = (
+        f"https://docs.google.com/spreadsheets/d/{sheet_id}/gviz/tq?"
+        f"gid={gid}&tqx=out:csv"
+    )
+
     return pd.read_csv(url)
 
 df = load_google_sheet()
