@@ -139,7 +139,18 @@ if st.sidebar.button("🔄 Atualizar dados"):
 # --------------------------------------------------
 # DASHBOARD
 # --------------------------------------------------
-st.title("📊 Dashboard People — V4 Company")
+col_logo, col_title = st.columns([1, 6])
+
+with col_logo:
+    st.image("LOGO VERMELHO.png", width=120)
+
+with col_title:
+    st.markdown(
+        "<h1 style='color:#E30613; margin-bottom:0;'>Dashboard People</h1>"
+        "<h3 style='color:#cccccc; margin-top:0;'>V4 Company</h3>",
+        unsafe_allow_html=True
+    )
+
 st.markdown("---")
 
 col1, col2, col3, col4, col5 = st.columns(5)
