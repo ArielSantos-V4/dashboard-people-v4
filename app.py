@@ -70,8 +70,13 @@ if not st.session_state.authenticated:
 @st.cache_data(ttl=300)
 def load_google_sheet():
     sheet_id = "13EPwhiXgh8BkbhyrEy2aCy3cv1O8npxJ_hA-HmLZ-pY"
-    gid = "2056973316"
-    url = f"https://docs.google.com/spreadsheets/d/{sheet_id}/export?format=csv&gid={gid}"
+    sheet_name = "Ativos"
+
+    url = (
+        f"https://docs.google.com/spreadsheets/d/{sheet_id}/gviz/tq?"
+        f"tqx=out:csv&sheet={sheet_name}"
+    )
+
     df = pd.read_csv(url)
     return df
 
