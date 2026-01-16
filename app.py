@@ -79,6 +79,13 @@ def load_google_sheet():
 
 df = load_google_sheet()
 df.columns = df.columns.str.strip()
+# --------------------------------------------------
+# DATAFRAME BASE PARA EXIBIÇÃO
+# --------------------------------------------------
+df_tabela = df.copy()
+
+df_tabela["Término do contrato"] = df_tabela.get("Térm previsto_exibicao", "")
+df_tabela["Data de início"] = df_tabela.get("Data Início_exibicao", "")
 
 # --------------------------------------------------
 # DATAS (TRATAMENTO DUPLO)
@@ -341,7 +348,6 @@ st.markdown("### 📋 Base de investidores")
 
 busca = st.text_input("🔍 Buscar na tabela")
 
-df_tabela = df.copy()
 df_tabela["Término do contrato"] = df_tabela["Térm previsto_exibicao"]
 df_tabela["Data de início"] = df_tabela["Data Início_exibicao"]
 
