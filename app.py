@@ -250,74 +250,13 @@ chart_adm = (
 
 st.altair_chart(chart_adm, use_container_width=True)
 # --------------------------------------------------
-# CONSULTA INDIVIDUAL DE INVESTIDOR
+# CONSULTA INDIVIDUAL DE INVESTIDOR (LAYOUT SISTEMA)
 # --------------------------------------------------
-
-df_tabela = df.copy()  # 👈 ADICIONE ESTA LINHA
-
-st.markdown("## 👤 Consulta individual de investidor")
-
-nome_busca = st.text_input(
-    "Digite o nome do investidor",
-    placeholder="Ex: João Silva"
-)
-
-if nome_busca:
-    resultado = df_tabela[
-        df_tabela.astype(str)
-        .apply(
-            lambda linha: linha.str.contains(nome_busca, case=False, na=False).any(),
-            axis=1
-        )
-    ]
-
-    if resultado.empty:
-        st.warning("❌ Nenhum investidor encontrado com esse nome.")
-    else:
-        st.success(f"✅ {len(resultado)} registro(s) encontrado(s)")
-
-        for _, row in resultado.iterrows():
-            st.markdown("---")
-            st.markdown(f"### 🧾 {row.get('Nome', 'Investidor')}")
-
-            col_a, col_b, col_c = st.columns(3)
-
-            with col_a:
-                st.markdown(f"**Modelo de contrato:** {row.get('Modelo de contrato', '-')}")
-                st.markdown(f"**Unidade / Atuação:** {row.get('Unidade/Atuação', '-')}")
-                st.markdown(f"**Data de início:** {row.get('Data de início', '-')}")
-
-            with col_b:
-                st.markdown(f"**Término do contrato:** {row.get('Término do contrato', '-')}")
-                st.markdown(f"**Status:** {'Vencido' if pd.notna(row.get('Térm previsto')) and row.get('Térm previsto') < hoje else 'Ativo'}")
-
-            with col_c:
-                # Mostra qualquer outro campo que exista na planilha
-                campos_extra = [
-                    col for col in row.index
-                    if col not in [
-                        "Nome",
-                        "Modelo de contrato",
-                        "Unidade/Atuação",
-                        "Data de início",
-                        "Término do contrato",
-                        "Térm previsto"
-                    ]
-                ]
-
-                for campo in campos_extra[:5]:
-                    st.markdown(f"**{campo}:** {row[campo]}")
-
-# --------------------------------------------------
-# CONSULTA INDIVIDUAL DE INVESTIDOR (DESIGN MELHORADO)
-# --------------------------------------------------
-st.markdown("## 👤 Consulta individual de investidor")
 
 df_consulta = df.copy()
 
-# 🔹 AJUSTE SE NECESSÁRIO
 coluna_nome = "Nome"
-coluna_foto = "Foto"   # coluna C da planilha (URL da imagem)
+coluna_foto = "Foto"
 
 lista_nomes = (
     df_consulta[coluna_nome]
@@ -329,64 +268,59 @@ lista_nomes = (
 )
 
 nome_selecionado = st.selectbox(
-    "Digite ou selecione o nome do investidor",
+    "Nome do investidor",
     options=[""] + lista_nomes
 )
 
 if nome_selecionado:
-    resultado = df_consulta[df_consulta[coluna_nome] == nome_selecionado]
+    linha = df_consulta[df_consulta[coluna_nome] == nome_selecionado].iloc[0]
 
-    if not resultado.empty:
-        dados = resultado.iloc[0]
+    # ---------- LAYOUT PRINCIPAL ----------
+    col_esq, col_dir = st.columns([3, 2])
 
-        st.markdown("### 📄 Ficha do investidor")
+    # ---------- COLUNA ESQUERDA ----------
+    with col_esq:
+        st.markdown("##### Dados principais")
 
-        # CARD BRANCO
-        st.markdown("""
-        <div style="
-            background-color:#ffffff;
-            border-radius:16px;
-            padding:24px;
-            box-shadow:0 4px 12px rgba(0,0,0,0.15);
-            margin-top:16px;
-        ">
-        """, unsafe_allow_html=True)
+        c1, c2 = st.columns(2)
+        c1.text_input("Nome completo", linha.get("Nome", ""), disabled=True)
+        c2.text_input("BP", linha.get("BP", ""), disabled=True)
 
-        col_foto, col_dados = st.columns([1, 4])
+        c3, c4 = st.columns(2)
+        c3.text_input("Matrícula", linha.get("Matrícula", ""), disabled=True)
+        c4.text_input("Situação", linha.get("Situação", ""), disabled=True)
 
-        # FOTO
-        with col_foto:
-            if coluna_foto in dados and pd.notna(dados[coluna_foto]):
-                st.image(dados[coluna_foto], width=140)
-            else:
-                st.markdown("🖼️ Sem foto")
+        c5, c6 = st.columns(2)
+        c5.text_input("Modelo de contrato", linha.get("Modelo de contrato", ""), disabled=True)
+        c6.text_input("Unidade de atuação", linha.get("Unidade/Atuação", ""), disabled=True)
 
-        # DADOS
-        with col_dados:
-            st.markdown("<div style='display:flex; flex-wrap:wrap; gap:16px;'>", unsafe_allow_html=True)
+        c7, c8 = st.columns(2)
+        c7.text_input("Data início", linha.get("Data Início_exibicao", ""), disabled=True)
+        c8.text_input("Término previsto", linha.get("Térm previsto_exibicao", ""), disabled=True)
 
-            for campo, valor in dados.items():
-                if campo == coluna_foto:
-                    continue
+        st.text_input("Cargo", linha.get("Cargo", ""), disabled=True)
+        st.text_input("E-mail corporativo", linha.get("E-mail corporativo", ""), disabled=True)
 
-                st.markdown(f"""
-                <div style="
-                    background-color:#f5f5f5;
-                    padding:12px 16px;
-                    border-radius:10px;
-                    min-width:180px;
-                    flex-grow:1;
-                ">
-                    <div style="font-size:12px; color:#666;">{campo}</div>
-                    <div style="font-size:15px; font-weight:600; color:#000;">
-                        {valor}
-                    </div>
-                </div>
-                """, unsafe_allow_html=True)
+    # ---------- COLUNA DIREITA ----------
+    with col_dir:
+        st.markdown("#####")
 
-            st.markdown("</div>", unsafe_allow_html=True)
+        if pd.notna(linha.get(coluna_foto)):
+            st.image(linha[coluna_foto], width=180)
 
-        st.markdown("</div>", unsafe_allow_html=True)
+        st.markdown("##### Dados pessoais")
+
+        d1, d2 = st.columns(2)
+        d1.text_input("CPF", linha.get("CPF", ""), disabled=True)
+        d2.text_input("Nascimento", linha.get("Data de nascimento", ""), disabled=True)
+
+        d3, d4 = st.columns(2)
+        d3.text_input("CEP", linha.get("CEP", ""), disabled=True)
+        d4.text_input("Escolaridade", linha.get("Escolaridade", ""), disabled=True)
+
+        st.text_input("E-mail pessoal", linha.get("E-mail pessoal", ""), disabled=True)
+        st.text_input("Telefone", linha.get("Telefone pessoal", ""), disabled=True)
+        
 # --------------------------------------------------
 # TABELA COM BUSCA
 # --------------------------------------------------
