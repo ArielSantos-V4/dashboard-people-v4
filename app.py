@@ -139,12 +139,24 @@ clt_pct = round((clt / headcount) * 100, 1) if headcount > 0 else 0
 est_pct = round((estagio / headcount) * 100, 1) if headcount > 0 else 0
 media_salarial = round(df["Remuneração"].mean(), 2)
 
-# Contratos vencendo em 30 dias
+# ===============================
+# CONTRATOS A VENCER (ROBUSTO)
+# ===============================
 hoje = pd.Timestamp.today()
-contratos_vencendo = df[
-    (df["Término do contrato previsto"].notna()) &
-    (df["Término do contrato previsto"] <= hoje + pd.Timedelta(days=30))
-].shape[0]
+
+col_contrato = None
+for col in df.columns:
+    if "término" in col.lower() or "termino" in col.lower():
+        col_contrato = col
+        break
+
+if col_contrato:
+    contratos_vencendo = df[
+        (df[col_contrato].notna()) &
+        (df[col_contrato] <= hoje + pd.Timedelta(days=30))
+    ].shape[0]
+else:
+    contratos_vencendo = 0
 
 # ===============================
 # EXIBIÇÃO
