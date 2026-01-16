@@ -83,7 +83,21 @@ df.columns = df.columns.str.strip()
 # --------------------------------------------------
 # DATAS
 # --------------------------------------------------
+# --------------------------------------------------
+# DATAS (TRATAMENTO DUPLO)
+# --------------------------------------------------
+
+# Coluna original para exibição
+df["Térm previsto_exibicao"] = df["Térm previsto"].astype(str)
+
+# Coluna para cálculos
 df["Térm previsto"] = pd.to_datetime(df["Térm previsto"], errors="coerce")
+
+df["Data Início"] = pd.to_datetime(df["Data Início"], errors="coerce")
+
+# Formatar datas para exibição (dd/mm/yyyy)
+df["Térm previsto_exibicao"] = df["Térm previsto"].dt.strftime("%d/%m/%Y").fillna(df["Térm previsto_exibicao"])
+df["Data Início_exibicao"] = df["Data Início"].dt.strftime("%d/%m/%Y")
 df["Data Início"] = pd.to_datetime(df["Data Início"], errors="coerce")
 
 hoje = datetime.today()
@@ -166,7 +180,7 @@ g1, g2 = st.columns(2)
 
 # -------- PIZZA MODELO DE CONTRATO
 with g1:
-    st.subheader("🍕 Modelo de contrato")
+    st.subheader("📃 Modelo de contrato")
 
     contrato_df = (
         df["Modelo de contrato"]
@@ -247,4 +261,22 @@ st.altair_chart(chart_adm, use_container_width=True)
 # --------------------------------------------------
 st.markdown("### 📋 Base de investidores")
 
-st.dataframe(df, use_container_width=True, hide_index=True)
+df_tabela = df.copy()
+
+# Ajustar colunas para exibição
+df_tabela["Término do contrato"] = df_tabela["Térm previsto_exibicao"]
+df_tabela["Data de início"] = df_tabela["Data Início_exibicao"]
+
+st.dataframe(
+    df_tabela.drop(
+        columns=[
+            "Térm previsto",
+            "Térm previsto_exibicao",
+            "Data Início",
+            "Data Início_exibicao"
+        ],
+        errors="ignore"
+    ),
+    use_container_width=True,
+    hide_index=True
+)
