@@ -1,6 +1,6 @@
 import streamlit as st
 import streamlit_authenticator as stauth
-import copy
+import json
 
 # --------------------------------------------------
 # CONFIGURAÇÃO INICIAL
@@ -11,10 +11,10 @@ st.set_page_config(
 )
 
 # --------------------------------------------------
-# AUTENTICAÇÃO (CORREÇÃO DEFINITIVA)
+# AUTENTICAÇÃO (VERSÃO ESTÁVEL)
 # --------------------------------------------------
-# Copia os secrets para um dicionário mutável
-config = copy.deepcopy(st.secrets["auth_config"])
+# Converte secrets em dict Python mutável
+config = json.loads(json.dumps(st.secrets["auth_config"]))
 
 authenticator = stauth.Authenticate(
     config["credentials"],
@@ -53,12 +53,12 @@ elif authentication_status:
     col3.metric("Média Salarial", "—")
     col4.metric("Total de Desligamentos", "—")
 
-    st.markdown("### ✅ Base técnica concluída")
+    st.markdown("### ✅ Infraestrutura concluída")
     st.write(
         """
-        ✔ Autenticação segura  
-        ✔ Secrets funcionando corretamente  
-        ✔ Streamlit Cloud configurado  
-        ✔ Pronto para Google Sheets e KPIs  
+        ✔ Login com usuário e senha  
+        ✔ Secrets seguros  
+        ✔ Streamlit Cloud estável  
+        ✔ Pronto para Google Sheets  
         """
     )
