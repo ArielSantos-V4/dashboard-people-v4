@@ -1,7 +1,6 @@
 import streamlit as st
 import streamlit_authenticator as stauth
-import pandas as pd
-import plotly.express as px
+import copy
 
 # --------------------------------------------------
 # CONFIGURAÇÃO INICIAL
@@ -12,9 +11,10 @@ st.set_page_config(
 )
 
 # --------------------------------------------------
-# AUTENTICAÇÃO
+# AUTENTICAÇÃO (CORREÇÃO DEFINITIVA)
 # --------------------------------------------------
-config = st.secrets["auth_config"]
+# Copia os secrets para um dicionário mutável
+config = copy.deepcopy(st.secrets["auth_config"])
 
 authenticator = stauth.Authenticate(
     config["credentials"],
@@ -45,26 +45,20 @@ elif authentication_status:
     st.title("📊 Dashboard People - V4 Company")
     st.markdown("---")
 
-    st.info(
-        "Login realizado com sucesso ✅  \n"
-        "Próximo passo: conectar Google Sheets e construir os gráficos."
-    )
+    st.success("Login realizado com sucesso 🔐")
 
-    # KPIs (placeholders)
     col1, col2, col3, col4 = st.columns(4)
-
     col1.metric("Headcount Total", "—")
     col2.metric("% PJ vs CLT", "—")
     col3.metric("Média Salarial", "—")
     col4.metric("Total de Desligamentos", "—")
 
-
-    st.markdown("### ✅ Estrutura pronta")
+    st.markdown("### ✅ Base técnica concluída")
     st.write(
         """
         ✔ Autenticação segura  
-        ✔ Secrets funcionando  
-        ✔ Tema V4 aplicado  
-        ✔ Base pronta para KPIs, gráficos e abas  
+        ✔ Secrets funcionando corretamente  
+        ✔ Streamlit Cloud configurado  
+        ✔ Pronto para Google Sheets e KPIs  
         """
     )
