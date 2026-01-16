@@ -34,6 +34,28 @@ section[data-testid="stSidebar"] {
     color: white;
     border-radius: 8px;
 }
+.copy-container {
+    position: relative;
+    margin-bottom: 6px;
+}
+
+.copy-btn {
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: transparent;
+    border: none;
+    color: #E30613;
+    cursor: pointer;
+    display: none;
+    font-size: 14px;
+}
+
+.copy-container:hover .copy-btn {
+    display: block;
+}
+
 </style>
 """, unsafe_allow_html=True)
 
@@ -226,6 +248,30 @@ st.altair_chart(
     .encode(x="Mes:N", y="Quantidade:Q", tooltip=["Mes", "Quantidade"]),
     use_container_width=True
 )
+def campo_copiavel(label, valor):
+    if pd.isna(valor):
+        valor = ""
+
+    html = f"""
+    <div class="copy-container">
+        <div style="font-size:12px;color:#aaa;margin-bottom:2px;">{label}</div>
+        <div style="
+            background:#1a1a1a;
+            border:1px solid #333;
+            padding:8px 12px;
+            border-radius:6px;
+            color:white;
+            font-size:14px;
+        ">
+            {valor}
+            <button class="copy-btn"
+                onclick="navigator.clipboard.writeText('{valor}')">
+                📋
+            </button>
+        </div>
+    </div>
+    """
+    st.markdown(html, unsafe_allow_html=True)
 
 # --------------------------------------------------
 # CONSULTA INDIVIDUAL
