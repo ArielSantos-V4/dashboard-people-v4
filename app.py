@@ -249,7 +249,61 @@ chart_adm = (
 )
 
 st.altair_chart(chart_adm, use_container_width=True)
+# --------------------------------------------------
+# CONSULTA INDIVIDUAL DE INVESTIDOR
+# --------------------------------------------------
+st.markdown("## 👤 Consulta individual de investidor")
 
+nome_busca = st.text_input(
+    "Digite o nome do investidor",
+    placeholder="Ex: João Silva"
+)
+
+if nome_busca:
+    resultado = df_tabela[
+        df_tabela.astype(str)
+        .apply(
+            lambda linha: linha.str.contains(nome_busca, case=False, na=False).any(),
+            axis=1
+        )
+    ]
+
+    if resultado.empty:
+        st.warning("❌ Nenhum investidor encontrado com esse nome.")
+    else:
+        st.success(f"✅ {len(resultado)} registro(s) encontrado(s)")
+
+        for _, row in resultado.iterrows():
+            st.markdown("---")
+            st.markdown(f"### 🧾 {row.get('Nome', 'Investidor')}")
+
+            col_a, col_b, col_c = st.columns(3)
+
+            with col_a:
+                st.markdown(f"**Modelo de contrato:** {row.get('Modelo de contrato', '-')}")
+                st.markdown(f"**Unidade / Atuação:** {row.get('Unidade/Atuação', '-')}")
+                st.markdown(f"**Data de início:** {row.get('Data de início', '-')}")
+
+            with col_b:
+                st.markdown(f"**Término do contrato:** {row.get('Término do contrato', '-')}")
+                st.markdown(f"**Status:** {'Vencido' if pd.notna(row.get('Térm previsto')) and row.get('Térm previsto') < hoje else 'Ativo'}")
+
+            with col_c:
+                # Mostra qualquer outro campo que exista na planilha
+                campos_extra = [
+                    col for col in row.index
+                    if col not in [
+                        "Nome",
+                        "Modelo de contrato",
+                        "Unidade/Atuação",
+                        "Data de início",
+                        "Término do contrato",
+                        "Térm previsto"
+                    ]
+                ]
+
+                for campo in campos_extra[:5]:
+                    st.markdown(f"**{campo}:** {row[campo]}")
 # --------------------------------------------------
 # TABELA COM BUSCA
 # --------------------------------------------------
