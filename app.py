@@ -1,5 +1,5 @@
 import streamlit as st
-import streamlit_authenticator as stauth
+import hashlib
 
 # --------------------------------------------------
 # CONFIGURAÇÃO INICIAL
@@ -10,72 +10,57 @@ st.set_page_config(
 )
 
 # --------------------------------------------------
-# AUTENTICAÇÃO (VERSÃO ESTÁVEL)
+# FUNÇÕES
 # --------------------------------------------------
+def check_password(username, password):
+    users = st.secrets["users"]
 
-# Copiando secrets para dict Python mutável (manual)
-secrets_auth = st.secrets["auth_config"]
+    if username not in users:
+        return False, None
 
-credentials = {
-    "usernames": {
-        user: {
-            "name": data["name"],
-            "email": data["email"],
-            "password": data["password"],
-        }
-        for user, data in secrets_auth["credentials"]["usernames"].items()
-    }
-}
+    stored_password = users[username]["password"]
+    return password == stored_password, users[username]["name"]
 
-cookie = {
-    "name": secrets_auth["cookie"]["name"],
-    "key": secrets_auth["cookie"]["key"],
-    "expiry_days": secrets_auth["cookie"]["expiry_days"],
-}
+# --------------------------------------------------
+# LOGIN
+# --------------------------------------------------
+if "authenticated" not in st.session_state:
+    st.session_state.authenticated = False
 
-authenticator = stauth.Authenticate(
-    credentials,
-    cookie["name"],
-    cookie["key"],
-    cookie["expiry_days"],
-)
+if not st.session_state.authenticated:
+    st.title("🔐 Login — Dashboard People V4")
 
-name, authentication_status, username = authenticator.login(
-    "Login - Dashboard People V4",
-    location="sidebar"
-)
+    username = st.text_input("Usuário")
+    password = st.text_input("Senha", type="password")
 
-if authentication_status is False:
-    st.error("Usuário ou senha inválidos")
+    if st.button("Entrar"):
+        valid, name = check_password(username, password)
 
-elif authentication_status is None:
-    st.warning("Digite seu usuário e senha")
+        if valid:
+            st.session_state.authenticated = True
+            st.session_state.user_name = name
+            st.experimental_rerun()
+        else:
+            st.error("Usuário ou senha inválidos")
 
-elif authentication_status:
+    st.stop()
 
-    authenticator.logout("Logout", "sidebar")
-    st.sidebar.success(f"Bem-vindo(a), {name}")
+# --------------------------------------------------
+# DASHBOARD
+# --------------------------------------------------
+st.sidebar.success(f"Bem-vindo(a), {st.session_state.user_name}")
 
-    # --------------------------------------------------
-    # DASHBOARD (PLACEHOLDER)
-    # --------------------------------------------------
-    st.title("📊 Dashboard People - V4 Company")
-    st.markdown("---")
+if st.sidebar.button("Logout"):
+    st.session_state.authenticated = False
+    st.experimental_rerun()
 
-    st.success("Login realizado com sucesso 🔐")
+st.title("📊 Dashboard People - V4 Company")
+st.markdown("---")
 
-    col1, col2, col3, col4 = st.columns(4)
-    col1.metric("Headcount Total", "—")
-    col2.metric("% PJ vs CLT", "—")
-    col3.metric("Média Salarial", "—")
-    col4.metric("Total de Desligamentos", "—")
+col1, col2, col3, col4 = st.columns(4)
+col1.metric("Headcount Total", "—")
+col2.metric("% PJ vs CLT", "—")
+col3.metric("Média Salarial", "—")
+col4.metric("Total de Desligamentos", "—")
 
-    st.markdown("### ✅ Infraestrutura concluída")
-    st.write(
-        """
-        ✔ Autenticação segura  
-        ✔ Secrets protegidos  
-        ✔ Streamlit Cloud estável  
-        ✔ Pronto para Google Sheets  
-        """
-    )
+st.success("🎉 Login funcionando. Base pronta para conectar o Google Sheets.")
