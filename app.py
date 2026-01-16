@@ -252,6 +252,13 @@ st.altair_chart(chart_adm, use_container_width=True)
 # --------------------------------------------------
 # CONSULTA INDIVIDUAL DE INVESTIDOR (LAYOUT SISTEMA)
 # --------------------------------------------------
+def valor_limpo(valor):
+    if pd.isna(valor) or str(valor).lower() == "none":
+        return ""
+    return str(valor)
+    
+st.markdown("## 👤 Consulta individual do investidor")
+st.markdown("Selecione um investidor para visualizar todos os dados consolidados.")
 
 df_consulta = df.copy()
 
@@ -283,7 +290,7 @@ if nome_selecionado:
         st.markdown("##### Dados principais")
 
         c1, c2 = st.columns(2)
-        c1.text_input("Nome completo", linha.get("Nome", ""), disabled=True)
+        c1.text_input("Nome completo", valor_limpo(linha.get("Nome")), disabled=True)
         c2.text_input("BP", linha.get("BP", ""), disabled=True)
 
         c3, c4 = st.columns(2)
