@@ -151,3 +151,11 @@ col4.metric("PJ / CLT / Estágio", f"{pj} / {clt} / {estagio}")
 col5.metric("Média admissões / mês", f"{media_admissoes:.1f}")
 
 st.success("✅ Dashboard conectado ao Google Sheets com sucesso.")
+
+st.markdown("### 📋 Base de colaboradores")
+
+st.dataframe(
+    df,
+    use_container_width=True,
+    hide_index=True
+)
