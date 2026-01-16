@@ -118,7 +118,7 @@ estagio = len(df[df["Modelo de contrato"] == "Estágio"])
 df_adm = df.dropna(subset=["Data Início"])
 media_admissoes = (
     df_adm
-    .groupby(df_adm["Data de admissão"].dt.to_period("M"))
+    .groupby(df_adm["Data Início"].dt.to_period("M"))
     .size()
     .mean()
 )
