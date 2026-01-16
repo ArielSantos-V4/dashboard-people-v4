@@ -309,16 +309,16 @@ if nome_busca:
                     st.markdown(f"**{campo}:** {row[campo]}")
 
 # --------------------------------------------------
-# CONSULTA INDIVIDUAL DE INVESTIDOR
+# CONSULTA INDIVIDUAL DE INVESTIDOR (DESIGN MELHORADO)
 # --------------------------------------------------
 st.markdown("## 👤 Consulta individual de investidor")
 
 df_consulta = df.copy()
 
-# 🔹 AJUSTE AQUI se o nome da coluna for diferente
+# 🔹 AJUSTE SE NECESSÁRIO
 coluna_nome = "Nome"
+coluna_foto = "Foto"   # coluna C da planilha (URL da imagem)
 
-# Lista de nomes (autocomplete)
 lista_nomes = (
     df_consulta[coluna_nome]
     .dropna()
@@ -341,28 +341,52 @@ if nome_selecionado:
 
         st.markdown("### 📄 Ficha do investidor")
 
-        with st.container():
-            st.markdown("""
-            <div style="
-                background-color:#1a1a1a;
-                border:1px solid #E30613;
-                border-radius:12px;
-                padding:20px;
-            ">
-            """, unsafe_allow_html=True)
+        # CARD BRANCO
+        st.markdown("""
+        <div style="
+            background-color:#ffffff;
+            border-radius:16px;
+            padding:24px;
+            box-shadow:0 4px 12px rgba(0,0,0,0.15);
+            margin-top:16px;
+        ">
+        """, unsafe_allow_html=True)
 
-            cols = st.columns(3)
+        col_foto, col_dados = st.columns([1, 4])
 
-            for i, (campo, valor) in enumerate(dados.items()):
-                with cols[i % 3]:
-                    st.markdown(f"""
-                    <div style="margin-bottom:12px;">
-                        <strong style="color:#E30613;">{campo}</strong><br>
-                        <span style="color:#ffffff;">{valor}</span>
+        # FOTO
+        with col_foto:
+            if coluna_foto in dados and pd.notna(dados[coluna_foto]):
+                st.image(dados[coluna_foto], width=140)
+            else:
+                st.markdown("🖼️ Sem foto")
+
+        # DADOS
+        with col_dados:
+            st.markdown("<div style='display:flex; flex-wrap:wrap; gap:16px;'>", unsafe_allow_html=True)
+
+            for campo, valor in dados.items():
+                if campo == coluna_foto:
+                    continue
+
+                st.markdown(f"""
+                <div style="
+                    background-color:#f5f5f5;
+                    padding:12px 16px;
+                    border-radius:10px;
+                    min-width:180px;
+                    flex-grow:1;
+                ">
+                    <div style="font-size:12px; color:#666;">{campo}</div>
+                    <div style="font-size:15px; font-weight:600; color:#000;">
+                        {valor}
                     </div>
-                    """, unsafe_allow_html=True)
+                </div>
+                """, unsafe_allow_html=True)
 
             st.markdown("</div>", unsafe_allow_html=True)
+
+        st.markdown("</div>", unsafe_allow_html=True)
 # --------------------------------------------------
 # TABELA COM BUSCA
 # --------------------------------------------------
