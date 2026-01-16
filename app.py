@@ -1,4 +1,45 @@
 import streamlit as st
+# ===== CONFIGURAÇÃO VISUAL V4 =====
+st.set_page_config(
+    page_title="Dashboard People | V4 Company",
+    layout="wide",
+    page_icon="🔴"
+)
+
+st.markdown("""
+<style>
+/* Fundo geral */
+.main {
+    background-color: #f8f9fa;
+}
+
+/* Sidebar */
+section[data-testid="stSidebar"] {
+    background-color: #ffffff;
+    border-right: 2px solid #E30613;
+}
+
+/* Cards KPI */
+div[data-testid="metric-container"] {
+    background-color: white;
+    border: 1px solid #E30613;
+    padding: 16px;
+    border-radius: 12px;
+}
+
+/* Títulos */
+h1, h2, h3 {
+    color: #E30613;
+}
+
+/* Botões */
+.stButton > button {
+    background-color: #E30613;
+    color: white;
+    border-radius: 8px;
+}
+</style>
+""", unsafe_allow_html=True)
 import hashlib
 
 # --------------------------------------------------
