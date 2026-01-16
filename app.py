@@ -101,14 +101,60 @@ st.markdown("---")
 
 df = load_google_sheet()
 
-# ---------------- KPIs ----------------
-headcount = len(df)
+# ===============================
+# TRATAMENTO DE DADOS
+# ===============================
+df.columns = df.columns.str.strip()
 
+# Remuneração -> float
+if "Remuneração" in df.columns:
+    df["Remuneração"] = (
+        df["Remuneração"]
+        .astype(str)
+        .str.replace("R$", "", regex=False)
+        .str.replace(".", "", regex=False)
+        .str.replace(",", ".", regex=False)
+    )
+    df["Remuneração"] = pd.to_numeric(df["Remuneração"], errors="coerce")
+
+# Datas
+for col in ["Data Início", "Término do contrato previsto"]:
+    if col in df.columns:
+        df[col] = pd.to_datetime(df[col], errors="coerce")
+
+# ===============================
+# KPIs
+# ===============================
+headcount = df.shape[0]
+
+# ===============================
+# CONTAGEM POR MODELO DE CONTRATO
+# ===============================
+pj = df[df["Modelo de contrato"].str.contains("PJ", case=False, na=False)].shape[0]
+clt = df[df["Modelo de contrato"].str.contains("CLT", case=False, na=False)].shape[0]
+estagio = df[df["Modelo de contrato"].str.contains("EST", case=False, na=False)].shape[0]
+
+pj_pct = round((pj / headcount) * 100, 1) if headcount > 0 else 0
+clt_pct = round((clt / headcount) * 100, 1) if headcount > 0 else 0
+est_pct = round((estagio / headcount) * 100, 1) if headcount > 0 else 0
+media_salarial = round(df["Remuneração"].mean(), 2)
+
+# Contratos vencendo em 30 dias
+hoje = pd.Timestamp.today()
+contratos_vencendo = df[
+    (df["Término do contrato previsto"].notna()) &
+    (df["Término do contrato previsto"] <= hoje + pd.Timedelta(days=30))
+].shape[0]
+
+# ===============================
+# EXIBIÇÃO
+# ===============================
 col1, col2, col3, col4 = st.columns(4)
+
 col1.metric("👥 Headcount Total", headcount)
-col2.metric("% PJ vs CLT", "—")
-col3.metric("💰 Média Salarial", "—")
-col4.metric("🚪 Total de Desligamentos", "—")
+col2.metric("📑 PJ | CLT | Estágio", f"{pj_pct}% | {clt_pct}% | {est_pct}%")
+col3.metric("💰 Média Salarial", f"R$ {media_salarial:,.2f}")
+col4.metric("⏰ Contratos a vencer (30d)", contratos_vencendo)
 
 st.markdown("---")
 
