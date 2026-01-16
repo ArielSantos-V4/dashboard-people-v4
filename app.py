@@ -58,4 +58,13 @@ elif authentication_status:
     col3.metric("Média Salarial", "—")
     col4.metric("Total de Desligamentos", "—")
 
-    st.markdown("###
+
+    st.markdown("### ✅ Estrutura pronta")
+    st.write(
+        """
+        ✔ Autenticação segura  
+        ✔ Secrets funcionando  
+        ✔ Tema V4 aplicado  
+        ✔ Base pronta para KPIs, gráficos e abas  
+        """
+    )
