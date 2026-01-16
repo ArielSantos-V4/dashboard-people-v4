@@ -69,14 +69,19 @@ if not st.session_state.authenticated:
 # ==================================================
 @st.cache_data
 def load_google_sheet():
-    url = (
-        "https://docs.google.com/spreadsheets/d/"
-        "13EPwhiXgh8BkbhyrEy2aCy3cv1O8npxJ_hA-HmLZ-pY"
-        "/export?format=csv&gid=2056973316"
-    )
-    df = pd.read_csv(url)
-    df.columns = df.columns.str.strip()
-    return df
+    sheet_id = "13EPwhiXgh8BkbhyrEy2aCy3cv1O8npxJ_hA-HmLZ-pY"
+    gid = "2056973316"  # aba ATIVOS (confirmado)
+
+    url = f"https://docs.google.com/spreadsheets/d/{sheet_id}/export?format=csv&gid={gid}"
+
+    try:
+        df = pd.read_csv(url)
+        df.columns = df.columns.str.strip()
+        return df
+    except Exception as e:
+        st.error("❌ Não foi possível carregar a planilha do Google Sheets")
+        st.write("Verifique se a aba 'Ativos' está pública (Leitor)")
+        raise e
 
 df = load_google_sheet()
 
