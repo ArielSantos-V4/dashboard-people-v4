@@ -13,49 +13,22 @@ st.set_page_config(
 )
 
 # --------------------------------------------------
-# ESTILO
+# ESTILO (PRETO + VERMELHO)
 # --------------------------------------------------
 st.markdown("""
 <style>
 .main { background-color: #0e0e0e; }
-
 h1, h2, h3 { color: #E30613; }
-
 div[data-testid="metric-container"] {
     background-color: #1a1a1a;
     border: 1px solid #E30613;
     padding: 16px;
     border-radius: 12px;
 }
-
-.consulta-box {
-    background-color: #ffffff;
-    padding: 20px;
-    border-radius: 16px;
-    border: 3px solid #E30613;
-    margin-top: 20px;
-    color: #000000;
-}
-
-.consulta-box h3 {
-    color: #E30613;
-}
-
-.consulta-item {
-    margin-bottom: 8px;
-    font-size: 14px;
-}
-
-.consulta-label {
-    font-weight: bold;
-    color: #444;
-}
-
 section[data-testid="stSidebar"] {
     background-color: #111111;
     border-right: 2px solid #E30613;
 }
-
 .stButton > button {
     background-color: #E30613;
     color: white;
@@ -100,6 +73,7 @@ if not st.session_state.authenticated:
 def load_google_sheet():
     sheet_id = "13EPwhiXgh8BkbhyrEy2aCy3cv1O8npxJ_hA-HmLZ-pY"
     gid = "2056973316"
+
     url = f"https://docs.google.com/spreadsheets/d/{sheet_id}/gviz/tq?gid={gid}&tqx=out:csv"
     return pd.read_csv(url)
 
@@ -107,13 +81,19 @@ df = load_google_sheet()
 df.columns = df.columns.str.strip()
 
 # --------------------------------------------------
-# DATAS
+# DATAS (TRATAMENTO DUPLO)
 # --------------------------------------------------
 df["Térm previsto_exibicao"] = df["Térm previsto"].astype(str)
+
 df["Térm previsto"] = pd.to_datetime(df["Térm previsto"], errors="coerce")
 df["Data Início"] = pd.to_datetime(df["Data Início"], errors="coerce")
 
-df["Térm previsto_exibicao"] = df["Térm previsto"].dt.strftime("%d/%m/%Y").fillna(df["Térm previsto_exibicao"])
+df["Térm previsto_exibicao"] = (
+    df["Térm previsto"]
+    .dt.strftime("%d/%m/%Y")
+    .fillna(df["Térm previsto_exibicao"])
+)
+
 df["Data Início_exibicao"] = df["Data Início"].dt.strftime("%d/%m/%Y")
 
 hoje = datetime.today()
@@ -139,6 +119,27 @@ pj = len(df[df["Modelo de contrato"] == "PJ"])
 clt = len(df[df["Modelo de contrato"] == "CLT"])
 estagio = len(df[df["Modelo de contrato"] == "Estágio"])
 
+df_adm = df.dropna(subset=["Data Início"])
+media_admissoes = (
+    df_adm
+    .groupby(df_adm["Data Início"].dt.to_period("M"))
+    .size()
+    .mean()
+)
+
+# --------------------------------------------------
+# SIDEBAR
+# --------------------------------------------------
+st.sidebar.success(f"Bem-vindo(a), {st.session_state.user_name}")
+
+if st.sidebar.button("🔄 Atualizar dados"):
+    st.cache_data.clear()
+    st.rerun()
+
+if st.sidebar.button("Logout"):
+    st.session_state.authenticated = False
+    st.rerun()
+
 # --------------------------------------------------
 # TOPO
 # --------------------------------------------------
@@ -148,82 +149,218 @@ with col_logo:
     st.image("LOGO VERMELHO.png", width=120)
 
 with col_title:
-    st.markdown("<h1>Dashboard People</h1><h3 style='color:#ccc'>V4 Company</h3>", unsafe_allow_html=True)
+    st.markdown(
+        "<h1>Dashboard People</h1><h3 style='color:#cccccc;'>V4 Company</h3>",
+        unsafe_allow_html=True
+    )
 
 st.markdown("---")
 
-c1, c2, c3, c4 = st.columns(4)
+# --------------------------------------------------
+# KPIs
+# --------------------------------------------------
+c1, c2, c3, c4, c5 = st.columns(5)
+
 c1.metric("Headcount", headcount)
 c2.metric("Contratos vencendo (30 dias)", len(contratos_vencer))
 c3.metric("Contratos vencidos", len(contratos_vencidos))
 c4.metric("PJ / CLT / Estágio", f"{pj} / {clt} / {estagio}")
+c5.metric("Média admissões / mês", f"{media_admissoes:.1f}")
 
 st.markdown("---")
 
 # --------------------------------------------------
-# CONSULTA INDIVIDUAL (DESTAQUE)
+# GRÁFICOS
 # --------------------------------------------------
-st.subheader("🔎 Consulta individual do investidor")
+g1, g2 = st.columns(2)
 
-df_tabela = df.copy()
+# PIZZA - MODELO DE CONTRATO
+with g1:
+    st.subheader("📃 Modelo de contrato")
 
-df_tabela["Término do contrato"] = df_tabela["Térm previsto_exibicao"]
-df_tabela["Data de início"] = df_tabela["Data Início_exibicao"]
+    contrato_df = (
+        df["Modelo de contrato"]
+        .value_counts()
+        .reset_index()
+    )
+    contrato_df.columns = ["Modelo", "Quantidade"]
 
-df_tabela = df_tabela.sort_values("Nome")
+    chart_pizza = (
+        alt.Chart(contrato_df)
+        .mark_arc(innerRadius=60)
+        .encode(
+            theta="Quantidade:Q",
+            color=alt.Color(
+                "Modelo:N",
+                scale=alt.Scale(range=["#E30613", "#B0000A", "#FF4C4C"]),
+                legend=alt.Legend(title="Contrato")
+            ),
+            tooltip=["Modelo", "Quantidade"]
+        )
+    )
 
-nomes = sorted(df_tabela["Nome"].dropna().unique())
+    st.altair_chart(chart_pizza, use_container_width=True)
 
-nome_selecionado = st.selectbox(
-    "Digite ou selecione o nome do investidor",
-    options=nomes
+# BARRAS - LOCAL DE ATUAÇÃO
+with g2:
+    st.subheader("📍 Local de atuação dos investidores")
+
+    local_df = (
+        df["Unidade/Atuação"]
+        .dropna()
+        .value_counts()
+        .reset_index()
+    )
+    local_df.columns = ["Local", "Quantidade"]
+
+    chart_local = (
+        alt.Chart(local_df)
+        .mark_bar(color="#E30613")
+        .encode(
+            x=alt.X("Local:N", sort="-y", axis=alt.Axis(labelAngle=-30)),
+            y=alt.Y("Quantidade:Q"),
+            tooltip=["Local", "Quantidade"]
+        )
+    )
+
+    st.altair_chart(chart_local, use_container_width=True)
+
+# --------------------------------------------------
+# ADMISSÕES
+# --------------------------------------------------
+st.subheader("📈 Admissões por mês")
+
+adm_mes = (
+    df_adm
+    .assign(Mes=df_adm["Data Início"].dt.strftime("%b/%Y"))
+    .groupby("Mes")
+    .size()
+    .reset_index(name="Quantidade")
 )
 
-resultado = df_tabela[df_tabela["Nome"] == nome_selecionado]
+chart_adm = (
+    alt.Chart(adm_mes)
+    .mark_line(color="#E30613", point=True)
+    .encode(
+        x="Mes:N",
+        y="Quantidade:Q",
+        tooltip=["Mes", "Quantidade"]
+    )
+)
 
-if not resultado.empty:
-    dados = resultado.iloc[0]
+st.altair_chart(chart_adm, use_container_width=True)
 
-    st.markdown("<div class='consulta-box'>", unsafe_allow_html=True)
-
-    col_a, col_b, col_c = st.columns(3)
-
-    with col_a:
-        st.markdown(f"<div class='consulta-item'><span class='consulta-label'>Nome:</span> {dados.get('Nome','')}</div>", unsafe_allow_html=True)
-        st.markdown(f"<div class='consulta-item'><span class='consulta-label'>Email:</span> {dados.get('Email','')}</div>", unsafe_allow_html=True)
-        st.markdown(f"<div class='consulta-item'><span class='consulta-label'>Modelo de contrato:</span> {dados.get('Modelo de contrato','')}</div>", unsafe_allow_html=True)
-
-    with col_b:
-        st.markdown(f"<div class='consulta-item'><span class='consulta-label'>Data início:</span> {dados.get('Data de início','')}</div>", unsafe_allow_html=True)
-        st.markdown(f"<div class='consulta-item'><span class='consulta-label'>Término:</span> {dados.get('Término do contrato','')}</div>", unsafe_allow_html=True)
-        st.markdown(f"<div class='consulta-item'><span class='consulta-label'>Centro de custo:</span> {dados.get('Centro de custo','')}</div>", unsafe_allow_html=True)
-
-    with col_c:
-        st.markdown(f"<div class='consulta-item'><span class='consulta-label'>Unidade / Atuação:</span> {dados.get('Unidade/Atuação','')}</div>", unsafe_allow_html=True)
-        st.markdown(f"<div class='consulta-item'><span class='consulta-label'>Benefícios:</span> {dados.get('Benefícios','')}</div>", unsafe_allow_html=True)
-
-    st.markdown("</div>", unsafe_allow_html=True)
+st.markdown("""
+<div style="
+    background-color:#f5f5f5;
+    padding:20px;
+    border-radius:16px;
+    border:2px solid #E30613;
+    margin-top:30px;
+">
+""", unsafe_allow_html=True)
 
 # --------------------------------------------------
-# TABELA (ORDEM ALFABÉTICA)
+# CONSULTA INDIVIDUAL DE INVESTIDOR (LAYOUT SISTEMA)
+# --------------------------------------------------
+
+st.subheader("🔍 Consulta individual de investidor")
+
+nome_selecionado = st.selectbox(
+    "Digite ou selecione o nome",
+    sorted(df_tabela["Nome completo"].dropna().unique())
+)
+
+linha = df_tabela[df_tabela["Nome completo"] == nome_selecionado].iloc[0]
+
+col_esq, col_meio, col_dir = st.columns([1.2, 1.2, 1])
+
+# -----------------------------------
+# COLUNA ESQUERDA — DADOS CONTRATUAIS
+# -----------------------------------
+with col_esq:
+    st.markdown("##### Dados contratuais")
+
+    st.text_input("BP", linha.get("BP", ""), disabled=True)
+    st.text_input("Matrícula", linha.get("Matrícula", ""), disabled=True)
+    st.text_input("Cargo", linha.get("Cargo", ""), disabled=True)
+    st.text_input("CBO", linha.get("CBO", ""), disabled=True)
+    st.text_input("Descrição CBO", linha.get("Descrição CBO", ""), disabled=True)
+
+    st.text_input("Modelo de contrato", linha.get("Modelo de contrato", ""), disabled=True)
+    st.text_input("Situação", linha.get("Situação", ""), disabled=True)
+    st.text_input("Unidade de atuação", linha.get("Unidade/Atuação", ""), disabled=True)
+
+    st.text_input("Data início", linha.get("Data de início", ""), disabled=True)
+    st.text_input("Término previsto", linha.get("Término do contrato", ""), disabled=True)
+    st.text_input("Tempo de casa", linha.get("Tempo de casa", ""), disabled=True)
+
+# -----------------------------------
+# COLUNA MEIO — DADOS PESSOAIS
+# -----------------------------------
+with col_meio:
+    st.markdown("##### Dados pessoais")
+
+    st.text_input("CPF", linha.get("CPF", ""), disabled=True)
+    st.text_input("Nascimento", linha.get("Data de nascimento", ""), disabled=True)
+    st.text_input("Idade", linha.get("Idade", ""), disabled=True)
+    st.text_input("CEP", linha.get("CEP", ""), disabled=True)
+    st.text_input("Escolaridade", linha.get("Escolaridade", ""), disabled=True)
+
+    st.text_input("E-mail pessoal", linha.get("E-mail pessoal", ""), disabled=True)
+    st.text_input("Telefone pessoal", linha.get("Telefone pessoal", ""), disabled=True)
+
+    st.text_input("E-mail corporativo", linha.get("E-mail corporativo", ""), disabled=True)
+
+# -----------------------------------
+# COLUNA DIREITA — FOTO + GESTÃO
+# -----------------------------------
+with col_dir:
+    if pd.notna(linha.get(coluna_foto)):
+        st.image(linha[coluna_foto], width=160)
+
+    st.markdown("##### Centro de custo")
+
+    st.text_input("Código", linha.get("Centro de custo - Código", ""), disabled=True)
+    st.text_input("Descrição", linha.get("Centro de custo - Descrição", ""), disabled=True)
+    st.text_input("Senioridade", linha.get("Senioridade", ""), disabled=True)
+    st.text_input("Liderança direta", linha.get("Liderança direta", ""), disabled=True)
+    st.text_input("Conta contábil", linha.get("Conta contábil", ""), disabled=True)
+
+    st.markdown("##### Benefícios")
+
+    st.text_input("Situação no plano", linha.get("Situação no plano", ""), disabled=True)
+    st.text_input("Plano / EB", linha.get("Enviar no EB", ""), disabled=True)
+
+st.markdown("</div>", unsafe_allow_html=True)
+
+# --------------------------------------------------
+# TABELA COM BUSCA
 # --------------------------------------------------
 st.markdown("### 📋 Base de investidores")
 
 busca = st.text_input("🔍 Buscar na tabela")
 
+df_tabela = df.copy()
+df_tabela["Término do contrato"] = df_tabela["Térm previsto_exibicao"]
+df_tabela["Data de início"] = df_tabela["Data Início_exibicao"]
+
 if busca:
     df_filtrado = df_tabela[
         df_tabela.astype(str)
-        .apply(lambda x: x.str.contains(busca, case=False, na=False).any(), axis=1)
+        .apply(lambda linha: linha.str.contains(busca, case=False, na=False).any(), axis=1)
     ]
 else:
     df_filtrado = df_tabela
 
-df_filtrado = df_filtrado.sort_values("Nome")
-
 st.dataframe(
     df_filtrado.drop(
-        columns=["Térm previsto", "Térm previsto_exibicao", "Data Início", "Data Início_exibicao"],
+        columns=[
+            "Térm previsto",
+            "Térm previsto_exibicao",
+            "Data Início",
+            "Data Início_exibicao"
+        ],
         errors="ignore"
     ),
     use_container_width=True,
