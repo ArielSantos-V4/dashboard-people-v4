@@ -1,5 +1,6 @@
 import streamlit as st
 import pandas as pd
+import altair as alt
 from datetime import datetime, timedelta
 
 # --------------------------------------------------
@@ -37,7 +38,7 @@ section[data-testid="stSidebar"] {
 """, unsafe_allow_html=True)
 
 # --------------------------------------------------
-# LOGIN SIMPLES (st.secrets)
+# LOGIN (st.secrets)
 # --------------------------------------------------
 def check_password(username, password):
     users = st.secrets["users"]
@@ -77,17 +78,14 @@ def load_google_sheet():
         f"https://docs.google.com/spreadsheets/d/{sheet_id}/gviz/tq?"
         f"gid={gid}&tqx=out:csv"
     )
-
     return pd.read_csv(url)
 
 df = load_google_sheet()
-
-# --------------------------------------------------
-# TRATAMENTO DE DADOS
-# --------------------------------------------------
 df.columns = df.columns.str.strip()
 
-# Datas
+# --------------------------------------------------
+# TRATAMENTO DE DATAS
+# --------------------------------------------------
 df["Térm previsto"] = pd.to_datetime(df["Térm previsto"], errors="coerce")
 df["Data Início"] = pd.to_datetime(df["Data Início"], errors="coerce")
 
@@ -114,7 +112,6 @@ pj = len(df[df["Modelo de contrato"] == "PJ"])
 clt = len(df[df["Modelo de contrato"] == "CLT"])
 estagio = len(df[df["Modelo de contrato"] == "Estágio"])
 
-# Média de admissões por mês
 df_adm = df.dropna(subset=["Data Início"])
 media_admissoes = (
     df_adm
@@ -128,16 +125,16 @@ media_admissoes = (
 # --------------------------------------------------
 st.sidebar.success(f"Bem-vindo(a), {st.session_state.user_name}")
 
-if st.sidebar.button("Logout"):
-    st.session_state.authenticated = False
-    st.rerun()
-
 if st.sidebar.button("🔄 Atualizar dados"):
     st.cache_data.clear()
     st.rerun()
 
+if st.sidebar.button("Logout"):
+    st.session_state.authenticated = False
+    st.rerun()
+
 # --------------------------------------------------
-# DASHBOARD
+# TOPO COM LOGO
 # --------------------------------------------------
 col_logo, col_title = st.columns([1, 6])
 
@@ -146,83 +143,99 @@ with col_logo:
 
 with col_title:
     st.markdown(
-        "<h1 style='color:#E30613; margin-bottom:0;'>Dashboard People</h1>"
+        "<h1 style='margin-bottom:0;'>Dashboard People</h1>"
         "<h3 style='color:#cccccc; margin-top:0;'>V4 Company</h3>",
         unsafe_allow_html=True
     )
 
 st.markdown("---")
 
-col1, col2, col3, col4, col5 = st.columns(5)
+# --------------------------------------------------
+# KPIs VISUAIS
+# --------------------------------------------------
+c1, c2, c3, c4, c5 = st.columns(5)
 
-col1.metric("Headcount", headcount)
-col2.metric("Contratos vencendo (30 dias)", len(contratos_vencer))
-col3.metric("Contratos vencidos", len(contratos_vencidos))
-col4.metric("PJ / CLT / Estágio", f"{pj} / {clt} / {estagio}")
-col5.metric("Média admissões / mês", f"{media_admissoes:.1f}")
+c1.metric("Headcount", headcount)
+c2.metric("Contratos vencendo (30 dias)", len(contratos_vencer))
+c3.metric("Contratos vencidos", len(contratos_vencidos))
+c4.metric("PJ / CLT / Estágio", f"{pj} / {clt} / {estagio}")
+c5.metric("Média admissões / mês", f"{media_admissoes:.1f}")
 
-st.success("✅ Dashboard conectado ao Google Sheets com sucesso.")
+st.markdown("---")
 
 # --------------------------------------------------
 # GRÁFICOS
 # --------------------------------------------------
+st.subheader("📊 Distribuição por modelo de contrato")
 
-st.markdown("## 📊 Análises")
+contratos = (
+    df["Modelo de contrato"]
+    .value_counts()
+    .reset_index()
+)
+contratos.columns = ["Modelo", "Quantidade"]
 
-col_g1, col_g2 = st.columns(2)
-
-with col_g1:
-    st.markdown("### Modelo de contrato")
-
-    contratos = (
-        df["Modelo de contrato"]
-        .value_counts()
-        .reset_index()
+chart_contrato = (
+    alt.Chart(contratos)
+    .mark_bar(color="#E30613")
+    .encode(
+        x="Modelo:N",
+        y="Quantidade:Q",
+        tooltip=["Modelo", "Quantidade"]
     )
-    contratos.columns = ["Modelo", "Quantidade"]
+)
 
-    st.bar_chart(
-        contratos,
-        x="Modelo",
-        y="Quantidade",
-        use_container_width=True
-    )
-with col_g2:
-    st.markdown("### Contratos a vencer")
+st.altair_chart(chart_contrato, use_container_width=True)
 
-    vencer_por_mes = (
-        df.dropna(subset=["Térm previsto"])
-        .assign(Mes=df["Térm previsto"].dt.to_period("M").astype(str))
-        .groupby("Mes")
-        .size()
-        .reset_index(name="Quantidade")
-        .sort_values("Mes")
-    )
+# ---------------------------
+st.subheader("⏳ Contratos a vencer por mês")
 
-    st.bar_chart(
-        vencer_por_mes,
-        x="Mes",
-        y="Quantidade",
-        use_container_width=True
-    )
-st.markdown("### 📈 Admissões por mês")
-
-admissoes_mes = (
-    df.dropna(subset=["Data Início"])
-    .assign(Mes=df["Data Início"].dt.to_period("M").astype(str))
+vencer_por_mes = (
+    contratos_vencer
+    .assign(Mes=contratos_vencer["Térm previsto"].dt.to_period("M").astype(str))
     .groupby("Mes")
     .size()
     .reset_index(name="Quantidade")
-    .sort_values("Mes")
 )
 
-st.line_chart(
-    admissoes_mes,
-    x="Mes",
-    y="Quantidade",
-    use_container_width=True
+chart_vencer = (
+    alt.Chart(vencer_por_mes)
+    .mark_bar(color="#E30613")
+    .encode(
+        x="Mes:N",
+        y="Quantidade:Q",
+        tooltip=["Mes", "Quantidade"]
+    )
 )
 
+st.altair_chart(chart_vencer, use_container_width=True)
+
+# ---------------------------
+st.subheader("📈 Admissões por mês")
+
+admissoes_mes = (
+    df_adm
+    .assign(Mes=df_adm["Data Início"].dt.to_period("M").astype(str))
+    .groupby("Mes")
+    .size()
+    .reset_index(name="Quantidade")
+)
+
+chart_admissoes = (
+    alt.Chart(admissoes_mes)
+    .mark_line(color="#E30613", point=True)
+    .encode(
+        x="Mes:N",
+        y="Quantidade:Q",
+        tooltip=["Mes", "Quantidade"]
+    )
+)
+
+st.altair_chart(chart_admissoes, use_container_width=True)
+
+# --------------------------------------------------
+# TABELA FINAL
+# --------------------------------------------------
 st.markdown("### 📋 Base de colaboradores")
 
 st.dataframe(
