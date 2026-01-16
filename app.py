@@ -307,6 +307,62 @@ if nome_busca:
 
                 for campo in campos_extra[:5]:
                     st.markdown(f"**{campo}:** {row[campo]}")
+
+# --------------------------------------------------
+# CONSULTA INDIVIDUAL DE INVESTIDOR
+# --------------------------------------------------
+st.markdown("## 👤 Consulta individual de investidor")
+
+df_consulta = df.copy()
+
+# 🔹 AJUSTE AQUI se o nome da coluna for diferente
+coluna_nome = "Nome"
+
+# Lista de nomes (autocomplete)
+lista_nomes = (
+    df_consulta[coluna_nome]
+    .dropna()
+    .astype(str)
+    .sort_values()
+    .unique()
+    .tolist()
+)
+
+nome_selecionado = st.selectbox(
+    "Digite ou selecione o nome do investidor",
+    options=[""] + lista_nomes
+)
+
+if nome_selecionado:
+    resultado = df_consulta[df_consulta[coluna_nome] == nome_selecionado]
+
+    if not resultado.empty:
+        dados = resultado.iloc[0]
+
+        st.markdown("### 📄 Ficha do investidor")
+
+        with st.container():
+            st.markdown("""
+            <div style="
+                background-color:#1a1a1a;
+                border:1px solid #E30613;
+                border-radius:12px;
+                padding:20px;
+            ">
+            """, unsafe_allow_html=True)
+
+            cols = st.columns(3)
+
+            for i, (campo, valor) in enumerate(dados.items()):
+                with cols[i % 3]:
+                    st.markdown(f"""
+                    <div style="margin-bottom:12px;">
+                        <strong style="color:#E30613;">{campo}</strong><br>
+                        <span style="color:#ffffff;">{valor}</span>
+                    </div>
+                    """, unsafe_allow_html=True)
+
+            st.markdown("</div>", unsafe_allow_html=True)
 # --------------------------------------------------
 # TABELA COM BUSCA
 # --------------------------------------------------
