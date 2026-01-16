@@ -261,12 +261,37 @@ st.altair_chart(chart_adm, use_container_width=True)
 # --------------------------------------------------
 st.markdown("### 📋 Base de investidores")
 
+# Campo de busca
+busca = st.text_input("🔍 Buscar na tabela", placeholder="Digite qualquer texto...")
+
 df_tabela = df.copy()
 
 # Ajustar colunas para exibição
 df_tabela["Término do contrato"] = df_tabela["Térm previsto_exibicao"]
 df_tabela["Data de início"] = df_tabela["Data Início_exibicao"]
 
+# Aplicar filtro de busca
+if busca:
+    df_filtrado = df_tabela[
+        df_tabela.astype(str)
+        .apply(lambda linha: linha.str.contains(busca, case=False, na=False).any(), axis=1)
+    ]
+else:
+    df_filtrado = df_tabela
+
+st.dataframe(
+    df_filtrado.drop(
+        columns=[
+            "Térm previsto",
+            "Térm previsto_exibicao",
+            "Data Início",
+            "Data Início_exibicao"
+        ],
+        errors="ignore"
+    ),
+    use_container_width=True,
+    hide_index=True
+)
 st.dataframe(
     df_tabela.drop(
         columns=[
