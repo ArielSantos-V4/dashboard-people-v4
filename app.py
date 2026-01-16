@@ -252,6 +252,9 @@ st.altair_chart(chart_adm, use_container_width=True)
 # --------------------------------------------------
 # CONSULTA INDIVIDUAL DE INVESTIDOR
 # --------------------------------------------------
+
+df_tabela = df.copy()  # 👈 ADICIONE ESTA LINHA
+
 st.markdown("## 👤 Consulta individual de investidor")
 
 nome_busca = st.text_input(
