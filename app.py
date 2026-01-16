@@ -89,7 +89,7 @@ if st.sidebar.button("Logout"):
 # ==============================
 @st.cache_data
 def load_google_sheet():
-    url = "https://docs.google.com/spreadsheets/d/13EPwhiXgh8BkbhyrEy2aCy3cv1O8npxJ_hA-HmLZ-pY/export?format=csv&gid=2056973316"
+    url = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRWduIT16goCiVCD4eBSUswOF7rUQH08StTTf3ayIjm0T_YI3UVi7vqvjsrCSOL4Lx_m9HqWPICUs7K/pub?gid=2056973316&single=true&output=csv"
     df = pd.read_csv(url)
     df.columns = df.columns.str.strip()
     return df
