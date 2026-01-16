@@ -10,16 +10,34 @@ st.set_page_config(
 )
 
 # --------------------------------------------------
-# AUTENTICAÇÃO (VERSÃO CORRETA PARA SECRETS)
+# AUTENTICAÇÃO (VERSÃO ESTÁVEL)
 # --------------------------------------------------
-config = st.secrets["auth_config"]
+
+# Copiando secrets para dict Python mutável (manual)
+secrets_auth = st.secrets["auth_config"]
+
+credentials = {
+    "usernames": {
+        user: {
+            "name": data["name"],
+            "email": data["email"],
+            "password": data["password"],
+        }
+        for user, data in secrets_auth["credentials"]["usernames"].items()
+    }
+}
+
+cookie = {
+    "name": secrets_auth["cookie"]["name"],
+    "key": secrets_auth["cookie"]["key"],
+    "expiry_days": secrets_auth["cookie"]["expiry_days"],
+}
 
 authenticator = stauth.Authenticate(
-    credentials=config["credentials"],
-    cookie_name=config["cookie"]["name"],
-    cookie_key=config["cookie"]["key"],
-    cookie_expiry_days=config["cookie"]["expiry_days"],
-    auto_hash=False,  # 🔴 ISSO É O MAIS IMPORTANTE
+    credentials,
+    cookie["name"],
+    cookie["key"],
+    cookie["expiry_days"],
 )
 
 name, authentication_status, username = authenticator.login(
@@ -56,7 +74,7 @@ elif authentication_status:
     st.write(
         """
         ✔ Autenticação segura  
-        ✔ Secrets sem mutação  
+        ✔ Secrets protegidos  
         ✔ Streamlit Cloud estável  
         ✔ Pronto para Google Sheets  
         """
