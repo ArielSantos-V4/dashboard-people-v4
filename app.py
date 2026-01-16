@@ -1,6 +1,5 @@
 import streamlit as st
 import streamlit_authenticator as stauth
-import json
 
 # --------------------------------------------------
 # CONFIGURAÇÃO INICIAL
@@ -11,16 +10,16 @@ st.set_page_config(
 )
 
 # --------------------------------------------------
-# AUTENTICAÇÃO (VERSÃO ESTÁVEL)
+# AUTENTICAÇÃO (VERSÃO CORRETA PARA SECRETS)
 # --------------------------------------------------
-# Converte secrets em dict Python mutável
-config = json.loads(json.dumps(st.secrets["auth_config"]))
+config = st.secrets["auth_config"]
 
 authenticator = stauth.Authenticate(
-    config["credentials"],
-    config["cookie"]["name"],
-    config["cookie"]["key"],
-    config["cookie"]["expiry_days"],
+    credentials=config["credentials"],
+    cookie_name=config["cookie"]["name"],
+    cookie_key=config["cookie"]["key"],
+    cookie_expiry_days=config["cookie"]["expiry_days"],
+    auto_hash=False,  # 🔴 ISSO É O MAIS IMPORTANTE
 )
 
 name, authentication_status, username = authenticator.login(
@@ -56,8 +55,8 @@ elif authentication_status:
     st.markdown("### ✅ Infraestrutura concluída")
     st.write(
         """
-        ✔ Login com usuário e senha  
-        ✔ Secrets seguros  
+        ✔ Autenticação segura  
+        ✔ Secrets sem mutação  
         ✔ Streamlit Cloud estável  
         ✔ Pronto para Google Sheets  
         """
