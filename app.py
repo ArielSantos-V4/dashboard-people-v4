@@ -302,24 +302,41 @@ if nome_selecionado:
         st.text_input("E-mail corporativo", linha.get("E-mail corporativo", ""), disabled=True)
 
     # ---------- COLUNA DIREITA ----------
-    with col_dir:
-        st.markdown("#####")
+with col_dir:
+    if pd.notna(linha.get(coluna_foto)):
+        st.image(linha[coluna_foto], width=170)
 
-        if pd.notna(linha.get(coluna_foto)):
-            st.image(linha[coluna_foto], width=180)
+    # -------------------------------
+    # CENTRO DE CUSTO
+    # -------------------------------
+    st.markdown("##### Centro de custo")
 
-        st.markdown("##### Dados pessoais")
+    cc1, cc2 = st.columns(2)
+    cc1.text_input("Código", linha.get("Centro de custo - Código", ""), disabled=True)
+    cc2.text_input("Descrição", linha.get("Centro de custo - Descrição", ""), disabled=True)
 
-        d1, d2 = st.columns(2)
-        d1.text_input("CPF", linha.get("CPF", ""), disabled=True)
-        d2.text_input("Nascimento", linha.get("Data de nascimento", ""), disabled=True)
+    cc3, cc4 = st.columns(2)
+    cc3.text_input("Senioridade", linha.get("Senioridade", ""), disabled=True)
+    cc4.text_input("Liderança direta", linha.get("Liderança direta", ""), disabled=True)
 
-        d3, d4 = st.columns(2)
-        d3.text_input("CEP", linha.get("CEP", ""), disabled=True)
-        d4.text_input("Escolaridade", linha.get("Escolaridade", ""), disabled=True)
+    st.text_input("Conta contábil", linha.get("Conta contábil", ""), disabled=True)
 
-        st.text_input("E-mail pessoal", linha.get("E-mail pessoal", ""), disabled=True)
-        st.text_input("Telefone", linha.get("Telefone pessoal", ""), disabled=True)
+    # -------------------------------
+    # BENEFÍCIOS
+    # -------------------------------
+    st.markdown("##### Benefícios")
+
+    b1, b2 = st.columns(2)
+    b1.text_input("Plano / Situação", linha.get("Situação no plano", ""), disabled=True)
+    b2.text_input("Enviar no EB", linha.get("Enviar no EB", ""), disabled=True)
+
+    b3, b4 = st.columns(2)
+    b3.text_input("Cart. Médico", linha.get("Carteirinha Médico", ""), disabled=True)
+    b4.text_input("Operadora Médica", linha.get("Operadora Médico", ""), disabled=True)
+
+    b5, b6 = st.columns(2)
+    b5.text_input("Cart. Odonto", linha.get("Carteirinha Odonto", ""), disabled=True)
+    b6.text_input("Operadora Odonto", linha.get("Operadora Odonto", ""), disabled=True)
         
 # --------------------------------------------------
 # TABELA COM BUSCA
