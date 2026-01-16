@@ -38,7 +38,7 @@ section[data-testid="stSidebar"] {
 """, unsafe_allow_html=True)
 
 # --------------------------------------------------
-# LOGIN (st.secrets)
+# LOGIN
 # --------------------------------------------------
 def check_password(username, password):
     users = st.secrets["users"]
@@ -74,17 +74,14 @@ def load_google_sheet():
     sheet_id = "13EPwhiXgh8BkbhyrEy2aCy3cv1O8npxJ_hA-HmLZ-pY"
     gid = "2056973316"
 
-    url = (
-        f"https://docs.google.com/spreadsheets/d/{sheet_id}/gviz/tq?"
-        f"gid={gid}&tqx=out:csv"
-    )
+    url = f"https://docs.google.com/spreadsheets/d/{sheet_id}/gviz/tq?gid={gid}&tqx=out:csv"
     return pd.read_csv(url)
 
 df = load_google_sheet()
 df.columns = df.columns.str.strip()
 
 # --------------------------------------------------
-# TRATAMENTO DE DATAS
+# DATAS
 # --------------------------------------------------
 df["Térm previsto"] = pd.to_datetime(df["Térm previsto"], errors="coerce")
 df["Data Início"] = pd.to_datetime(df["Data Início"], errors="coerce")
@@ -134,7 +131,7 @@ if st.sidebar.button("Logout"):
     st.rerun()
 
 # --------------------------------------------------
-# TOPO COM LOGO
+# TOPO
 # --------------------------------------------------
 col_logo, col_title = st.columns([1, 6])
 
@@ -143,15 +140,14 @@ with col_logo:
 
 with col_title:
     st.markdown(
-        "<h1 style='margin-bottom:0;'>Dashboard People</h1>"
-        "<h3 style='color:#cccccc; margin-top:0;'>V4 Company</h3>",
+        "<h1>Dashboard People</h1><h3 style='color:#cccccc;'>V4 Company</h3>",
         unsafe_allow_html=True
     )
 
 st.markdown("---")
 
 # --------------------------------------------------
-# KPIs VISUAIS
+# KPIs
 # --------------------------------------------------
 c1, c2, c3, c4, c5 = st.columns(5)
 
@@ -164,82 +160,91 @@ c5.metric("Média admissões / mês", f"{media_admissoes:.1f}")
 st.markdown("---")
 
 # --------------------------------------------------
-# GRÁFICOS
+# GRÁFICOS LADO A LADO
 # --------------------------------------------------
-st.subheader("📊 Distribuição por modelo de contrato")
+g1, g2 = st.columns(2)
 
-contratos = (
-    df["Modelo de contrato"]
-    .value_counts()
-    .reset_index()
-)
-contratos.columns = ["Modelo", "Quantidade"]
+# -------- PIZZA MODELO DE CONTRATO
+with g1:
+    st.subheader("🍕 Modelo de contrato")
 
-chart_contrato = (
-    alt.Chart(contratos)
-    .mark_bar(color="#E30613")
-    .encode(
-        x="Modelo:N",
-        y="Quantidade:Q",
-        tooltip=["Modelo", "Quantidade"]
+    contrato_df = (
+        df["Modelo de contrato"]
+        .value_counts()
+        .reset_index()
     )
-)
+    contrato_df.columns = ["Modelo", "Quantidade"]
 
-st.altair_chart(chart_contrato, use_container_width=True)
-
-# ---------------------------
-st.subheader("⏳ Contratos a vencer por mês")
-
-vencer_por_mes = (
-    contratos_vencer
-    .assign(Mes=contratos_vencer["Térm previsto"].dt.to_period("M").astype(str))
-    .groupby("Mes")
-    .size()
-    .reset_index(name="Quantidade")
-)
-
-chart_vencer = (
-    alt.Chart(vencer_por_mes)
-    .mark_bar(color="#E30613")
-    .encode(
-        x="Mes:N",
-        y="Quantidade:Q",
-        tooltip=["Mes", "Quantidade"]
+    chart_pizza = (
+        alt.Chart(contrato_df)
+        .mark_arc(innerRadius=60)
+        .encode(
+            theta="Quantidade:Q",
+            color=alt.Color(
+                "Modelo:N",
+                scale=alt.Scale(
+                    range=["#E30613", "#B0000A", "#FF4C4C"]
+                ),
+                legend=alt.Legend(title="Contrato")
+            ),
+            tooltip=["Modelo", "Quantidade"]
+        )
     )
-)
 
-st.altair_chart(chart_vencer, use_container_width=True)
+    st.altair_chart(chart_pizza, use_container_width=True)
 
-# ---------------------------
+# -------- CONTRATOS A VENCER
+with g2:
+    st.subheader("⏳ Contratos a vencer")
+
+    vencer_mes = (
+        contratos_vencer
+        .assign(Mes=contratos_vencer["Térm previsto"].dt.strftime("%b/%Y"))
+        .groupby("Mes")
+        .size()
+        .reset_index(name="Quantidade")
+    )
+
+    chart_vencer = (
+        alt.Chart(vencer_mes)
+        .mark_bar(color="#E30613")
+        .encode(
+            x=alt.X("Mes:N", title="Mês"),
+            y=alt.Y("Quantidade:Q", title="Qtd"),
+            tooltip=["Mes", "Quantidade"]
+        )
+    )
+
+    st.altair_chart(chart_vencer, use_container_width=True)
+
+# --------------------------------------------------
+# ADMISSÕES
+# --------------------------------------------------
 st.subheader("📈 Admissões por mês")
 
-admissoes_mes = (
+adm_mes = (
     df_adm
-    .assign(Mes=df_adm["Data Início"].dt.to_period("M").astype(str))
+    .assign(Mes=df_adm["Data Início"].dt.strftime("%b/%Y"))
     .groupby("Mes")
     .size()
     .reset_index(name="Quantidade")
 )
 
-chart_admissoes = (
-    alt.Chart(admissoes_mes)
+chart_adm = (
+    alt.Chart(adm_mes)
     .mark_line(color="#E30613", point=True)
     .encode(
-        x="Mes:N",
-        y="Quantidade:Q",
+        x=alt.X("Mes:N", title="Mês"),
+        y=alt.Y("Quantidade:Q", title="Qtd"),
         tooltip=["Mes", "Quantidade"]
     )
 )
 
-st.altair_chart(chart_admissoes, use_container_width=True)
+st.altair_chart(chart_adm, use_container_width=True)
 
 # --------------------------------------------------
-# TABELA FINAL
+# TABELA
 # --------------------------------------------------
-st.markdown("### 📋 Base de colaboradores")
+st.markdown("### 📋 Base de investidores")
 
-st.dataframe(
-    df,
-    use_container_width=True,
-    hide_index=True
-)
+st.dataframe(df, use_container_width=True, hide_index=True)
