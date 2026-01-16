@@ -207,29 +207,34 @@ with g1:
 
     st.altair_chart(chart_pizza, use_container_width=True)
 
-# -------- CONTRATOS A VENCER
+# -------- LOCAL DE ATUAÇÃO
 with g2:
-    st.subheader("⏳ Contratos a vencer")
+    st.subheader("📍 Local de atuação dos investidores")
 
-    vencer_mes = (
-        contratos_vencer
-        .assign(Mes=contratos_vencer["Térm previsto"].dt.strftime("%b/%Y"))
-        .groupby("Mes")
-        .size()
-        .reset_index(name="Quantidade")
+    local_df = (
+        df["Local de atuação"]
+        .dropna()
+        .value_counts()
+        .reset_index()
     )
+    local_df.columns = ["Local", "Quantidade"]
 
-    chart_vencer = (
-        alt.Chart(vencer_mes)
+    chart_local = (
+        alt.Chart(local_df)
         .mark_bar(color="#E30613")
         .encode(
-            x=alt.X("Mes:N", title="Mês"),
-            y=alt.Y("Quantidade:Q", title="Qtd"),
-            tooltip=["Mes", "Quantidade"]
+            x=alt.X(
+                "Local:N",
+                title="Local",
+                sort="-y",
+                axis=alt.Axis(labelAngle=-30)
+            ),
+            y=alt.Y("Quantidade:Q", title="Quantidade"),
+            tooltip=["Local", "Quantidade"]
         )
     )
 
-    st.altair_chart(chart_vencer, use_container_width=True)
+    st.altair_chart(chart_local, use_container_width=True)
 
 # --------------------------------------------------
 # ADMISSÕES
