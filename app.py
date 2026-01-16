@@ -13,26 +13,40 @@ st.set_page_config(
 )
 
 # --------------------------------------------------
-# ESTILO (PRETO + VERMELHO)
+# ESTILO (PRETO + VERMELHO + CONSULTA DESTACADA)
 # --------------------------------------------------
 st.markdown("""
 <style>
 .main { background-color: #0e0e0e; }
 h1, h2, h3 { color: #E30613; }
+
 div[data-testid="metric-container"] {
     background-color: #1a1a1a;
     border: 1px solid #E30613;
     padding: 16px;
     border-radius: 12px;
 }
+
 section[data-testid="stSidebar"] {
     background-color: #111111;
     border-right: 2px solid #E30613;
 }
+
 .stButton > button {
     background-color: #E30613;
     color: white;
     border-radius: 8px;
+}
+
+/* CONSULTA INVESTIDOR */
+.consulta-investidor {
+    background-color: #ffffff;
+    padding: 24px;
+    border-radius: 16px;
+    border: 3px solid #E30613;
+    margin-top: 24px;
+    margin-bottom: 40px;
+    color: #000000;
 }
 </style>
 """, unsafe_allow_html=True)
@@ -73,7 +87,6 @@ if not st.session_state.authenticated:
 def load_google_sheet():
     sheet_id = "13EPwhiXgh8BkbhyrEy2aCy3cv1O8npxJ_hA-HmLZ-pY"
     gid = "2056973316"
-
     url = f"https://docs.google.com/spreadsheets/d/{sheet_id}/gviz/tq?gid={gid}&tqx=out:csv"
     return pd.read_csv(url)
 
@@ -81,7 +94,7 @@ df = load_google_sheet()
 df.columns = df.columns.str.strip()
 
 # --------------------------------------------------
-# DATAS (TRATAMENTO DUPLO)
+# DATAS
 # --------------------------------------------------
 df["Térm previsto_exibicao"] = df["Térm previsto"].astype(str)
 
@@ -174,15 +187,8 @@ st.markdown("---")
 # --------------------------------------------------
 g1, g2 = st.columns(2)
 
-# PIZZA - MODELO DE CONTRATO
 with g1:
-    st.subheader("📃 Modelo de contrato")
-
-    contrato_df = (
-        df["Modelo de contrato"]
-        .value_counts()
-        .reset_index()
-    )
+    contrato_df = df["Modelo de contrato"].value_counts().reset_index()
     contrato_df.columns = ["Modelo", "Quantidade"]
 
     chart_pizza = (
@@ -192,25 +198,15 @@ with g1:
             theta="Quantidade:Q",
             color=alt.Color(
                 "Modelo:N",
-                scale=alt.Scale(range=["#E30613", "#B0000A", "#FF4C4C"]),
-                legend=alt.Legend(title="Contrato")
+                scale=alt.Scale(range=["#E30613", "#B0000A", "#FF4C4C"])
             ),
             tooltip=["Modelo", "Quantidade"]
         )
     )
-
     st.altair_chart(chart_pizza, use_container_width=True)
 
-# BARRAS - LOCAL DE ATUAÇÃO
 with g2:
-    st.subheader("📍 Local de atuação dos investidores")
-
-    local_df = (
-        df["Unidade/Atuação"]
-        .dropna()
-        .value_counts()
-        .reset_index()
-    )
+    local_df = df["Unidade/Atuação"].dropna().value_counts().reset_index()
     local_df.columns = ["Local", "Quantidade"]
 
     chart_local = (
@@ -218,138 +214,80 @@ with g2:
         .mark_bar(color="#E30613")
         .encode(
             x=alt.X("Local:N", sort="-y", axis=alt.Axis(labelAngle=-30)),
-            y=alt.Y("Quantidade:Q"),
+            y="Quantidade:Q",
             tooltip=["Local", "Quantidade"]
         )
     )
-
     st.altair_chart(chart_local, use_container_width=True)
 
 # --------------------------------------------------
-# ADMISSÕES
+# CONSULTA INDIVIDUAL DE INVESTIDOR (DESTACADA)
 # --------------------------------------------------
-st.subheader("📈 Admissões por mês")
+st.markdown("## 🔎 Consulta individual do investidor")
 
-adm_mes = (
-    df_adm
-    .assign(Mes=df_adm["Data Início"].dt.strftime("%b/%Y"))
-    .groupby("Mes")
-    .size()
-    .reset_index(name="Quantidade")
-)
+lista_nomes = sorted(df["Nome"].dropna().astype(str).unique())
 
-chart_adm = (
-    alt.Chart(adm_mes)
-    .mark_line(color="#E30613", point=True)
-    .encode(
-        x="Mes:N",
-        y="Quantidade:Q",
-        tooltip=["Mes", "Quantidade"]
-    )
-)
-
-st.altair_chart(chart_adm, use_container_width=True)
-# --------------------------------------------------
-# CONSULTA INDIVIDUAL DE INVESTIDOR (LAYOUT SISTEMA)
-# --------------------------------------------------
-
-df_consulta = df.copy()
-
-coluna_nome = "Nome"
-coluna_foto = "Foto"
-
-lista_nomes = (
-    df_consulta[coluna_nome]
-    .dropna()
-    .astype(str)
-    .sort_values()
-    .unique()
-    .tolist()
-)
-
-nome_selecionado = st.selectbox(
-    "Nome do investidor",
+nome = st.selectbox(
+    "Digite ou selecione o nome do investidor",
     options=[""] + lista_nomes
 )
 
-if nome_selecionado:
-    linha = df_consulta[df_consulta[coluna_nome] == nome_selecionado].iloc[0]
+if nome:
+    linha = df[df["Nome"] == nome].iloc[0]
 
-    # ---------- LAYOUT PRINCIPAL ----------
-    col_esq, col_dir = st.columns([3, 2])
+    st.markdown("<div class='consulta-investidor'>", unsafe_allow_html=True)
 
-    # ---------- COLUNA ESQUERDA ----------
-    with col_esq:
-        st.markdown("##### Dados principais")
+    col1, col2, col3 = st.columns(3)
 
-        c1, c2 = st.columns(2)
-        c1.text_input("Nome completo", linha.get("Nome", ""), disabled=True)
-        c2.text_input("BP", linha.get("BP", ""), disabled=True)
-
-        c3, c4 = st.columns(2)
-        c3.text_input("Matrícula", linha.get("Matrícula", ""), disabled=True)
-        c4.text_input("Situação", linha.get("Situação", ""), disabled=True)
-
-        c5, c6 = st.columns(2)
-        c5.text_input("Modelo de contrato", linha.get("Modelo de contrato", ""), disabled=True)
-        c6.text_input("Unidade de atuação", linha.get("Unidade/Atuação", ""), disabled=True)
-
-        c7, c8 = st.columns(2)
-        c7.text_input("Data início", linha.get("Data Início_exibicao", ""), disabled=True)
-        c8.text_input("Término previsto", linha.get("Térm previsto_exibicao", ""), disabled=True)
-
+    with col1:
+        st.text_input("Nome", linha.get("Nome", ""), disabled=True)
+        st.text_input("Matrícula", linha.get("Matrícula", ""), disabled=True)
         st.text_input("Cargo", linha.get("Cargo", ""), disabled=True)
-        st.text_input("E-mail corporativo", linha.get("E-mail corporativo", ""), disabled=True)
 
-    # ---------- COLUNA DIREITA ----------
-    with col_dir:
-        st.markdown("#####")
+    with col2:
+        st.text_input("BP", linha.get("BP", ""), disabled=True)
+        st.text_input("Centro de custo", linha.get("Centro de custo", ""), disabled=True)
+        st.text_input("Benefícios", linha.get("Benefícios", ""), disabled=True)
 
-        if pd.notna(linha.get(coluna_foto)):
-            st.image(linha[coluna_foto], width=180)
+    with col3:
+        st.text_input("Modelo de contrato", linha.get("Modelo de contrato", ""), disabled=True)
+        st.text_input("Unidade / Atuação", linha.get("Unidade/Atuação", ""), disabled=True)
+        st.text_input("Situação", linha.get("Situação", ""), disabled=True)
 
-        st.markdown("##### Dados pessoais")
+    st.markdown("---")
 
-        d1, d2 = st.columns(2)
-        d1.text_input("CPF", linha.get("CPF", ""), disabled=True)
-        d2.text_input("Nascimento", linha.get("Data de nascimento", ""), disabled=True)
+    col_img, col_pes = st.columns([1, 3])
 
-        d3, d4 = st.columns(2)
-        d3.text_input("CEP", linha.get("CEP", ""), disabled=True)
-        d4.text_input("Escolaridade", linha.get("Escolaridade", ""), disabled=True)
+    with col_img:
+        if pd.notna(linha.get("Foto")):
+            st.image(linha["Foto"], width=160)
 
-        st.text_input("E-mail pessoal", linha.get("E-mail pessoal", ""), disabled=True)
-        st.text_input("Telefone", linha.get("Telefone pessoal", ""), disabled=True)
-        
+    with col_pes:
+        p1, p2, p3 = st.columns(3)
+        p1.text_input("CPF", linha.get("CPF", ""), disabled=True)
+        p2.text_input("Nascimento", linha.get("Data de nascimento", ""), disabled=True)
+        p3.text_input("CEP", linha.get("CEP", ""), disabled=True)
+
+        p4, p5 = st.columns(2)
+        p4.text_input("E-mail pessoal", linha.get("E-mail pessoal", ""), disabled=True)
+        p5.text_input("Telefone", linha.get("Telefone pessoal", ""), disabled=True)
+
+    st.markdown("</div>", unsafe_allow_html=True)
+
 # --------------------------------------------------
-# TABELA COM BUSCA
+# TABELA
 # --------------------------------------------------
 st.markdown("### 📋 Base de investidores")
 
 busca = st.text_input("🔍 Buscar na tabela")
 
 df_tabela = df.copy()
-df_tabela["Término do contrato"] = df_tabela["Térm previsto_exibicao"]
-df_tabela["Data de início"] = df_tabela["Data Início_exibicao"]
+df_tabela = df_tabela.sort_values("Nome")
 
 if busca:
-    df_filtrado = df_tabela[
+    df_tabela = df_tabela[
         df_tabela.astype(str)
-        .apply(lambda linha: linha.str.contains(busca, case=False, na=False).any(), axis=1)
+        .apply(lambda x: x.str.contains(busca, case=False, na=False).any(), axis=1)
     ]
-else:
-    df_filtrado = df_tabela
 
-st.dataframe(
-    df_filtrado.drop(
-        columns=[
-            "Térm previsto",
-            "Térm previsto_exibicao",
-            "Data Início",
-            "Data Início_exibicao"
-        ],
-        errors="ignore"
-    ),
-    use_container_width=True,
-    hide_index=True
-)
+st.dataframe(df_tabela, use_container_width=True, hide_index=True)
