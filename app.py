@@ -163,6 +163,66 @@ col5.metric("Média admissões / mês", f"{media_admissoes:.1f}")
 
 st.success("✅ Dashboard conectado ao Google Sheets com sucesso.")
 
+# --------------------------------------------------
+# GRÁFICOS
+# --------------------------------------------------
+
+st.markdown("## 📊 Análises")
+
+col_g1, col_g2 = st.columns(2)
+
+with col_g1:
+    st.markdown("### Modelo de contrato")
+
+    contratos = (
+        df["Modelo de contrato"]
+        .value_counts()
+        .reset_index()
+    )
+    contratos.columns = ["Modelo", "Quantidade"]
+
+    st.bar_chart(
+        contratos,
+        x="Modelo",
+        y="Quantidade",
+        use_container_width=True
+    )
+with col_g2:
+    st.markdown("### Contratos a vencer")
+
+    vencer_por_mes = (
+        df.dropna(subset=["Térm previsto"])
+        .assign(Mes=df["Térm previsto"].dt.to_period("M").astype(str))
+        .groupby("Mes")
+        .size()
+        .reset_index(name="Quantidade")
+        .sort_values("Mes")
+    )
+
+    st.bar_chart(
+        vencer_por_mes,
+        x="Mes",
+        y="Quantidade",
+        use_container_width=True
+    )
+st.markdown("### 📈 Admissões por mês")
+
+admissoes_mes = (
+    df.dropna(subset=["Data Início"])
+    .assign(Mes=df["Data Início"].dt.to_period("M").astype(str))
+    .groupby("Mes")
+    .size()
+    .reset_index(name="Quantidade")
+    .sort_values("Mes")
+)
+
+st.line_chart(
+    admissoes_mes,
+    x="Mes",
+    y="Quantidade",
+    use_container_width=True
+)
+
 st.markdown("### 📋 Base de colaboradores")
 
 st.dataframe(
