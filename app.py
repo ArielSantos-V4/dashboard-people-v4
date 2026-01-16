@@ -42,7 +42,7 @@ authenticator = stauth.Authenticate(
 
 name, authentication_status, username = authenticator.login(
     "Login - Dashboard People V4",
-    "sidebar"
+    location="sidebar"
 )
 
 if authentication_status is False:
