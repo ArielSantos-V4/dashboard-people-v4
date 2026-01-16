@@ -249,95 +249,91 @@ chart_adm = (
 )
 
 st.altair_chart(chart_adm, use_container_width=True)
+
+st.markdown("""
+<div style="
+    background-color:#f5f5f5;
+    padding:20px;
+    border-radius:16px;
+    border:2px solid #E30613;
+    margin-top:30px;
+">
+""", unsafe_allow_html=True)
+
 # --------------------------------------------------
 # CONSULTA INDIVIDUAL DE INVESTIDOR (LAYOUT SISTEMA)
 # --------------------------------------------------
 
-df_consulta = df.copy()
-
-coluna_nome = "Nome"
-coluna_foto = "Foto"
-
-lista_nomes = (
-    df_consulta[coluna_nome]
-    .dropna()
-    .astype(str)
-    .sort_values()
-    .unique()
-    .tolist()
-)
+st.subheader("🔍 Consulta individual de investidor")
 
 nome_selecionado = st.selectbox(
-    "Nome do investidor",
-    options=[""] + lista_nomes
+    "Digite ou selecione o nome",
+    sorted(df_tabela["Nome completo"].dropna().unique())
 )
 
-if nome_selecionado:
-    linha = df_consulta[df_consulta[coluna_nome] == nome_selecionado].iloc[0]
+linha = df_tabela[df_tabela["Nome completo"] == nome_selecionado].iloc[0]
 
-    # ---------- LAYOUT PRINCIPAL ----------
-    col_esq, col_dir = st.columns([3, 2])
+col_esq, col_meio, col_dir = st.columns([1.2, 1.2, 1])
 
-    # ---------- COLUNA ESQUERDA ----------
-    with col_esq:
-        st.markdown("##### Dados principais")
+# -----------------------------------
+# COLUNA ESQUERDA — DADOS CONTRATUAIS
+# -----------------------------------
+with col_esq:
+    st.markdown("##### Dados contratuais")
 
-        c1, c2 = st.columns(2)
-        c1.text_input("Nome completo", linha.get("Nome", ""), disabled=True)
-        c2.text_input("BP", linha.get("BP", ""), disabled=True)
+    st.text_input("BP", linha.get("BP", ""), disabled=True)
+    st.text_input("Matrícula", linha.get("Matrícula", ""), disabled=True)
+    st.text_input("Cargo", linha.get("Cargo", ""), disabled=True)
+    st.text_input("CBO", linha.get("CBO", ""), disabled=True)
+    st.text_input("Descrição CBO", linha.get("Descrição CBO", ""), disabled=True)
 
-        c3, c4 = st.columns(2)
-        c3.text_input("Matrícula", linha.get("Matrícula", ""), disabled=True)
-        c4.text_input("Situação", linha.get("Situação", ""), disabled=True)
+    st.text_input("Modelo de contrato", linha.get("Modelo de contrato", ""), disabled=True)
+    st.text_input("Situação", linha.get("Situação", ""), disabled=True)
+    st.text_input("Unidade de atuação", linha.get("Unidade/Atuação", ""), disabled=True)
 
-        c5, c6 = st.columns(2)
-        c5.text_input("Modelo de contrato", linha.get("Modelo de contrato", ""), disabled=True)
-        c6.text_input("Unidade de atuação", linha.get("Unidade/Atuação", ""), disabled=True)
+    st.text_input("Data início", linha.get("Data de início", ""), disabled=True)
+    st.text_input("Término previsto", linha.get("Término do contrato", ""), disabled=True)
+    st.text_input("Tempo de casa", linha.get("Tempo de casa", ""), disabled=True)
 
-        c7, c8 = st.columns(2)
-        c7.text_input("Data início", linha.get("Data Início_exibicao", ""), disabled=True)
-        c8.text_input("Término previsto", linha.get("Térm previsto_exibicao", ""), disabled=True)
+# -----------------------------------
+# COLUNA MEIO — DADOS PESSOAIS
+# -----------------------------------
+with col_meio:
+    st.markdown("##### Dados pessoais")
 
-        st.text_input("Cargo", linha.get("Cargo", ""), disabled=True)
-        st.text_input("E-mail corporativo", linha.get("E-mail corporativo", ""), disabled=True)
+    st.text_input("CPF", linha.get("CPF", ""), disabled=True)
+    st.text_input("Nascimento", linha.get("Data de nascimento", ""), disabled=True)
+    st.text_input("Idade", linha.get("Idade", ""), disabled=True)
+    st.text_input("CEP", linha.get("CEP", ""), disabled=True)
+    st.text_input("Escolaridade", linha.get("Escolaridade", ""), disabled=True)
 
-    # ---------- COLUNA DIREITA ----------
+    st.text_input("E-mail pessoal", linha.get("E-mail pessoal", ""), disabled=True)
+    st.text_input("Telefone pessoal", linha.get("Telefone pessoal", ""), disabled=True)
+
+    st.text_input("E-mail corporativo", linha.get("E-mail corporativo", ""), disabled=True)
+
+# -----------------------------------
+# COLUNA DIREITA — FOTO + GESTÃO
+# -----------------------------------
 with col_dir:
     if pd.notna(linha.get(coluna_foto)):
-        st.image(linha[coluna_foto], width=170)
+        st.image(linha[coluna_foto], width=160)
 
-    # -------------------------------
-    # CENTRO DE CUSTO
-    # -------------------------------
     st.markdown("##### Centro de custo")
 
-    cc1, cc2 = st.columns(2)
-    cc1.text_input("Código", linha.get("Centro de custo - Código", ""), disabled=True)
-    cc2.text_input("Descrição", linha.get("Centro de custo - Descrição", ""), disabled=True)
-
-    cc3, cc4 = st.columns(2)
-    cc3.text_input("Senioridade", linha.get("Senioridade", ""), disabled=True)
-    cc4.text_input("Liderança direta", linha.get("Liderança direta", ""), disabled=True)
-
+    st.text_input("Código", linha.get("Centro de custo - Código", ""), disabled=True)
+    st.text_input("Descrição", linha.get("Centro de custo - Descrição", ""), disabled=True)
+    st.text_input("Senioridade", linha.get("Senioridade", ""), disabled=True)
+    st.text_input("Liderança direta", linha.get("Liderança direta", ""), disabled=True)
     st.text_input("Conta contábil", linha.get("Conta contábil", ""), disabled=True)
 
-    # -------------------------------
-    # BENEFÍCIOS
-    # -------------------------------
     st.markdown("##### Benefícios")
 
-    b1, b2 = st.columns(2)
-    b1.text_input("Plano / Situação", linha.get("Situação no plano", ""), disabled=True)
-    b2.text_input("Enviar no EB", linha.get("Enviar no EB", ""), disabled=True)
+    st.text_input("Situação no plano", linha.get("Situação no plano", ""), disabled=True)
+    st.text_input("Plano / EB", linha.get("Enviar no EB", ""), disabled=True)
 
-    b3, b4 = st.columns(2)
-    b3.text_input("Cart. Médico", linha.get("Carteirinha Médico", ""), disabled=True)
-    b4.text_input("Operadora Médica", linha.get("Operadora Médico", ""), disabled=True)
+st.markdown("</div>", unsafe_allow_html=True)
 
-    b5, b6 = st.columns(2)
-    b5.text_input("Cart. Odonto", linha.get("Carteirinha Odonto", ""), disabled=True)
-    b6.text_input("Operadora Odonto", linha.get("Operadora Odonto", ""), disabled=True)
-        
 # --------------------------------------------------
 # TABELA COM BUSCA
 # --------------------------------------------------
