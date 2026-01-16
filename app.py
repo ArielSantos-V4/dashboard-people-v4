@@ -212,7 +212,7 @@ with g2:
     st.subheader("📍 Local de atuação dos investidores")
 
     local_df = (
-        df["Local de atuação"]
+        df["Unidade/Atuação"]
         .dropna()
         .value_counts()
         .reset_index()
