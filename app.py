@@ -225,33 +225,44 @@ if nome:
     with col1:
         st.markdown("##### 📌 Dados profissionais")
 
-        c1, c2, c3 = st.columns(3)
-        c1.text_input("BP", linha["BP"], disabled=True)
-        c2.text_input("Matrícula", linha["Matrícula"], disabled=True)
-        c3.text_input("Situação", linha["Situação"], disabled=True)
+        a1, a2, a3 = st.columns(3)
+        a1.text_input("BP", linha["BP"], disabled=True)
+        a2.text_input("Matrícula", linha["Matrícula"], disabled=True)
+        a3.text_input("Situação", linha["Situação"], disabled=True)
 
-        c4, c5, c6 = st.columns(3)
-        c4.text_input("Data início", linha["Data Início_exibicao"], disabled=True)
-        c5.text_input("Término previsto", linha["Térm previsto_exibicao"], disabled=True)
-        c6.text_input("Modelo contrato", linha["Modelo de contrato"], disabled=True)
+        a4, a5, a6 = st.columns(3)
+        a4.text_input("Data início", linha["Data Início_exibicao"], disabled=True)
+        a5.text_input("Término previsto", linha["Térm previsto_exibicao"], disabled=True)
+        a6.text_input("Modelo contrato", linha["Modelo de contrato"], disabled=True)
 
-        c7, c8 = st.columns(2)
-        c7.text_input("Unidade / Atuação", linha["Unidade/Atuação"], disabled=True)
-        c8.text_input("Modalidade PJ", linha["Modalidade PJ"], disabled=True)
+        # início na V4 + tempo de casa
+        inicio_v4 = linha["Data Início"]
+        tempo_casa = ""
+        if inicio_v4 != "":
+            anos = (datetime.today() - pd.to_datetime(inicio_v4)).days / 365.25
+            tempo_casa = f"{anos:.1f} anos"
+
+        a7, a8 = st.columns(2)
+        a7.text_input("Início na V4", linha["Data Início_exibicao"], disabled=True)
+        a8.text_input("Tempo de casa", tempo_casa, disabled=True)
+
+        a9, a10 = st.columns(2)
+        a9.text_input("Unidade / Atuação", linha["Unidade/Atuação"], disabled=True)
+        a10.text_input("Modalidade PJ", linha["Modalidade PJ"], disabled=True)
 
         st.text_input("E-mail corporativo", linha["E-mail corporativo"], disabled=True)
 
-        c9, c10 = st.columns(2)
-        c9.text_input("CNPJ", linha["CNPJ"], disabled=True)
-        c10.text_input("Razão social", linha["Razão social"], disabled=True)
+        a11, a12 = st.columns(2)
+        a11.text_input("CNPJ", linha["CNPJ"], disabled=True)
+        a12.text_input("Razão social", linha["Razão social"], disabled=True)
 
-        c11, c12 = st.columns(2)
-        c11.text_input("Cargo", linha["Cargo"], disabled=True)
-        c12.text_input("Remuneração", linha["Remuneração"], disabled=True)
+        a13, a14 = st.columns(2)
+        a13.text_input("Cargo", linha["Cargo"], disabled=True)
+        a14.text_input("Remuneração", linha["Remuneração"], disabled=True)
 
-        c13, c14 = st.columns(2)
-        c13.text_input("CBO", linha["CBO"], disabled=True)
-        c14.text_input("Descrição CBO", linha["Descrição CBO"], disabled=True)
+        a15, a16 = st.columns(2)
+        a15.text_input("CBO", linha["CBO"], disabled=True)
+        a16.text_input("Descrição CBO", linha["Descrição CBO"], disabled=True)
 
     # -------------------------
     # COLUNA 2 — ADMIN / PESSOAL
@@ -259,31 +270,32 @@ if nome:
     with col2:
         st.markdown("##### 🧾 Centro de custo")
 
-        c15, c16 = st.columns(2)
-        c15.text_input("Código CC", linha["Código CC"], disabled=True)
-        c16.text_input("Descrição CC", linha["Descrição CC"], disabled=True)
+        b1, b2 = st.columns(2)
+        b1.text_input("Código CC", linha["Código CC"], disabled=True)
+        b2.text_input("Descrição CC", linha["Descrição CC"], disabled=True)
 
-        c17, c18 = st.columns(2)
-        c17.text_input("Senioridade", linha["Senioridade"], disabled=True)
-        c18.text_input("Liderança direta", linha["Liderança direta"], disabled=True)
+        # senioridade + conta contábil lado a lado
+        b3, b4 = st.columns(2)
+        b3.text_input("Senioridade", linha["Senioridade"], disabled=True)
+        b4.text_input("Conta contábil", linha["Conta contábil"], disabled=True)
 
-        st.text_input("Conta contábil", linha["Conta contábil"], disabled=True)
+        # liderança sozinha embaixo
+        st.text_input("Liderança direta", linha["Liderança direta"], disabled=True)
 
         st.markdown("##### 👤 Dados pessoais")
 
-        c19, c20, c21 = st.columns(3)
-        c19.text_input("CPF", linha["CPF"], disabled=True)
-        c20.text_input("Nascimento", linha["Data de nascimento"], disabled=True)
+        b5, b6, b7 = st.columns(3)
+        b5.text_input("CPF", linha["CPF"], disabled=True)
+        b6.text_input("Nascimento", linha["Data de nascimento"], disabled=True)
 
-        # idade
         idade = ""
         if linha["Data de nascimento"] != "":
-            idade = int((date.today() - pd.to_datetime(linha["Data de nascimento"])).days / 365.25)
-        c21.text_input("Idade", idade, disabled=True)
+            idade = int((datetime.today() - pd.to_datetime(linha["Data de nascimento"])).days / 365.25)
+        b7.text_input("Idade", idade, disabled=True)
 
-        c22, c23 = st.columns(2)
-        c22.text_input("CEP", linha["CEP"], disabled=True)
-        c23.text_input("Escolaridade", linha["Escolaridade"], disabled=True)
+        b8, b9 = st.columns(2)
+        b8.text_input("CEP", linha["CEP"], disabled=True)
+        b9.text_input("Escolaridade", linha["Escolaridade"], disabled=True)
 
         st.text_input("Telefone pessoal", linha["Telefone pessoal"], disabled=True)
         st.text_input("E-mail pessoal", linha["E-mail pessoal"], disabled=True)
