@@ -491,7 +491,7 @@ if busca:
         df_tabela.astype(str)
         .apply(lambda x: x.str.contains(busca, case=False).any(), axis=1)
     ]
-
+    
 st.dataframe(
     df_tabela.drop(
         columns=["Térm previsto", "Térm previsto_exibicao", "Data Início", "Data Início_exibicao"],
@@ -500,3 +500,4 @@ st.dataframe(
     use_container_width=True,
     hide_index=True
 )
+
