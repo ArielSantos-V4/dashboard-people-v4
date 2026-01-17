@@ -2,8 +2,13 @@ import streamlit as st
 import pandas as pd
 import altair as alt
 from datetime import datetime, timedelta
+
 if "investidor_selecionado" not in st.session_state:
     st.session_state.investidor_selecionado = ""
+
+def limpar_investidor():
+    st.session_state.investidor_selecionado = ""
+
 
 # --------------------------------------------------
 # CONFIGURAÇÃO DA PÁGINA
