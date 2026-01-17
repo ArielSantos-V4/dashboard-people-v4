@@ -1,7 +1,7 @@
 import streamlit as st
 import pandas as pd
 import altair as alt
-from datetime import datetime, timedelta, date
+from datetime import datetime, timedelta
 
 # --------------------------------------------------
 # CONFIGURAÇÃO DA PÁGINA
@@ -13,12 +13,12 @@ st.set_page_config(
 )
 
 # --------------------------------------------------
-# ESTILO (PRETO + VERMELHO)
+# ESTILO
 # --------------------------------------------------
 st.markdown("""
 <style>
 .main { background-color: #0e0e0e; }
-h1, h2, h3 { color: #E30613; }
+h1, h2, h3, h4 { color: #E30613; }
 div[data-testid="metric-container"] {
     background-color: #1a1a1a;
     border: 1px solid #E30613;
@@ -34,28 +34,9 @@ section[data-testid="stSidebar"] {
     color: white;
     border-radius: 8px;
 }
-.copy-container {
-    position: relative;
-    margin-bottom: 6px;
+input[disabled] {
+    color: white !important;
 }
-
-.copy-btn {
-    position: absolute;
-    right: 8px;
-    top: 50%;
-    transform: translateY(-50%);
-    background: transparent;
-    border: none;
-    color: #E30613;
-    cursor: pointer;
-    display: none;
-    font-size: 14px;
-}
-
-.copy-container:hover .copy-btn {
-    display: block;
-}
-
 </style>
 """, unsafe_allow_html=True)
 
@@ -100,21 +81,15 @@ def load_google_sheet():
 
 df = load_google_sheet()
 df.columns = df.columns.str.strip()
+df = df.fillna("")
 
 # --------------------------------------------------
-# DATAS (TRATAMENTO DUPLO)
+# DATAS
 # --------------------------------------------------
-df["Térm previsto_exibicao"] = df["Térm previsto"].astype(str)
-
 df["Térm previsto"] = pd.to_datetime(df["Térm previsto"], errors="coerce")
 df["Data Início"] = pd.to_datetime(df["Data Início"], errors="coerce")
 
-df["Térm previsto_exibicao"] = (
-    df["Térm previsto"]
-    .dt.strftime("%d/%m/%Y")
-    .fillna("")
-)
-
+df["Térm previsto_exibicao"] = df["Térm previsto"].dt.strftime("%d/%m/%Y").fillna("")
 df["Data Início_exibicao"] = df["Data Início"].dt.strftime("%d/%m/%Y").fillna("")
 
 # --------------------------------------------------
@@ -124,28 +99,16 @@ hoje = datetime.today()
 prox_30_dias = hoje + timedelta(days=30)
 
 headcount = len(df)
-
-contratos_vencer = df[
-    (df["Térm previsto"].notna()) &
-    (df["Térm previsto"] >= hoje) &
-    (df["Térm previsto"] <= prox_30_dias)
-]
-
-contratos_vencidos = df[
-    (df["Térm previsto"].notna()) &
-    (df["Térm previsto"] < hoje)
-]
+contratos_vencer = df[(df["Térm previsto"].notna()) & (df["Térm previsto"] <= prox_30_dias)]
+contratos_vencidos = df[(df["Térm previsto"].notna()) & (df["Térm previsto"] < hoje)]
 
 pj = len(df[df["Modelo de contrato"] == "PJ"])
 clt = len(df[df["Modelo de contrato"] == "CLT"])
 estagio = len(df[df["Modelo de contrato"] == "Estágio"])
 
-df_adm = df.dropna(subset=["Data Início"])
+df_adm = df[df["Data Início"].notna()]
 media_admissoes = (
-    df_adm
-    .groupby(df_adm["Data Início"].dt.to_period("M"))
-    .size()
-    .mean()
+    df_adm.groupby(df_adm["Data Início"].dt.to_period("M")).size().mean()
 )
 
 # --------------------------------------------------
@@ -165,20 +128,15 @@ if st.sidebar.button("Logout"):
 # TOPO
 # --------------------------------------------------
 col_logo, col_title = st.columns([1, 6])
-
 with col_logo:
     st.image("LOGO VERMELHO.png", width=120)
-
 with col_title:
-    st.markdown(
-        "<h1>Dashboard People</h1><h3 style='color:#cccccc;'>V4 Company</h3>",
-        unsafe_allow_html=True
-    )
+    st.markdown("<h1>Dashboard People</h1><h3 style='color:#ccc;'>V4 Company</h3>", unsafe_allow_html=True)
 
 st.markdown("---")
 
 # --------------------------------------------------
-# KPIs
+# KPIs VISUAIS
 # --------------------------------------------------
 c1, c2, c3, c4, c5 = st.columns(5)
 c1.metric("Headcount", headcount)
@@ -204,18 +162,15 @@ with g1:
         .mark_arc(innerRadius=60)
         .encode(
             theta="Quantidade:Q",
-            color=alt.Color(
-                "Modelo:N",
-                scale=alt.Scale(range=["#E30613", "#B0000A", "#FF4C4C"])
-            ),
+            color=alt.Color("Modelo:N", scale=alt.Scale(range=["#E30613", "#B0000A", "#FF4C4C"])),
             tooltip=["Modelo", "Quantidade"]
         ),
         use_container_width=True
     )
 
 with g2:
-    st.subheader("📍 Local de atuação dos investidores")
-    local_df = df["Unidade/Atuação"].dropna().value_counts().reset_index()
+    st.subheader("📍 Local de atuação")
+    local_df = df["Unidade/Atuação"].value_counts().reset_index()
     local_df.columns = ["Local", "Quantidade"]
 
     st.altair_chart(
@@ -235,8 +190,7 @@ with g2:
 st.subheader("📈 Admissões por mês")
 
 adm_mes = (
-    df_adm
-    .assign(Mes=df_adm["Data Início"].dt.strftime("%b/%Y"))
+    df_adm.assign(Mes=df_adm["Data Início"].dt.strftime("%b/%Y"))
     .groupby("Mes")
     .size()
     .reset_index(name="Quantidade")
@@ -248,84 +202,6 @@ st.altair_chart(
     .encode(x="Mes:N", y="Quantidade:Q", tooltip=["Mes", "Quantidade"]),
     use_container_width=True
 )
-def campo_copiavel(label, valor):
-    if pd.isna(valor) or str(valor).strip() == "":
-        # Campo vazio → sem botão de copiar
-        html = f"""
-        <div class="copy-container">
-            <div style="font-size:12px;color:#aaa;margin-bottom:2px;">
-                {label}
-            </div>
-
-            <div style="
-                background:#1a1a1a;
-                border:1px solid #333;
-                padding:8px 12px;
-                border-radius:6px;
-                color:#777;
-                font-size:14px;
-            ">
-                &nbsp;
-            </div>
-        </div>
-        """
-    else:
-        valor_str = str(valor)
-
-        html = f"""
-        <div class="copy-container">
-            <div style="font-size:12px;color:#aaa;margin-bottom:2px;">
-                {label}
-            </div>
-
-            <div style="
-                background:#1a1a1a;
-                border:1px solid #333;
-                padding:8px 12px;
-                border-radius:6px;
-                color:white;
-                font-size:14px;
-                display:flex;
-                justify-content:space-between;
-                align-items:center;
-                gap:8px;
-            ">
-                <span>{valor_str}</span>
-
-                <button class="copy-btn"
-                    data-value="{valor_str}"
-                    onclick="navigator.clipboard.writeText(this.dataset.value)">
-                    ⧉
-                </button>
-            </div>
-        </div>
-        """
-
-    st.markdown(html, unsafe_allow_html=True)
-
-    if pd.isna(valor):
-        valor = ""
-
-    html = f"""
-    <div class="copy-container">
-        <div style="font-size:12px;color:#aaa;margin-bottom:2px;">{label}</div>
-        <div style="
-            background:#1a1a1a;
-            border:1px solid #333;
-            padding:8px 12px;
-            border-radius:6px;
-            color:white;
-            font-size:14px;
-        ">
-            {valor}
-            <button class="copy-btn"
-                onclick="navigator.clipboard.writeText('{valor}')">
-                📋
-            </button>
-        </div>
-    </div>
-    """
-    st.markdown(html, unsafe_allow_html=True)
 
 # --------------------------------------------------
 # CONSULTA INDIVIDUAL
@@ -333,82 +209,31 @@ def campo_copiavel(label, valor):
 st.markdown("---")
 st.subheader("🔎 Consulta individual do investidor")
 
-def campo_copiavel(label, valor, key):
-    valor = "" if pd.isna(valor) else str(valor)
-
-    botao = ""
-    if valor != "":
-        botao = f"""
-        <button class="copy-btn"
-            data-value="{valor}"
-            onclick="navigator.clipboard.writeText(this.dataset.value);
-                     var m=document.getElementById('msg-{key}');
-                     m.style.opacity=1;
-                     setTimeout(()=>m.style.opacity=0,1200);">
-            ⧉
-        </button>
-        """
-
-    html = f"""
-    <div class="copy-container">
-        <div style="font-size:12px;color:#aaa;margin-bottom:2px;">{label}</div>
-        <div style="
-            background:#1a1a1a;
-            border:1px solid #333;
-            padding:8px 12px;
-            border-radius:6px;
-            color:white;
-            font-size:14px;
-            display:flex;
-            justify-content:space-between;
-            align-items:center;
-        ">
-            <span>{valor}</span>
-            {botao}
-        </div>
-        <div id="msg-{key}" style="
-            font-size:11px;
-            color:#6fff6f;
-            margin-top:2px;
-            opacity:0;
-            transition:opacity .3s;
-        ">
-            Copiado!
-        </div>
-    </div>
-    """
-    st.markdown(html, unsafe_allow_html=True)
-
-
-df_consulta = df.fillna("")
-lista_nomes = sorted(df_consulta["Nome"].unique())
-
+lista_nomes = sorted(df["Nome"].unique())
 nome = st.selectbox("Selecione o investidor", [""] + lista_nomes)
 
 if nome:
-    linha = df_consulta[df_consulta["Nome"] == nome].iloc[0]
+    linha = df[df["Nome"] == nome].iloc[0]
 
     col1, col2 = st.columns(2)
 
     with col1:
         st.markdown("##### Dados principais")
-
-        campo_copiavel("BP", linha["BP"], "bp")
-        campo_copiavel("Matrícula", linha["Matrícula"], "matricula")
-        campo_copiavel("Situação", linha["Situação"], "situacao")
-        campo_copiavel("Data contrato", linha["Data Início_exibicao"], "data_inicio")
-        campo_copiavel("Término previsto", linha["Térm previsto_exibicao"], "termino")
-        campo_copiavel("Modelo contrato", linha["Modelo de contrato"], "modelo")
-        campo_copiavel("Unidade", linha["Unidade/Atuação"], "unidade")
-        campo_copiavel("E-mail corporativo", linha["E-mail corporativo"], "email_corp")
+        st.text_input("BP", linha["BP"], disabled=True)
+        st.text_input("Matrícula", linha["Matrícula"], disabled=True)
+        st.text_input("Situação", linha["Situação"], disabled=True)
+        st.text_input("Data início", linha["Data Início_exibicao"], disabled=True)
+        st.text_input("Término previsto", linha["Térm previsto_exibicao"], disabled=True)
+        st.text_input("Modelo de contrato", linha["Modelo de contrato"], disabled=True)
+        st.text_input("Unidade", linha["Unidade/Atuação"], disabled=True)
+        st.text_input("E-mail corporativo", linha["E-mail corporativo"], disabled=True)
 
     with col2:
         st.markdown("##### Dados pessoais")
-
-        campo_copiavel("CPF", linha["CPF"], "cpf")
-        campo_copiavel("Data nascimento", linha["Data de nascimento"], "nascimento")
-        campo_copiavel("Escolaridade", linha["Escolaridade"], "escolaridade")
-        campo_copiavel("Telefone pessoal", linha["Telefone pessoal"], "telefone")
+        st.text_input("CPF", linha["CPF"], disabled=True)
+        st.text_input("Nascimento", linha["Data de nascimento"], disabled=True)
+        st.text_input("Escolaridade", linha["Escolaridade"], disabled=True)
+        st.text_input("Telefone", linha["Telefone pessoal"], disabled=True)
 
 # --------------------------------------------------
 # TABELA
@@ -418,7 +243,6 @@ st.markdown("### 📋 Base de investidores")
 busca = st.text_input("🔍 Buscar na tabela")
 
 df_tabela = df.copy()
-df_tabela = df_tabela.fillna("")
 df_tabela["Término do contrato"] = df_tabela["Térm previsto_exibicao"]
 df_tabela["Data de início"] = df_tabela["Data Início_exibicao"]
 
