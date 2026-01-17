@@ -398,8 +398,7 @@ if nome:
         st.text_input("Carteirinha odonto", linha["Carteirinha odonto"], disabled=True)
 
         st.markdown("##### 🔗 Link")
-        if linha["Link Drive"]:
-            st.link_button("Abrir Drive", linha["Link Drive"])
+        if linha["Link Drive"]: st.link_button("Abrir Drive", linha["Link Drive"])
 
 # --------------------------------------------------
 # TABELA
