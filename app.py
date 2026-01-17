@@ -17,51 +17,6 @@ st.set_page_config(
 # --------------------------------------------------
 st.markdown("""
 <style>
-<style>
-
-/* =========================
-   COMPACTAÇÃO GERAL
-   ========================= */
-
-/* Títulos internos da consulta (Dados profissionais, Centro de custo etc) */
-h5 {
-    font-size: 13px !important;
-    margin-bottom: 6px !important;
-    margin-top: 12px !important;
-}
-
-/* Labels dos inputs */
-label {
-    font-size: 11px !important;
-    margin-bottom: 2px !important;
-    color: #bdbdbd !important;
-}
-
-/* Inputs mais baixos */
-div[data-testid="stTextInput"] input {
-    height: 30px;
-    padding: 4px 8px;
-    font-size: 12.5px;
-}
-
-/* Reduz espaço vertical entre campos */
-div[data-testid="stTextInput"],
-div[data-testid="stSelectbox"] {
-    margin-bottom: 4px;
-}
-
-/* Reduz espaço entre colunas da consulta */
-div[data-testid="column"] {
-    padding-top: 0px;
-}
-
-/* Benefícios: separação mais sutil */
-.espaco-beneficio {
-    margin-top: 10px;
-    margin-bottom: 4px;
-}
-
-</style>
 
 /* Fundo geral */
 .main {
@@ -71,6 +26,12 @@ div[data-testid="column"] {
 /* Títulos */
 h1, h2, h3, h4 {
     color: #E30613;
+}
+
+/* Títulos internos da consulta */
+h5 {
+    font-size: 13px;
+    margin: 8px 0 4px 0;
 }
 
 /* Cards de KPI */
@@ -95,49 +56,46 @@ section[data-testid="stSidebar"] {
     padding: 6px 14px;
 }
 
+/* Labels menores */
+label {
+    font-size: 11px;
+    color: #cccccc;
+    margin-bottom: 2px;
+}
+
+/* Inputs mais compactos */
+div[data-testid="stTextInput"] input {
+    height: 30px;
+    padding: 4px 8px;
+    font-size: 12.5px;
+}
+
+/* Reduz espaço vertical entre campos */
+div[data-testid="stTextInput"],
+div[data-testid="stSelectbox"] {
+    margin-bottom: 4px;
+}
+
 /* Inputs desabilitados */
 input[disabled] {
     color: white !important;
     opacity: 1 !important;
 }
 
-/* =========================
-   COMPACTAÇÃO DOS CAMPOS
-   ========================= */
-
-/* Altura e padding dos inputs */
-div[data-testid="stTextInput"] input {
-    padding: 6px 10px;
-    height: 34px;
-    font-size: 13px;
-}
-
-/* Reduz espaço vertical entre blocos */
-div[data-testid="stTextInput"],
-div[data-testid="stSelectbox"] {
-    margin-bottom: 6px;
-}
-
-/* Compacta o container principal */
+/* Compacta o container */
 .block-container {
     padding-top: 1.5rem;
     padding-bottom: 1.5rem;
 }
 
-/* Espaço visual entre Médico e Odonto */
+/* Espaço entre médico e odonto */
 .espaco-beneficio {
-    margin-top: 14px;
-    margin-bottom: 6px;
-}
-
-/* Labels menores */
-label {
-    font-size: 12px !important;
-    color: #cccccc !important;
+    margin: 10px 0 4px 0;
 }
 
 </style>
 """, unsafe_allow_html=True)
+
 
 # --------------------------------------------------
 # LOGIN
