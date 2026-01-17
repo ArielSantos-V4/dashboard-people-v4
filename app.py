@@ -491,12 +491,38 @@ if busca:
         .apply(lambda x: x.str.contains(busca, case=False).any(), axis=1)
     ]
 
+df_exibicao = df_tabela.drop(
+    columns=["Térm previsto", "Térm previsto_exibicao", "Data Início", "Data Início_exibicao"],
+    errors="ignore"
+)
+
+# Colunas que devem ficar CENTRALIZADAS
+colunas_centralizadas = [
+    "BP",
+    "Matrícula",
+    "CPF",
+    "CNPJ",
+    "Código CC",
+    "Carteirinha médico",
+    "Carteirinha odonto",
+    "Data de início",
+    "Término do contrato"
+]
+
+# Estilo da tabela
+styler = df_exibicao.style.set_properties(
+    **{"text-align": "left"}
+)
+
+styler = styler.set_properties(
+    subset=[c for c in colunas_centralizadas if c in df_exibicao.columns],
+    **{"text-align": "center"}
+)
+
 st.dataframe(
-    df_tabela.drop(
-        columns=["Térm previsto", "Térm previsto_exibicao", "Data Início", "Data Início_exibicao"],
-        errors="ignore"
-    ),
+    styler,
     use_container_width=True,
     hide_index=True
 )
+
 
