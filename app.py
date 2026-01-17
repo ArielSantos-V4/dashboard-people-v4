@@ -62,7 +62,7 @@ div[data-testid="column"] {
 
 /* Benefícios */
 .espaco-beneficio {
-    margin-top: 6px;
+    margin-top: 15px;
     margin-bottom: 4px;
 }
 
