@@ -523,3 +523,20 @@ with aba_dashboard:
 with aba_relatorios:
     st.subheader("📄 Relatórios")
     st.info("Área reservada para relatórios futuros.")
+
+    # --------------------------------------------------
+    # TOPO
+    # --------------------------------------------------
+    col_logo, col_title = st.columns([1, 6])
+    
+    with col_logo:
+        st.image("LOGO VERMELHO.png", width=120)
+    
+    with col_title:
+        st.markdown(
+            "<h1>Análises & Relatórios People</h1><h3 style='color:#ccc;'>V4 Company</h3>",
+            unsafe_allow_html=True
+        )
+
+st.markdown("---")
+
