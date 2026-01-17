@@ -471,6 +471,7 @@ with aba_dashboard:
     # --------------------------------------------------
     # TABELA
     # --------------------------------------------------
+    st.markdown("---")
     st.markdown("### 📋 Base de investidores")
     
     busca = st.text_input(
