@@ -322,9 +322,12 @@ if nome:
     
         st.text_input("E-mail corporativo", linha["E-mail corporativo"], disabled=True)
     
+        cnpj = str(linha["CNPJ"]).replace(".0", "")
+
         a11, a12 = st.columns(2)
-        a11.text_input("CNPJ", linha["CNPJ"], disabled=True)
+        a11.text_input("CNPJ", cnpj, disabled=True)
         a12.text_input("Razão social", linha["Razão social"], disabled=True)
+
 
         a13, a14 = st.columns([3, 1])
         a13.text_input("Cargo", linha["Cargo"], disabled=True)
