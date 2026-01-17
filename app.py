@@ -39,6 +39,22 @@ input[disabled] {
 }
 </style>
 """, unsafe_allow_html=True)
+/* Compactar inputs */
+div[data-testid="stTextInput"] input {
+    padding: 6px 10px;
+    height: 34px;
+    font-size: 13px;
+}
+
+/* Reduz espaço vertical entre elementos */
+.block-container {
+    padding-top: 1.5rem;
+}
+
+/* Espaçamento visual entre médico e odonto */
+.espaco-beneficio {
+    margin-top: 14px;
+}
 
 # --------------------------------------------------
 # LOGIN
@@ -235,18 +251,22 @@ if nome:
         a5.text_input("Término previsto", linha["Térm previsto_exibicao"], disabled=True)
         a6.text_input("Modelo contrato", linha["Modelo de contrato"], disabled=True)
 
-        # início na V4 + tempo de casa
+        # início na V4 + tempo de casa (larguras ajustadas)
         inicio_v4 = linha["Data Início"]
         tempo_casa = ""
         if inicio_v4 != "":
-            anos = (datetime.today() - pd.to_datetime(inicio_v4)).days / 365.25
-            tempo_casa = f"{anos:.1f} anos"
+            delta = datetime.today() - pd.to_datetime(inicio_v4)
+            anos = delta.days // 365
+            meses = (delta.days % 365) // 30
+            dias = (delta.days % 365) % 30
+            tempo_casa = f"{anos} anos, {meses} meses e {dias} dias"
 
-        a7, a8 = st.columns(2)
+        a7, a8 = st.columns([1, 2])
         a7.text_input("Início na V4", linha["Data Início_exibicao"], disabled=True)
         a8.text_input("Tempo de casa", tempo_casa, disabled=True)
 
-        a9, a10 = st.columns(2)
+        # unidade maior, modalidade menor
+        a9, a10 = st.columns([3, 1])
         a9.text_input("Unidade / Atuação", linha["Unidade/Atuação"], disabled=True)
         a10.text_input("Modalidade PJ", linha["Modalidade PJ"], disabled=True)
 
@@ -256,11 +276,13 @@ if nome:
         a11.text_input("CNPJ", linha["CNPJ"], disabled=True)
         a12.text_input("Razão social", linha["Razão social"], disabled=True)
 
-        a13, a14 = st.columns(2)
+        # cargo maior, remuneração menor
+        a13, a14 = st.columns([3, 1])
         a13.text_input("Cargo", linha["Cargo"], disabled=True)
         a14.text_input("Remuneração", linha["Remuneração"], disabled=True)
 
-        a15, a16 = st.columns(2)
+        # descrição maior, CBO menor
+        a15, a16 = st.columns([1, 3])
         a15.text_input("CBO", linha["CBO"], disabled=True)
         a16.text_input("Descrição CBO", linha["Descrição CBO"], disabled=True)
 
@@ -274,12 +296,10 @@ if nome:
         b1.text_input("Código CC", linha["Código CC"], disabled=True)
         b2.text_input("Descrição CC", linha["Descrição CC"], disabled=True)
 
-        # senioridade + conta contábil lado a lado
         b3, b4 = st.columns(2)
         b3.text_input("Senioridade", linha["Senioridade"], disabled=True)
         b4.text_input("Conta contábil", linha["Conta contábil"], disabled=True)
 
-        # liderança sozinha embaixo
         st.text_input("Liderança direta", linha["Liderança direta"], disabled=True)
 
         st.markdown("##### 👤 Dados pessoais")
@@ -291,6 +311,7 @@ if nome:
         idade = ""
         if linha["Data de nascimento"] != "":
             idade = int((datetime.today() - pd.to_datetime(linha["Data de nascimento"])).days / 365.25)
+            idade = f"{idade} anos"
         b7.text_input("Idade", idade, disabled=True)
 
         b8, b9 = st.columns(2)
@@ -313,6 +334,9 @@ if nome:
         st.markdown("##### 🎁 Benefícios")
         st.text_input("Plano médico", linha["Operadora Médico"], disabled=True)
         st.text_input("Carteirinha médico", linha["Carteirinha médico"], disabled=True)
+
+        st.markdown('<div class="espaco-beneficio"></div>', unsafe_allow_html=True)
+
         st.text_input("Plano odonto", linha["Operadora Odonto"], disabled=True)
         st.text_input("Carteirinha odonto", linha["Carteirinha odonto"], disabled=True)
 
