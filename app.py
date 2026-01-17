@@ -38,15 +38,15 @@ label {
 
 /* 🔥 CONTAINER DO INPUT (o retângulo) */
 div[data-testid="stTextInput"] {
-    height: 30px !important;
+    height: 25px !important;
 }
 
 /* 🔥 INPUT REAL */
 div[data-testid="stTextInput"] input {
     height: 30px !important;
-    padding: 0px 8px !important;
+    padding: 0px 0px !important;
     font-size: 12px !important;
-    line-height: 30px !important; /* 👈 CENTRALIZA O TEXTO */
+    line-height: 25px !important; /* 👈 CENTRALIZA O TEXTO */
 }
 
 /* Remove espaço entre campos */
@@ -56,7 +56,7 @@ div[data-testid="stTextInput"] {
 
 /* Remove respiro extra das colunas */
 div[data-testid="column"] {
-    padding-top: 0px !important;
+    padding-top: 5px !important;
     padding-bottom: 0px !important;
 }
 
