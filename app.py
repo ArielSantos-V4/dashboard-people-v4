@@ -38,7 +38,7 @@ label {
 
 /* 🔥 CONTAINER DO INPUT (o retângulo) */
 div[data-testid="stTextInput"] {
-    height: 10px !important;
+    height: 5px !important;
 }
 
 /* 🔥 INPUT REAL */
