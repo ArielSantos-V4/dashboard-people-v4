@@ -543,7 +543,19 @@ with aba_relatorios:
     # --------------------------------------------------
     # LAYOUT PRINCIPAL — RELATÓRIOS
     # --------------------------------------------------
-    col_relatorios, col_acoes = st.columns([8, 2])
+    col_relatorios, col_divisor, col_acoes = st.columns([8, 0.1, 2])
+
+    with col_divisor:
+    st.markdown(
+        """
+        <div style="
+            height: 100%;
+            border-left: 1px solid #e0e0e0;
+            margin: 0 auto;
+        "></div>
+        """,
+        unsafe_allow_html=True
+    )
 
     # --------------------------------------------------
     # COLUNA ESQUERDA — RELATÓRIOS
