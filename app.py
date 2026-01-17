@@ -17,6 +17,51 @@ st.set_page_config(
 # --------------------------------------------------
 st.markdown("""
 <style>
+<style>
+
+/* =========================
+   COMPACTAÇÃO GERAL
+   ========================= */
+
+/* Títulos internos da consulta (Dados profissionais, Centro de custo etc) */
+h5 {
+    font-size: 13px !important;
+    margin-bottom: 6px !important;
+    margin-top: 12px !important;
+}
+
+/* Labels dos inputs */
+label {
+    font-size: 11px !important;
+    margin-bottom: 2px !important;
+    color: #bdbdbd !important;
+}
+
+/* Inputs mais baixos */
+div[data-testid="stTextInput"] input {
+    height: 30px;
+    padding: 4px 8px;
+    font-size: 12.5px;
+}
+
+/* Reduz espaço vertical entre campos */
+div[data-testid="stTextInput"],
+div[data-testid="stSelectbox"] {
+    margin-bottom: 4px;
+}
+
+/* Reduz espaço entre colunas da consulta */
+div[data-testid="column"] {
+    padding-top: 0px;
+}
+
+/* Benefícios: separação mais sutil */
+.espaco-beneficio {
+    margin-top: 10px;
+    margin-bottom: 4px;
+}
+
+</style>
 
 /* Fundo geral */
 .main {
