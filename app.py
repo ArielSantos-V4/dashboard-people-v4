@@ -252,10 +252,20 @@ lista_nomes = sorted(df_consulta["Nome"].unique())
 c_busca, c_limpar = st.columns([5, 1])
 
 with c_busca:
-    nome = st.selectbox(,
+    nome = st.selectbox(
+        "Selecione o investidor",
         ["Selecione um investidor..."] + lista_nomes,
-        key="investidor_selecionado"
+        key="investidor_selecionado",
+        label_visibility="collapsed"
     )
+
+if nome == "Selecione um investidor...":
+    nome = ""
+
+
+if nome == "Selecione um investidor...":
+    nome = ""
+
 
 if nome == "Selecione um investidor...":
     nome = ""
