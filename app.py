@@ -24,7 +24,7 @@ st.markdown("""
 
 /* Títulos das seções */
 h5 {
-    font-size: 12px !important;
+    font-size: 20px !important;
     margin-top: 6px !important;
     margin-bottom: 4px !important;
 }
@@ -38,13 +38,13 @@ label {
 
 /* 🔥 CONTAINER DO INPUT (o retângulo) */
 div[data-testid="stTextInput"] {
-    height: 25px !important;
+    height: 20px !important;
 }
 
 /* 🔥 INPUT REAL */
 div[data-testid="stTextInput"] input {
-    height: 30px !important;
-    padding: 0px 0px !important;
+    height: 20px !important;
+    padding: 10px 0px !important;
     font-size: 12px !important;
     line-height: 25px !important; /* 👈 CENTRALIZA O TEXTO */
 }
