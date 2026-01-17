@@ -291,12 +291,14 @@ if nome:
 
     with col1:
         st.markdown("##### Dados principais")
-        st.text_input("BP", linha["BP"], disabled=True)
-        st.text_input("Matrícula", linha["Matrícula"], disabled=True)
-        st.text_input("Situação", linha["Situação"], disabled=True)
-        st.text_input("Modelo de contrato", linha["Modelo de contrato"], disabled=True)
-        st.text_input("Unidade de atuação", linha["Unidade/Atuação"], disabled=True)
-        st.text_input("E-mail corporativo", linha["E-mail corporativo"], disabled=True)
+
+        campo_copiavel("BP", linha["BP"])
+        campo_copiavel("Matrícula", linha["Matrícula"])
+        campo_copiavel("Situação", linha["Situação"])
+        campo_copiavel("Modelo de contrato", linha["Modelo de contrato"])
+        campo_copiavel("Unidade de atuação", linha["Unidade/Atuação"])
+        campo_copiavel("E-mail corporativo", linha["E-mail corporativo"])
+
 
     with col2:
         st.markdown("##### Dados pessoais")
