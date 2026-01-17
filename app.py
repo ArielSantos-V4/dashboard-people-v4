@@ -385,8 +385,12 @@ if nome:
             st.info("Sem foto")
 
         st.markdown("##### 🎁 Benefícios")
+
+        st.text_input("Situação no plano", linha["Situação no plano"], disabled=True)
+
         st.text_input("Plano médico", linha["Operadora Médico"], disabled=True)
         st.text_input("Carteirinha médico", linha["Carteirinha médico"], disabled=True)
+
 
         st.markdown('<div class="espaco-beneficio"></div>', unsafe_allow_html=True)
 
