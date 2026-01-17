@@ -16,8 +16,9 @@ def limpar_investidor():
 st.set_page_config(
     page_title="Dashboard People | V4 Company",
     layout="wide",
-    page_icon="🔴"
+    page_icon="LOGO VERMELHO.png"
 )
+
 
 # --------------------------------------------------
 # ESTILO
