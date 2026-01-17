@@ -32,7 +32,7 @@ st.markdown("""
 
 /* Títulos das seções */
 h5 {
-    font-size: 10px !important;
+    font-size: 20px !important;
     margin-top: 6px !important;
     margin-bottom: 2px !important;
 }
