@@ -31,7 +31,7 @@ h5 {
 
 /* Label */
 label {
-    font-size: 10.5px !important;
+    font-size: 10px !important;
     margin-bottom: 0px !important;
     color: #bdbdbd !important;
 }
