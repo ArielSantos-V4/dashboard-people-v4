@@ -39,6 +39,7 @@ st.set_page_config(
 aba_dashboard, aba_relatorios = st.tabs([
     "📊 Dashboard",
     "📄 Relatórios"
+    "🎁 Benefícios"
 ])
 
 # --------------------------------------------------
@@ -540,4 +541,52 @@ with aba_relatorios:
 
     st.markdown("---")
 
+    # --------------------------------------------------
+    # LAYOUT PRINCIPAL — RELATÓRIOS
+    # --------------------------------------------------
+    col_relatorios, col_acoes = st.columns([8, 2])
 
+with col_relatorios:
+
+    st.markdown("## 🎂 Relatórios Principais")
+
+    with st.expander("🎉 Aniversariantes do mês", expanded=False):
+
+        # Mês atual
+        mes_atual = datetime.today().month
+
+        df_aniversario = df.copy()
+        df_aniversario["Data de nascimento"] = pd.to_datetime(
+            df_aniversario["Data de nascimento"],
+            errors="coerce"
+        )
+
+        df_aniversario = df_aniversario[
+            df_aniversario["Data de nascimento"].dt.month == mes_atual
+        ]
+
+        if df_aniversario.empty:
+            st.info("Nenhum aniversariante neste mês 🎈")
+        else:
+            df_aniversario["Dia"] = df_aniversario["Data de nascimento"].dt.day
+
+            st.dataframe(
+                df_aniversario[
+                    ["Nome", "Dia", "Unidade/Atuação", "Cargo"]
+                ].sort_values("Dia"),
+                use_container_width=True,
+                hide_index=True
+            )
+
+with col_acoes:
+
+    st.markdown("## ⚙️ Ações")
+
+    st.button("📄 Gerar planilha de aniversariantes")
+    st.button("📊 Relatório de contratos")
+
+# --------------------------------------------------
+# ABA BENEFÍCIOS
+# --------------------------------------------------
+
+with aba_dashboard:
