@@ -522,19 +522,22 @@ with aba_dashboard:
 
 with aba_relatorios:
 
+    st.markdown("<div style='height:20px'></div>", unsafe_allow_html=True)
+
     # --------------------------------------------------
     # TOPO
     # --------------------------------------------------
     col_logo, col_title = st.columns([1, 6])
-    
+
     with col_logo:
         st.image("LOGO VERMELHO.png", width=120)
-    
+
     with col_title:
         st.markdown(
             "<h1>Análises & Relatórios</h1><h3 style='color:#ccc;'>V4 Company</h3>",
             unsafe_allow_html=True
         )
 
-st.markdown("---")
+    st.markdown("---")
+
 
