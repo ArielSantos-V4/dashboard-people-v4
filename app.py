@@ -594,3 +594,4 @@ with aba_relatorios:
 # --------------------------------------------------
 
 with aba_benefícios:
+    st.info("Área reservada para atualizações futuras.")
