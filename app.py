@@ -589,9 +589,3 @@ with aba_relatorios:
         st.button("📄 Gerar planilha de aniversariantes")
         st.button("📊 Relatório de contratos")
 
-# --------------------------------------------------
-# ABA BENEFÍCIOS
-# --------------------------------------------------
-
-with aba_benefícios:
-    st.info("Área reservada para atualizações futuras.")
