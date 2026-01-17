@@ -43,7 +43,7 @@ div[data-testid="stTextInput"] {
 
 /* 🔥 INPUT REAL */
 div[data-testid="stTextInput"] input {
-    height: 10px !important;
+    height: 30px !important;
     padding: 0px 0px !important;
     font-size: 12px !important;
     line-height: 15px !important; /* 👈 CENTRALIZA O TEXTO */
