@@ -9,6 +9,19 @@ if "investidor_selecionado" not in st.session_state:
 def limpar_investidor():
     st.session_state.investidor_selecionado = ""
 
+def formatar_cpf(valor):
+    v = str(valor).replace(".0", "").zfill(11)
+    if len(v) != 11:
+        return ""
+    return f"{v[:3]}.{v[3:6]}.{v[6:9]}-{v[9:]}"
+
+
+def formatar_cnpj(valor):
+    v = str(valor).replace(".0", "").zfill(14)
+    if len(v) != 14:
+        return ""
+    return f"{v[:2]}.{v[2:5]}.{v[5:8]}/{v[8:12]}-{v[12:]}"
+
 
 # --------------------------------------------------
 # CONFIGURAÇÃO DA PÁGINA
@@ -322,11 +335,12 @@ if nome:
     
         st.text_input("E-mail corporativo", linha["E-mail corporativo"], disabled=True)
     
-        cnpj = str(linha["CNPJ"]).replace(".0", "")
+        cnpj = formatar_cnpj(linha["CNPJ"])
 
         a11, a12 = st.columns(2)
         a11.text_input("CNPJ", cnpj, disabled=True)
         a12.text_input("Razão social", linha["Razão social"], disabled=True)
+
 
 
         a13, a14 = st.columns([3, 1])
@@ -363,6 +377,7 @@ if nome:
         cpf = str(linha["CPF"]).replace(".0", "")
 
         b5, b6, b7 = st.columns(3)
+        cpf = formatar_cpf(linha["CPF"])
         b5.text_input("CPF", cpf, disabled=True)
         b6.text_input("Nascimento", linha["Data de nascimento"], disabled=True)
 
