@@ -522,7 +522,6 @@ with aba_dashboard:
 
 with aba_relatorios:
     st.subheader("📄 Relatórios")
-    st.info("Área reservada para relatórios futuros.")
 
     # --------------------------------------------------
     # TOPO
@@ -534,7 +533,7 @@ with aba_relatorios:
     
     with col_title:
         st.markdown(
-            "<h1>Análises & Relatórios People</h1><h3 style='color:#ccc;'>V4 Company</h3>",
+            "<h1>Análises & Relatórios</h1><h3 style='color:#ccc;'>V4 Company</h3>",
             unsafe_allow_html=True
         )
 
