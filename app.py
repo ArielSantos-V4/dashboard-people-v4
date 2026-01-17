@@ -13,6 +13,14 @@ def limpar_investidor():
 # --------------------------------------------------
 # CONFIGURAÇÃO DA PÁGINA
 # --------------------------------------------------
+# --------------------------------------------------
+# NAVEGAÇÃO POR ABAS (TOPO)
+# --------------------------------------------------
+aba_dashboard, aba_relatorios = st.tabs([
+    "📊 Dashboard",
+    "📄 Relatórios"
+])
+
 st.set_page_config(
     page_title="Dashboard People | V4 Company",
     layout="wide",
