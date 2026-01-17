@@ -46,7 +46,7 @@ div[data-testid="stTextInput"] input {
     height: 30px !important;
     padding: 10px 10px !important;
     font-size: 12px !important;
-    line-height: 5px !important; /* 👈 CENTRALIZA O TEXTO */
+    line-height: 30px !important; /* 👈 CENTRALIZA O TEXTO */
 }
 
 /* Remove espaço entre campos */
