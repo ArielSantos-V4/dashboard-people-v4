@@ -312,50 +312,50 @@ if nome:
     # COLUNA 1 — PROFISSIONAL
     # -------------------------
     with col1:
-    st.markdown("##### 📌 Dados profissionais")
+        st.markdown("##### 📌 Dados profissionais")
+    
+        bp = str(linha["BP"]).replace(".0", "")
+        matricula = str(linha["Matrícula"]).replace(".0", "").zfill(6)
+    
+        a1, a2, a3 = st.columns(3)
+        a1.text_input("BP", bp, disabled=True)
+        a2.text_input("Matrícula", matricula, disabled=True)
+        a3.text_input("Situação", linha["Situação"], disabled=True)
 
-    bp = str(linha["BP"]).replace(".0", "")
-    matricula = str(linha["Matrícula"]).replace(".0", "").zfill(6)
+        a4, a5, a6 = st.columns(3)
+        a4.text_input("Data início", linha["Data Início_exibicao"], disabled=True)
+        a5.text_input("Término previsto", linha["Térm previsto_exibicao"], disabled=True)
+        a6.text_input("Modelo contrato", linha["Modelo de contrato"], disabled=True)
+    
+        tempo_casa = ""
+        if linha["Data Início"] != "":
+            delta = datetime.today() - pd.to_datetime(linha["Data Início"])
+            anos = delta.days // 365
+            meses = (delta.days % 365) // 30
+            dias = (delta.days % 365) % 30
+            tempo_casa = f"{anos} anos, {meses} meses e {dias} dias"
+    
+        a7, a8 = st.columns([1, 2])
+        a7.text_input("Início na V4", linha["Data Início_exibicao"], disabled=True)
+        a8.text_input("Tempo de casa", tempo_casa, disabled=True)
 
-    a1, a2, a3 = st.columns(3)
-    a1.text_input("BP", bp, disabled=True)
-    a2.text_input("Matrícula", matricula, disabled=True)
-    a3.text_input("Situação", linha["Situação"], disabled=True)
+        a9, a10 = st.columns([3, 1])
+        a9.text_input("Unidade / Atuação", linha["Unidade/Atuação"], disabled=True)
+        a10.text_input("Modalidade PJ", linha["Modalidade PJ"], disabled=True)
+    
+        st.text_input("E-mail corporativo", linha["E-mail corporativo"], disabled=True)
+    
+        a11, a12 = st.columns(2)
+        a11.text_input("CNPJ", linha["CNPJ"], disabled=True)
+        a12.text_input("Razão social", linha["Razão social"], disabled=True)
 
-    a4, a5, a6 = st.columns(3)
-    a4.text_input("Data início", linha["Data Início_exibicao"], disabled=True)
-    a5.text_input("Término previsto", linha["Térm previsto_exibicao"], disabled=True)
-    a6.text_input("Modelo contrato", linha["Modelo de contrato"], disabled=True)
-
-    tempo_casa = ""
-    if linha["Data Início"] != "":
-        delta = datetime.today() - pd.to_datetime(linha["Data Início"])
-        anos = delta.days // 365
-        meses = (delta.days % 365) // 30
-        dias = (delta.days % 365) % 30
-        tempo_casa = f"{anos} anos, {meses} meses e {dias} dias"
-
-    a7, a8 = st.columns([1, 2])
-    a7.text_input("Início na V4", linha["Data Início_exibicao"], disabled=True)
-    a8.text_input("Tempo de casa", tempo_casa, disabled=True)
-
-    a9, a10 = st.columns([3, 1])
-    a9.text_input("Unidade / Atuação", linha["Unidade/Atuação"], disabled=True)
-    a10.text_input("Modalidade PJ", linha["Modalidade PJ"], disabled=True)
-
-    st.text_input("E-mail corporativo", linha["E-mail corporativo"], disabled=True)
-
-    a11, a12 = st.columns(2)
-    a11.text_input("CNPJ", linha["CNPJ"], disabled=True)
-    a12.text_input("Razão social", linha["Razão social"], disabled=True)
-
-    a13, a14 = st.columns([3, 1])
-    a13.text_input("Cargo", linha["Cargo"], disabled=True)
-    a14.text_input("Remuneração", linha["Remuneração"], disabled=True)
-
-    a15, a16 = st.columns([1, 3])
-    a15.text_input("CBO", linha["CBO"], disabled=True)
-    a16.text_input("Descrição CBO", linha["Descrição CBO"], disabled=True)
+        a13, a14 = st.columns([3, 1])
+        a13.text_input("Cargo", linha["Cargo"], disabled=True)
+        a14.text_input("Remuneração", linha["Remuneração"], disabled=True)
+    
+        a15, a16 = st.columns([1, 3])
+        a15.text_input("CBO", linha["CBO"], disabled=True)
+        a16.text_input("Descrição CBO", linha["Descrição CBO"], disabled=True)
 
 
     # -------------------------
