@@ -38,7 +38,7 @@ label {
 
 /* 🔥 CONTAINER DO INPUT (o retângulo) */
 div[data-testid="stTextInput"] {
-    height: 20px !important;
+    height: 15px !important;
 }
 
 /* 🔥 INPUT REAL */
@@ -51,7 +51,7 @@ div[data-testid="stTextInput"] input {
 
 /* Remove espaço entre campos */
 div[data-testid="stTextInput"] {
-    margin-bottom: 15px !important;
+    margin-bottom: 25px !important;
 }
 
 /* Remove respiro extra das colunas */
