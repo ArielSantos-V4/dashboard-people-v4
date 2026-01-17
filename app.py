@@ -316,7 +316,7 @@ with a3:
     campo_copia("Situação", linha["Situação"])
 
 
-# 👇 ESSA LINHA TEM QUE COMEÇAR COLADA NA MARGEM
+# Datas e contrato
 a4, a5, a6 = st.columns(3)
 
 with a4:
@@ -329,18 +329,23 @@ with a6:
     campo_copia("Modelo contrato", linha["Modelo de contrato"])
 
 
-        # Início na V4 + Tempo de casa
-        tempo_casa = ""
-        if linha["Data Início"] != "":
-            delta = datetime.today() - pd.to_datetime(linha["Data Início"])
-            anos = delta.days // 365
-            meses = (delta.days % 365) // 30
-            dias = (delta.days % 365) % 30
-            tempo_casa = f"{anos} anos, {meses} meses e {dias} dias"
+# Início na V4 + Tempo de casa  ← ESTA LINHA TEM QUE ESTAR COLADA NA ESQUERDA
+tempo_casa = ""
 
-        a7, a8 = st.columns([1, 2])
-        a7.text_input("Início na V4", linha["Data Início_exibicao"], disabled=True)
-        a8.text_input("Tempo de casa", tempo_casa, disabled=True)
+if linha["Data Início"] != "":
+    delta = datetime.today() - pd.to_datetime(linha["Data Início"])
+    anos = delta.days // 365
+    meses = (delta.days % 365) // 30
+    dias = (delta.days % 365) % 30
+    tempo_casa = f"{anos} anos, {meses} meses e {dias} dias"
+
+a7, a8 = st.columns([1, 2])
+
+with a7:
+    campo_copia("Início na V4", linha["Data Início_exibicao"])
+
+with a8:
+    campo_copia("Tempo de casa", tempo_casa)
 
         # Unidade maior / Modalidade menor
         a9, a10 = st.columns([3, 1])
