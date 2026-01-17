@@ -36,24 +36,8 @@ st.set_page_config(
 # --------------------------------------------------
 # ESTILO
 # --------------------------------------------------
-
 st.markdown("""
 <style>
-
-/* =========================
-   DATAFRAME
-   ========================= */
-
-/* Centraliza números, datas e códigos no dataframe */
-div[data-testid="stDataFrame"] td {
-    vertical-align: middle;
-    white-space: nowrap;
-}
-
-/* Centraliza cabeçalhos */
-div[data-testid="stDataFrame"] th {
-    text-align: center !important;
-}
 
 /* =========================
    CONSULTA INDIVIDUAL — COMPACTAÇÃO REAL
@@ -73,18 +57,22 @@ label {
     color: #bdbdbd !important;
 }
 
-/* Container do input */
+/* 🔥 CONTAINER DO INPUT (o retângulo) */
 div[data-testid="stTextInput"] {
     height: 30px !important;
-    margin-bottom: 25px !important;
 }
 
-/* Input real */
+/* 🔥 INPUT REAL */
 div[data-testid="stTextInput"] input {
     height: 40px !important;
     padding: 10px 10px !important;
     font-size: 12px !important;
-    line-height: 0px !important;
+    line-height: 0px !important; /* 👈 CENTRALIZA O TEXTO */
+}
+
+/* Remove espaço entre campos */
+div[data-testid="stTextInput"] {
+    margin-bottom: 25px !important;
 }
 
 /* Remove respiro extra das colunas */
@@ -437,35 +425,6 @@ if nome:
         if linha["Link Drive"]: st.link_button("Abrir Drive", linha["Link Drive"])
 
 # --------------------------------------------------
-# FORMAT TABELA
-# --------------------------------------------------
-def limpar_numero(valor):
-    if valor == "" or pd.isna(valor):
-        return ""
-    return str(valor).replace(".0", "").strip()
-
-
-def formatar_cpf(valor):
-    v = limpar_numero(valor)
-    if len(v) == 11:
-        return f"{v[0:3]}.{v[3:6]}.{v[6:9]}-{v[9:11]}"
-    return v
-
-
-def formatar_cnpj(valor):
-    v = limpar_numero(valor)
-    if len(v) == 14:
-        return f"{v[0:2]}.{v[2:5]}.{v[5:8]}/{v[8:12]}-{v[12:14]}"
-    return v
-
-
-def formatar_matricula(valor):
-    v = limpar_numero(valor)
-    if v.isdigit():
-        return v.zfill(6)
-    return v
-
-# --------------------------------------------------
 # TABELA
 # --------------------------------------------------
 st.markdown("### 📋 Base de investidores")
@@ -476,56 +435,22 @@ busca = st.text_input(
     label_visibility="collapsed"
 )
 
-# Cria base da tabela
-df_tabela = df.copy()
 
+df_tabela = df.copy()
 df_tabela["Término do contrato"] = df_tabela["Térm previsto_exibicao"]
 df_tabela["Data de início"] = df_tabela["Data Início_exibicao"]
 
-# Aplica busca
 if busca:
     df_tabela = df_tabela[
         df_tabela.astype(str)
         .apply(lambda x: x.str.contains(busca, case=False).any(), axis=1)
     ]
 
-# Remove colunas técnicas
-df_exibicao = df_tabela.drop(
-    columns=[
-        "Térm previsto",
-        "Térm previsto_exibicao",
-        "Data Início",
-        "Data Início_exibicao"
-    ],
-    errors="ignore"
-)
-
-# Colunas que devem ficar centralizadas
-colunas_centralizadas = [
-    "BP",
-    "Matrícula",
-    "CPF",
-    "CNPJ",
-    "Código CC",
-    "Carteirinha médico",
-    "Carteirinha odonto",
-    "Data de início",
-    "Término do contrato"
-]
-
-# Estilo da tabela
-styler = df_exibicao.style.set_properties(
-    **{"text-align": "left"}
-).set_properties(
-    subset=[c for c in colunas_centralizadas if c in df_exibicao.columns],
-    **{"text-align": "center"}
-)
-
-# Exibe tabela
 st.dataframe(
-    styler,
+    df_tabela.drop(
+        columns=["Térm previsto", "Térm previsto_exibicao", "Data Início", "Data Início_exibicao"],
+        errors="ignore"
+    ),
     use_container_width=True,
     hide_index=True
 )
-
-
