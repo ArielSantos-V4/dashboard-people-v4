@@ -589,4 +589,4 @@ with col_acoes:
 # ABA BENEFÍCIOS
 # --------------------------------------------------
 
-with aba_dashboard:
+with aba_beneficios:
