@@ -76,52 +76,6 @@ div[data-testid="column"] {
 
 </style>
 """, unsafe_allow_html=True)
-# --------------------------------------------------
-# CAMPO COM BOTÃO COPIAR
-# --------------------------------------------------
-def campo_copia(label, valor):
-    valor = "" if valor is None else str(valor)
-
-    html = f"""
-    <div style="margin-bottom:25px;">
-        <label style="
-            font-size:10px;
-            color:#bdbdbd;
-        ">{label}</label>
-
-        <div style="
-            background:#0e0e0e;
-            border:1px solid #333;
-            border-radius:6px;
-            height:40px;
-            display:flex;
-            align-items:center;
-            justify-content:space-between;
-            padding:0 10px;
-        ">
-            <span style="font-size:12px; color:white;">{valor}</span>
-
-            {""
-            if valor == "" else f"""
-            <button onclick="
-                navigator.clipboard.writeText('{valor}');
-                this.innerText='✔';
-                setTimeout(()=>this.innerText='⧉',1000);
-            "
-            style="
-                background:none;
-                border:none;
-                color:white;
-                font-size:14px;
-                cursor:pointer;
-            ">⧉</button>
-            """}
-        </div>
-    </div>
-    """
-
-    st.markdown(html, unsafe_allow_html=True)
-
 
 # --------------------------------------------------
 # LOGIN
