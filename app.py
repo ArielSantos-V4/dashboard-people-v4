@@ -425,6 +425,36 @@ if nome:
         if linha["Link Drive"]: st.link_button("Abrir Drive", linha["Link Drive"])
 
 # --------------------------------------------------
+# FORMAT TABELA
+# --------------------------------------------------
+
+def limpar_numero(valor):
+    if valor == "" or pd.isna(valor):
+        return ""
+    return str(valor).replace(".0", "").strip()
+
+
+def formatar_cpf(valor):
+    v = limpar_numero(valor)
+    if len(v) == 11:
+        return f"{v[0:3]}.{v[3:6]}.{v[6:9]}-{v[9:11]}"
+    return v
+
+
+def formatar_cnpj(valor):
+    v = limpar_numero(valor)
+    if len(v) == 14:
+        return f"{v[0:2]}.{v[2:5]}.{v[5:8]}/{v[8:12]}-{v[12:14]}"
+    return v
+
+
+def formatar_matricula(valor):
+    v = limpar_numero(valor)
+    if v.isdigit():
+        return v.zfill(6)
+    return v
+
+# --------------------------------------------------
 # TABELA
 # --------------------------------------------------
 st.markdown("### 📋 Base de investidores")
@@ -437,8 +467,24 @@ busca = st.text_input(
 
 
 df_tabela = df.copy()
+
+# Datas exibidas
 df_tabela["Término do contrato"] = df_tabela["Térm previsto_exibicao"]
 df_tabela["Data de início"] = df_tabela["Data Início_exibicao"]
+
+# Limpeza de campos com .0
+df_tabela["BP"] = df_tabela["BP"].apply(limpar_numero)
+df_tabela["Código CC"] = df_tabela["Código CC"].apply(limpar_numero)
+df_tabela["Carteirinha médico"] = df_tabela["Carteirinha médico"].apply(limpar_numero)
+df_tabela["Carteirinha odonto"] = df_tabela["Carteirinha odonto"].apply(limpar_numero)
+
+# Matrícula com 6 dígitos
+df_tabela["Matrícula"] = df_tabela["Matrícula"].apply(formatar_matricula)
+
+# CPF e CNPJ formatados
+df_tabela["CPF"] = df_tabela["CPF"].apply(formatar_cpf)
+df_tabela["CNPJ"] = df_tabela["CNPJ"].apply(formatar_cnpj)
+
 
 if busca:
     df_tabela = df_tabela[
