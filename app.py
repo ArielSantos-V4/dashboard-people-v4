@@ -241,7 +241,6 @@ if nome:
 
         st.text_input("E-mail corporativo", linha["E-mail corporativo"], disabled=True)
 
-        st.markdown("###### 🏢 Empresa (PJ)")
         c9, c10 = st.columns(2)
         c9.text_input("CNPJ", linha["CNPJ"], disabled=True)
         c10.text_input("Razão social", linha["Razão social"], disabled=True)
@@ -258,7 +257,7 @@ if nome:
     # COLUNA 2 — ADMIN / PESSOAL
     # -------------------------
     with col2:
-        st.markdown("##### 🧾 Administrativo")
+        st.markdown("##### 🧾 Centro de custo")
 
         c15, c16 = st.columns(2)
         c15.text_input("Código CC", linha["Código CC"], disabled=True)
