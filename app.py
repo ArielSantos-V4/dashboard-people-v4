@@ -40,29 +40,20 @@ st.set_page_config(
 st.markdown("""
 <style>
 
+/* =========================
+   DATAFRAME
+   ========================= */
+
 /* Centraliza números, datas e códigos no dataframe */
 div[data-testid="stDataFrame"] td {
-    text-align: left;
     vertical-align: middle;
-}
-
-/* Força centralização de colunas numéricas */
-div[data-testid="stDataFrame"] td:has(div[data-testid="stMarkdownContainer"]) {
-    text-align: center;
+    white-space: nowrap;
 }
 
 /* Centraliza cabeçalhos */
 div[data-testid="stDataFrame"] th {
     text-align: center !important;
 }
-
-/* Evita quebra feia de texto */
-div[data-testid="stDataFrame"] td {
-    white-space: nowrap;
-}
-
-</style>
-""", unsafe_allow_html=True)
 
 /* =========================
    CONSULTA INDIVIDUAL — COMPACTAÇÃO REAL
@@ -82,22 +73,18 @@ label {
     color: #bdbdbd !important;
 }
 
-/* 🔥 CONTAINER DO INPUT (o retângulo) */
+/* Container do input */
 div[data-testid="stTextInput"] {
     height: 30px !important;
+    margin-bottom: 25px !important;
 }
 
-/* 🔥 INPUT REAL */
+/* Input real */
 div[data-testid="stTextInput"] input {
     height: 40px !important;
     padding: 10px 10px !important;
     font-size: 12px !important;
-    line-height: 0px !important; /* 👈 CENTRALIZA O TEXTO */
-}
-
-/* Remove espaço entre campos */
-div[data-testid="stTextInput"] {
-    margin-bottom: 25px !important;
+    line-height: 0px !important;
 }
 
 /* Remove respiro extra das colunas */
