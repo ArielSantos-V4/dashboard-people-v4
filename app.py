@@ -279,23 +279,25 @@ if nome:
     with col1:
         st.markdown("##### 📌 Dados profissionais")
 
+        # BP / Matrícula / Situação
         bp = str(linha["BP"]).replace(".0", "")
-matricula = str(linha["Matrícula"]).replace(".0", "").zfill(6)
+        matricula = str(linha["Matrícula"]).replace(".0", "").zfill(6)
 
-c1.text_input("BP", bp, disabled=True)
-c2.text_input("Matrícula", matricula, disabled=True)
+        a1, a2, a3 = st.columns(3)
+        a1.text_input("BP", bp, disabled=True)
+        a2.text_input("Matrícula", matricula, disabled=True)
         a3.text_input("Situação", linha["Situação"], disabled=True)
 
+        # Datas e contrato
         a4, a5, a6 = st.columns(3)
         a4.text_input("Data início", linha["Data Início_exibicao"], disabled=True)
         a5.text_input("Término previsto", linha["Térm previsto_exibicao"], disabled=True)
         a6.text_input("Modelo contrato", linha["Modelo de contrato"], disabled=True)
 
-        # início na V4 + tempo de casa (larguras ajustadas)
-        inicio_v4 = linha["Data Início"]
+        # Início na V4 + Tempo de casa
         tempo_casa = ""
-        if inicio_v4 != "":
-            delta = datetime.today() - pd.to_datetime(inicio_v4)
+        if linha["Data Início"] != "":
+            delta = datetime.today() - pd.to_datetime(linha["Data Início"])
             anos = delta.days // 365
             meses = (delta.days % 365) // 30
             dias = (delta.days % 365) % 30
@@ -305,7 +307,7 @@ c2.text_input("Matrícula", matricula, disabled=True)
         a7.text_input("Início na V4", linha["Data Início_exibicao"], disabled=True)
         a8.text_input("Tempo de casa", tempo_casa, disabled=True)
 
-        # unidade maior, modalidade menor
+        # Unidade maior / Modalidade menor
         a9, a10 = st.columns([3, 1])
         a9.text_input("Unidade / Atuação", linha["Unidade/Atuação"], disabled=True)
         a10.text_input("Modalidade PJ", linha["Modalidade PJ"], disabled=True)
@@ -316,12 +318,12 @@ c2.text_input("Matrícula", matricula, disabled=True)
         a11.text_input("CNPJ", linha["CNPJ"], disabled=True)
         a12.text_input("Razão social", linha["Razão social"], disabled=True)
 
-        # cargo maior, remuneração menor
+        # Cargo maior / Remuneração menor
         a13, a14 = st.columns([3, 1])
         a13.text_input("Cargo", linha["Cargo"], disabled=True)
         a14.text_input("Remuneração", linha["Remuneração"], disabled=True)
 
-        # descrição maior, CBO menor
+        # CBO menor / Descrição maior
         a15, a16 = st.columns([1, 3])
         a15.text_input("CBO", linha["CBO"], disabled=True)
         a16.text_input("Descrição CBO", linha["Descrição CBO"], disabled=True)
