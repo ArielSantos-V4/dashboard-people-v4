@@ -17,44 +17,82 @@ st.set_page_config(
 # --------------------------------------------------
 st.markdown("""
 <style>
-.main { background-color: #0e0e0e; }
-h1, h2, h3, h4 { color: #E30613; }
+
+/* Fundo geral */
+.main {
+    background-color: #0e0e0e;
+}
+
+/* Títulos */
+h1, h2, h3, h4 {
+    color: #E30613;
+}
+
+/* Cards de KPI */
 div[data-testid="metric-container"] {
     background-color: #1a1a1a;
     border: 1px solid #E30613;
-    padding: 16px;
+    padding: 14px;
     border-radius: 12px;
 }
+
+/* Sidebar */
 section[data-testid="stSidebar"] {
     background-color: #111111;
     border-right: 2px solid #E30613;
 }
+
+/* Botões */
 .stButton > button {
     background-color: #E30613;
     color: white;
     border-radius: 8px;
+    padding: 6px 14px;
 }
+
+/* Inputs desabilitados */
 input[disabled] {
     color: white !important;
+    opacity: 1 !important;
 }
-</style>
-""", unsafe_allow_html=True)
-/* Compactar inputs */
+
+/* =========================
+   COMPACTAÇÃO DOS CAMPOS
+   ========================= */
+
+/* Altura e padding dos inputs */
 div[data-testid="stTextInput"] input {
     padding: 6px 10px;
     height: 34px;
     font-size: 13px;
 }
 
-/* Reduz espaço vertical entre elementos */
-.block-container {
-    padding-top: 1.5rem;
+/* Reduz espaço vertical entre blocos */
+div[data-testid="stTextInput"],
+div[data-testid="stSelectbox"] {
+    margin-bottom: 6px;
 }
 
-/* Espaçamento visual entre médico e odonto */
+/* Compacta o container principal */
+.block-container {
+    padding-top: 1.5rem;
+    padding-bottom: 1.5rem;
+}
+
+/* Espaço visual entre Médico e Odonto */
 .espaco-beneficio {
     margin-top: 14px;
+    margin-bottom: 6px;
 }
+
+/* Labels menores */
+label {
+    font-size: 12px !important;
+    color: #cccccc !important;
+}
+
+</style>
+""", unsafe_allow_html=True)
 
 # --------------------------------------------------
 # LOGIN
