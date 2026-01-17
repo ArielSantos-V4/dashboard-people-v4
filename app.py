@@ -17,6 +17,18 @@ st.set_page_config(
 # --------------------------------------------------
 st.markdown("""
 <style>
+.copy-btn {
+    background: none;
+    border: none;
+    color: #E30613;
+    cursor: pointer;
+    font-size: 16px;
+    padding: 0;
+}
+
+.copy-btn:hover {
+    opacity: 0.8;
+}
 
 /* =========================
    CONSULTA INDIVIDUAL — COMPACTAÇÃO REAL
