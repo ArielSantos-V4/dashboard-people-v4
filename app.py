@@ -336,16 +336,15 @@ st.subheader("🔎 Consulta individual do investidor")
 def campo_copiavel(label, valor, key):
     valor = "" if pd.isna(valor) else str(valor)
 
-    copiar_html = ""
+    botao = ""
     if valor != "":
-        copiar_html = f"""
+        botao = f"""
         <button class="copy-btn"
-            onclick="
-                navigator.clipboard.writeText('{valor}');
-                const msg = document.getElementById('msg-{key}');
-                msg.style.opacity = 1;
-                setTimeout(() => msg.style.opacity = 0, 1200);
-            ">
+            data-value="{valor}"
+            onclick="navigator.clipboard.writeText(this.dataset.value);
+                     var m=document.getElementById('msg-{key}');
+                     m.style.opacity=1;
+                     setTimeout(()=>m.style.opacity=0,1200);">
             ⧉
         </button>
         """
@@ -365,7 +364,7 @@ def campo_copiavel(label, valor, key):
             align-items:center;
         ">
             <span>{valor}</span>
-            {copiar_html}
+            {botao}
         </div>
         <div id="msg-{key}" style="
             font-size:11px;
@@ -401,27 +400,15 @@ if nome:
         campo_copiavel("Término previsto", linha["Térm previsto_exibicao"], "termino")
         campo_copiavel("Modelo contrato", linha["Modelo de contrato"], "modelo")
         campo_copiavel("Unidade", linha["Unidade/Atuação"], "unidade")
-        campo_copiavel("Modalidade (PJ)", linha.get("Modalidade (PJ)", ""), "modalidade")
         campo_copiavel("E-mail corporativo", linha["E-mail corporativo"], "email_corp")
-        campo_copiavel("Início na V4", linha.get("Início na V4", ""), "inicio_v4")
-        campo_copiavel("Tempo de casa", linha.get("Tempo de casa", ""), "tempo_casa")
-        campo_copiavel("CNPJ", linha.get("CNPJ", ""), "cnpj")
-        campo_copiavel("Razão social", linha.get("Razão social", ""), "razao")
-        campo_copiavel("Cargo", linha.get("Cargo", ""), "cargo")
-        campo_copiavel("Remuneração", linha.get("Remuneração", ""), "remuneracao")
-        campo_copiavel("CBO", linha.get("CBO", ""), "cbo")
-        campo_copiavel("Descrição do CBO", linha.get("Descrição do CBO", ""), "desc_cbo")
 
     with col2:
         st.markdown("##### Dados pessoais")
 
         campo_copiavel("CPF", linha["CPF"], "cpf")
         campo_copiavel("Data nascimento", linha["Data de nascimento"], "nascimento")
-        campo_copiavel("Idade", linha.get("Idade", ""), "idade")
-        campo_copiavel("CEP", linha.get("CEP", ""), "cep")
         campo_copiavel("Escolaridade", linha["Escolaridade"], "escolaridade")
         campo_copiavel("Telefone pessoal", linha["Telefone pessoal"], "telefone")
-        campo_copiavel("E-mail pessoal", linha.get("E-mail pessoal", ""), "email_pessoal")
 
 # --------------------------------------------------
 # TABELA
