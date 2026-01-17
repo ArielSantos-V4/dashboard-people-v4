@@ -476,30 +476,31 @@ busca = st.text_input(
     label_visibility="collapsed"
 )
 
+# Cria base da tabela
+df_tabela = df.copy()
 
-st.dataframe(
-    df_tabela.drop(
-        columns=["Térm previsto", "Térm previsto_exibicao", "Data Início", "Data Início_exibicao"],
-        errors="ignore"
-    ),
-    use_container_width=True,
-    hide_index=True
-)
+df_tabela["Término do contrato"] = df_tabela["Térm previsto_exibicao"]
+df_tabela["Data de início"] = df_tabela["Data Início_exibicao"]
 
-
-
+# Aplica busca
 if busca:
     df_tabela = df_tabela[
         df_tabela.astype(str)
         .apply(lambda x: x.str.contains(busca, case=False).any(), axis=1)
     ]
 
+# Remove colunas técnicas
 df_exibicao = df_tabela.drop(
-    columns=["Térm previsto", "Térm previsto_exibicao", "Data Início", "Data Início_exibicao"],
+    columns=[
+        "Térm previsto",
+        "Térm previsto_exibicao",
+        "Data Início",
+        "Data Início_exibicao"
+    ],
     errors="ignore"
 )
 
-# Colunas que devem ficar CENTRALIZADAS
+# Colunas que devem ficar centralizadas
 colunas_centralizadas = [
     "BP",
     "Matrícula",
@@ -515,13 +516,12 @@ colunas_centralizadas = [
 # Estilo da tabela
 styler = df_exibicao.style.set_properties(
     **{"text-align": "left"}
-)
-
-styler = styler.set_properties(
+).set_properties(
     subset=[c for c in colunas_centralizadas if c in df_exibicao.columns],
     **{"text-align": "center"}
 )
 
+# Exibe tabela
 st.dataframe(
     styler,
     use_container_width=True,
