@@ -18,79 +18,53 @@ st.set_page_config(
 st.markdown("""
 <style>
 
-/* Fundo geral */
-.main {
-    background-color: #0e0e0e;
-}
+/* =========================
+   AJUSTE FINO – CONSULTA INDIVIDUAL
+   ========================= */
 
-/* Títulos */
-h1, h2, h3, h4 {
-    color: #E30613;
-}
-
-/* Títulos internos da consulta */
+/* Títulos das seções (Dados profissionais, Centro de custo etc) */
 h5 {
-    font-size: 13px;
-    margin: 8px 0 4px 0;
+    font-size: 12px !important;
+    margin-top: 8px !important;
+    margin-bottom: 4px !important;
 }
 
-/* Cards de KPI */
-div[data-testid="metric-container"] {
-    background-color: #1a1a1a;
-    border: 1px solid #E30613;
-    padding: 14px;
-    border-radius: 12px;
-}
-
-/* Sidebar */
-section[data-testid="stSidebar"] {
-    background-color: #111111;
-    border-right: 2px solid #E30613;
-}
-
-/* Botões */
-.stButton > button {
-    background-color: #E30613;
-    color: white;
-    border-radius: 8px;
-    padding: 6px 14px;
-}
-
-/* Labels menores */
+/* Labels dos campos */
 label {
-    font-size: 11px;
-    color: #cccccc;
-    margin-bottom: 2px;
+    font-size: 10.5px !important;
+    margin-bottom: 1px !important;
+    color: #bdbdbd !important;
 }
 
-/* Inputs mais compactos */
+/* Inputs: altura REAL menor */
 div[data-testid="stTextInput"] input {
-    height: 30px;
-    padding: 4px 8px;
-    font-size: 12.5px;
+    height: 28px !important;
+    padding: 2px 6px !important;
+    font-size: 12px !important;
 }
 
-/* Reduz espaço vertical entre campos */
+/* Selectbox (quando houver) */
+div[data-testid="stSelectbox"] div {
+    min-height: 28px !important;
+    font-size: 12px !important;
+}
+
+/* Espaço vertical ENTRE os campos */
 div[data-testid="stTextInput"],
 div[data-testid="stSelectbox"] {
-    margin-bottom: 4px;
+    margin-bottom: 2px !important;
 }
 
-/* Inputs desabilitados */
-input[disabled] {
-    color: white !important;
-    opacity: 1 !important;
+/* Remove respiro extra das colunas */
+div[data-testid="column"] {
+    padding-top: 0px !important;
+    padding-bottom: 0px !important;
 }
 
-/* Compacta o container */
-.block-container {
-    padding-top: 1.5rem;
-    padding-bottom: 1.5rem;
-}
-
-/* Espaço entre médico e odonto */
+/* Benefícios: separação mínima */
 .espaco-beneficio {
-    margin: 10px 0 4px 0;
+    margin-top: 6px;
+    margin-bottom: 4px;
 }
 
 </style>
