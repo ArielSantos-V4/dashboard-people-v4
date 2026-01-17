@@ -334,9 +334,13 @@ if nome:
     with col2:
         st.markdown("##### 🧾 Centro de custo")
 
-        b1, b2 = st.columns(2)
-        b1.text_input("Código CC", linha["Código CC"], disabled=True)
+        # Centro de custo (código menor / descrição maior)
+        codigo_cc = str(linha["Código CC"]).replace(".0", "")
+
+        b1, b2 = st.columns([1, 3])
+        b1.text_input("Código CC", codigo_cc, disabled=True)
         b2.text_input("Descrição CC", linha["Descrição CC"], disabled=True)
+
 
         b3, b4 = st.columns(2)
         b3.text_input("Senioridade", linha["Senioridade"], disabled=True)
