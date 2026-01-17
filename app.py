@@ -209,89 +209,105 @@ st.altair_chart(
 st.markdown("---")
 st.subheader("🔎 Consulta individual do investidor")
 
-df_consulta = df.copy().fillna("")
+df_consulta = df.fillna("")
 lista_nomes = sorted(df_consulta["Nome"].unique())
 
 nome = st.selectbox("Selecione o investidor", [""] + lista_nomes)
 
-def safe_val(linha, coluna):
-    return linha[coluna] if coluna in linha else ""
-
-def calcular_idade(data_nascimento):
-    try:
-        dn = pd.to_datetime(data_nascimento)
-        hoje = date.today()
-        return hoje.year - dn.year - ((hoje.month, hoje.day) < (dn.month, dn.day))
-    except:
-        return ""
-
-def calcular_tempo_casa(data_inicio):
-    try:
-        di = pd.to_datetime(data_inicio)
-        hoje = date.today()
-        anos = hoje.year - di.year - ((hoje.month, hoje.day) < (di.month, di.day))
-        meses = (hoje.month - di.month) % 12
-        return f"{anos}a {meses}m"
-    except:
-        return ""
-
 if nome:
     linha = df_consulta[df_consulta["Nome"] == nome].iloc[0]
 
-    idade = calcular_idade(safe_val(linha, "Data de nascimento"))
-    tempo_casa = calcular_tempo_casa(safe_val(linha, "Data Início"))
+    col1, col2, col3 = st.columns([3, 3, 2])
 
-    col1, col2, col3 = st.columns([1.2, 1.2, 0.8])
-
-    # ---------------- COLUNA 1 ----------------
+    # -------------------------
+    # COLUNA 1 — PROFISSIONAL
+    # -------------------------
     with col1:
-        st.markdown("##### Dados principais")
+        st.markdown("##### 📌 Dados profissionais")
 
-        st.text_input("BP", safe_val(linha, "BP"), disabled=True)
-        st.text_input("Matrícula", safe_val(linha, "Matrícula"), disabled=True)
-        st.text_input("Situação", safe_val(linha, "Situação"), disabled=True)
+        c1, c2, c3 = st.columns(3)
+        c1.text_input("BP", linha["BP"], disabled=True)
+        c2.text_input("Matrícula", linha["Matrícula"], disabled=True)
+        c3.text_input("Situação", linha["Situação"], disabled=True)
 
-        st.text_input("Data contrato", safe_val(linha, "Data Início_exibicao"), disabled=True)
-        st.text_input("Término previsto", safe_val(linha, "Térm previsto_exibicao"), disabled=True)
-        st.text_input("Modelo contrato", safe_val(linha, "Modelo de contrato"), disabled=True)
+        c4, c5, c6 = st.columns(3)
+        c4.text_input("Data início", linha["Data Início_exibicao"], disabled=True)
+        c5.text_input("Término previsto", linha["Térm previsto_exibicao"], disabled=True)
+        c6.text_input("Modelo contrato", linha["Modelo de contrato"], disabled=True)
 
-        st.text_input("Unidade", safe_val(linha, "Unidade/Atuação"), disabled=True)
-        st.text_input("E-mail corporativo", safe_val(linha, "E-mail corporativo"), disabled=True)
+        c7, c8 = st.columns(2)
+        c7.text_input("Unidade / Atuação", linha["Unidade/Atuação"], disabled=True)
+        c8.text_input("Modalidade PJ", linha["Modalidade PJ"], disabled=True)
 
-        st.text_input("Tempo de casa", tempo_casa, disabled=True)
+        st.text_input("E-mail corporativo", linha["E-mail corporativo"], disabled=True)
 
-    # ---------------- COLUNA 2 ----------------
+        st.markdown("###### 🏢 Empresa (PJ)")
+        c9, c10 = st.columns(2)
+        c9.text_input("CNPJ", linha["CNPJ"], disabled=True)
+        c10.text_input("Razão social", linha["Razão social"], disabled=True)
+
+        c11, c12 = st.columns(2)
+        c11.text_input("Cargo", linha["Cargo"], disabled=True)
+        c12.text_input("Remuneração", linha["Remuneração"], disabled=True)
+
+        c13, c14 = st.columns(2)
+        c13.text_input("CBO", linha["CBO"], disabled=True)
+        c14.text_input("Descrição CBO", linha["Descrição CBO"], disabled=True)
+
+    # -------------------------
+    # COLUNA 2 — ADMIN / PESSOAL
+    # -------------------------
     with col2:
-        st.markdown("##### Centro de custo")
+        st.markdown("##### 🧾 Administrativo")
 
-        st.text_input("Centro de custo", safe_val(linha, "Centro de custo"), disabled=True)
-        st.text_input("Descrição CC", safe_val(linha, "Descrição CC"), disabled=True)
-        st.text_input("Senioridade", safe_val(linha, "Senioridade"), disabled=True)
+        c15, c16 = st.columns(2)
+        c15.text_input("Código CC", linha["Código CC"], disabled=True)
+        c16.text_input("Descrição CC", linha["Descrição CC"], disabled=True)
 
-        st.markdown("##### Dados pessoais")
+        c17, c18 = st.columns(2)
+        c17.text_input("Senioridade", linha["Senioridade"], disabled=True)
+        c18.text_input("Liderança direta", linha["Liderança direta"], disabled=True)
 
-        st.text_input("CPF", safe_val(linha, "CPF"), disabled=True)
-        st.text_input("Data nascimento", safe_val(linha, "Data de nascimento"), disabled=True)
-        st.text_input("Idade", idade, disabled=True)
+        st.text_input("Conta contábil", linha["Conta contábil"], disabled=True)
 
-        st.text_input("Escolaridade", safe_val(linha, "Escolaridade"), disabled=True)
-        st.text_input("Telefone pessoal", safe_val(linha, "Telefone pessoal"), disabled=True)
-        st.text_input("E-mail pessoal", safe_val(linha, "E-mail pessoal"), disabled=True)
+        st.markdown("##### 👤 Dados pessoais")
 
-    # ---------------- COLUNA 3 ----------------
+        c19, c20, c21 = st.columns(3)
+        c19.text_input("CPF", linha["CPF"], disabled=True)
+        c20.text_input("Nascimento", linha["Data de nascimento"], disabled=True)
+
+        # idade
+        idade = ""
+        if linha["Data de nascimento"] != "":
+            idade = int((date.today() - pd.to_datetime(linha["Data de nascimento"])).days / 365.25)
+        c21.text_input("Idade", idade, disabled=True)
+
+        c22, c23 = st.columns(2)
+        c22.text_input("CEP", linha["CEP"], disabled=True)
+        c23.text_input("Escolaridade", linha["Escolaridade"], disabled=True)
+
+        st.text_input("Telefone pessoal", linha["Telefone pessoal"], disabled=True)
+        st.text_input("E-mail pessoal", linha["E-mail pessoal"], disabled=True)
+
+    # -------------------------
+    # COLUNA 3 — FOTO / BENEFÍCIOS / LINK
+    # -------------------------
     with col3:
-        st.markdown("##### Benefícios")
+        st.markdown("##### 🖼️ Foto")
+        if linha["Foto"]:
+            st.image(linha["Foto"], use_container_width=True)
+        else:
+            st.info("Sem foto")
 
-        st.text_input("Situação plano", safe_val(linha, "Situação plano"), disabled=True)
-        st.text_input("Operadora médico", safe_val(linha, "Operadora médico"), disabled=True)
-        st.text_input("Carteirinha médico", safe_val(linha, "Carteirinha médico"), disabled=True)
+        st.markdown("##### 🎁 Benefícios")
+        st.text_input("Plano médico", linha["Operadora Médico"], disabled=True)
+        st.text_input("Carteirinha médico", linha["Carteirinha médico"], disabled=True)
+        st.text_input("Plano odonto", linha["Operadora Odonto"], disabled=True)
+        st.text_input("Carteirinha odonto", linha["Carteirinha odonto"], disabled=True)
 
-        st.text_input("Operadora odonto", safe_val(linha, "Operadora odonto"), disabled=True)
-        st.text_input("Carteirinha odonto", safe_val(linha, "Carteirinha odonto"), disabled=True)
-
-        st.markdown("---")
-        if safe_val(linha, "Link") != "":
-            st.markdown(f"🔗 **[Abrir link]({linha['Link']})**", unsafe_allow_html=True)
+        st.markdown("##### 🔗 Link")
+        if linha["Link Drive"]:
+            st.link_button("Abrir Drive", linha["Link Drive"])
 
 # --------------------------------------------------
 # TABELA
