@@ -565,32 +565,52 @@ with aba_relatorios:
 
         st.markdown("## 📊 Relatórios Principais")
 
-        with st.expander("🎉 Aniversariantes do mês", expanded=False):
-
-            mes_atual = datetime.today().month
-
-            df_aniversario = df.copy()
-            df_aniversario["Data de nascimento"] = pd.to_datetime(
-                df_aniversario["Data de nascimento"],
-                errors="coerce"
+        # Lista de meses
+        meses = {
+            1: "Janeiro", 2: "Fevereiro", 3: "Março", 4: "Abril",
+            5: "Maio", 6: "Junho", 7: "Julho", 8: "Agosto",
+            9: "Setembro", 10: "Outubro", 11: "Novembro", 12: "Dezembro"
+        }
+        
+        mes_atual = datetime.today().month
+        
+        mes_selecionado = st.selectbox(
+            "Mês",
+            options=list(meses.keys()),
+            format_func=lambda x: meses[x],
+            index=mes_atual - 1
+        )
+        
+        df_aniversario = df.copy()
+        df_aniversario["Data de nascimento"] = pd.to_datetime(
+            df_aniversario["Data de nascimento"],
+            errors="coerce"
+        )
+        
+        df_aniversario = df_aniversario[
+            df_aniversario["Data de nascimento"].dt.month == mes_selecionado
+        ]
+        
+        if df_aniversario.empty:
+            st.info("Nenhum aniversariante neste mês 🎈")
+        else:
+            ano_atual = datetime.today().year
+        
+            df_aniversario["Nascimento"] = df_aniversario["Data de nascimento"].dt.strftime("%d/%m/%Y")
+            df_aniversario["Idade que completa"] = (
+                ano_atual - df_aniversario["Data de nascimento"].dt.year
+            )
+        
+            df_aniversario["Dia"] = df_aniversario["Data de nascimento"].dt.day
+        
+            st.dataframe(
+                df_aniversario[
+                    ["Nome", "E-mail corporativo", "Nascimento", "Idade que completa"]
+                ].sort_values("Dia"),
+                use_container_width=True,
+                hide_index=True
             )
 
-            df_aniversario = df_aniversario[
-                df_aniversario["Data de nascimento"].dt.month == mes_atual
-            ]
-
-            if df_aniversario.empty:
-                st.info("Nenhum aniversariante neste mês 🎈")
-            else:
-                df_aniversario["Dia"] = df_aniversario["Data de nascimento"].dt.day
-
-                st.dataframe(
-                    df_aniversario[
-                        ["Nome", "Dia", "Unidade/Atuação", "Cargo"]
-                    ].sort_values("Dia"),
-                    use_container_width=True,
-                    hide_index=True
-                )
 
     # --------------------------------------------------
     # COLUNA DIREITA — AÇÕES
