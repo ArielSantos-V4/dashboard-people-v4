@@ -300,9 +300,11 @@ with c_busca:
 
 with c_limpar:
     st.markdown("<br>", unsafe_allow_html=True)
-    if st.button("Limpar"):
-        st.session_state.investidor_selecionado = ""
-        st.rerun()
+    st.button(
+        "Limpar",
+        on_click=limpar_investidor
+    )
+
 
 
 if nome:
