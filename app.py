@@ -51,7 +51,7 @@ div[data-testid="stTextInput"] input {
 
 /* Remove espaço entre campos */
 div[data-testid="stTextInput"] {
-    margin-bottom: 10px !important;
+    margin-bottom: 15px !important;
 }
 
 /* Remove respiro extra das colunas */
