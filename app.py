@@ -279,8 +279,12 @@ if nome:
     with col1:
         st.markdown("##### 📌 Dados profissionais")
 
-        a1, a2, a3 = st.columns(3)
-        a1.text_input("BP", linha["BP"], disabled=True)
+        bp = str(linha["BP"]).replace(".0", "")
+matricula = str(linha["Matrícula"]).replace(".0", "").zfill(6)
+
+c1.text_input("BP", bp, disabled=True)
+c2.text_input("Matrícula", matricula, disabled=True)
+
         a2.text_input("Matrícula", linha["Matrícula"], disabled=True)
         a3.text_input("Situação", linha["Situação"], disabled=True)
 
