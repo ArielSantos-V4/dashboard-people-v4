@@ -308,10 +308,10 @@ if nome:
 
     col1, col2, col3 = st.columns([3, 3, 2])
 
-# -------------------------
-# COLUNA 1 — PROFISSIONAL
-# -------------------------
-with col1:
+    # -------------------------
+    # COLUNA 1 — PROFISSIONAL
+    # -------------------------
+    with col1:
     st.markdown("##### 📌 Dados profissionais")
 
     bp = str(linha["BP"]).replace(".0", "")
