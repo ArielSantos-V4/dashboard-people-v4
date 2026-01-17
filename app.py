@@ -36,8 +36,33 @@ st.set_page_config(
 # --------------------------------------------------
 # ESTILO
 # --------------------------------------------------
+
 st.markdown("""
 <style>
+
+/* Centraliza números, datas e códigos no dataframe */
+div[data-testid="stDataFrame"] td {
+    text-align: left;
+    vertical-align: middle;
+}
+
+/* Força centralização de colunas numéricas */
+div[data-testid="stDataFrame"] td:has(div[data-testid="stMarkdownContainer"]) {
+    text-align: center;
+}
+
+/* Centraliza cabeçalhos */
+div[data-testid="stDataFrame"] th {
+    text-align: center !important;
+}
+
+/* Evita quebra feia de texto */
+div[data-testid="stDataFrame"] td {
+    white-space: nowrap;
+}
+
+</style>
+""", unsafe_allow_html=True)
 
 /* =========================
    CONSULTA INDIVIDUAL — COMPACTAÇÃO REAL
@@ -465,24 +490,15 @@ busca = st.text_input(
 )
 
 
-df_tabela = df.copy()
+st.dataframe(
+    df_tabela.drop(
+        columns=["Térm previsto", "Térm previsto_exibicao", "Data Início", "Data Início_exibicao"],
+        errors="ignore"
+    ),
+    use_container_width=True,
+    hide_index=True
+)
 
-# Datas exibidas
-df_tabela["Término do contrato"] = df_tabela["Térm previsto_exibicao"]
-df_tabela["Data de início"] = df_tabela["Data Início_exibicao"]
-
-# Limpeza de campos com .0
-df_tabela["BP"] = df_tabela["BP"].apply(limpar_numero)
-df_tabela["Código CC"] = df_tabela["Código CC"].apply(limpar_numero)
-df_tabela["Carteirinha médico"] = df_tabela["Carteirinha médico"].apply(limpar_numero)
-df_tabela["Carteirinha odonto"] = df_tabela["Carteirinha odonto"].apply(limpar_numero)
-
-# Matrícula com 6 dígitos
-df_tabela["Matrícula"] = df_tabela["Matrícula"].apply(formatar_matricula)
-
-# CPF e CNPJ formatados
-df_tabela["CPF"] = df_tabela["CPF"].apply(formatar_cpf)
-df_tabela["CNPJ"] = df_tabela["CNPJ"].apply(formatar_cnpj)
 
 
 if busca:
