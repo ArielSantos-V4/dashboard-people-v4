@@ -304,7 +304,7 @@ if nome:
         bp = str(linha["BP"]).replace(".0", "")
         matricula = str(linha["Matrícula"]).replace(".0", "").zfill(6)
 
-        a1, a2, a3 = st.a1, a2, a3 = st.columns(3)
+        a1, a2, a3 = st.columns(3)
 
 with a1:
     campo_copia("BP", bp)
@@ -316,11 +316,18 @@ with a3:
     campo_copia("Situação", linha["Situação"])
 
 
-        # Datas e contrato
-        a4, a5, a6 = st.columns(3)
-        a4.text_input("Data início", linha["Data Início_exibicao"], disabled=True)
-        a5.text_input("Término previsto", linha["Térm previsto_exibicao"], disabled=True)
-        a6.text_input("Modelo contrato", linha["Modelo de contrato"], disabled=True)
+# 👇 ESSA LINHA TEM QUE COMEÇAR COLADA NA MARGEM
+a4, a5, a6 = st.columns(3)
+
+with a4:
+    campo_copia("Data início", linha["Data Início_exibicao"])
+
+with a5:
+    campo_copia("Término previsto", linha["Térm previsto_exibicao"])
+
+with a6:
+    campo_copia("Modelo contrato", linha["Modelo de contrato"])
+
 
         # Início na V4 + Tempo de casa
         tempo_casa = ""
