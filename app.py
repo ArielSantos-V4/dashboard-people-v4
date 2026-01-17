@@ -287,7 +287,21 @@ st.subheader("🔎 Consulta individual do investidor")
 df_consulta = df.fillna("")
 lista_nomes = sorted(df_consulta["Nome"].unique())
 
-nome = st.selectbox("Selecione o investidor", [""] + lista_nomes)
+c_busca, c_limpar = st.columns([5, 1])
+
+with c_busca:
+    nome = st.selectbox(
+        "Selecione o investidor",
+        [""] + lista_nomes,
+        key="investidor_selecionado"
+    )
+
+with c_limpar:
+    st.markdown("<br>", unsafe_allow_html=True)
+    if st.button("Limpar"):
+        st.session_state.investidor_selecionado = ""
+        st.rerun()
+
 
 if nome:
     linha = df_consulta[df_consulta["Nome"] == nome].iloc[0]
