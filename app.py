@@ -68,6 +68,51 @@ div[data-testid="column"] {
 
 </style>
 """, unsafe_allow_html=True)
+# --------------------------------------------------
+# CAMPO COM BOTÃO COPIAR
+# --------------------------------------------------
+def campo_copia(label, valor):
+    valor = "" if valor is None else str(valor)
+
+    html = f"""
+    <div style="margin-bottom:25px;">
+        <label style="
+            font-size:10px;
+            color:#bdbdbd;
+        ">{label}</label>
+
+        <div style="
+            background:#0e0e0e;
+            border:1px solid #333;
+            border-radius:6px;
+            height:40px;
+            display:flex;
+            align-items:center;
+            justify-content:space-between;
+            padding:0 10px;
+        ">
+            <span style="font-size:12px; color:white;">{valor}</span>
+
+            {""
+            if valor == "" else f"""
+            <button onclick="
+                navigator.clipboard.writeText('{valor}');
+                this.innerText='✔';
+                setTimeout(()=>this.innerText='⧉',1000);
+            "
+            style="
+                background:none;
+                border:none;
+                color:white;
+                font-size:14px;
+                cursor:pointer;
+            ">⧉</button>
+            """}
+        </div>
+    </div>
+    """
+
+    st.markdown(html, unsafe_allow_html=True)
 
 
 # --------------------------------------------------
@@ -259,10 +304,17 @@ if nome:
         bp = str(linha["BP"]).replace(".0", "")
         matricula = str(linha["Matrícula"]).replace(".0", "").zfill(6)
 
-        a1, a2, a3 = st.columns(3)
-        a1.text_input("BP", bp, disabled=True)
-        a2.text_input("Matrícula", matricula, disabled=True)
-        a3.text_input("Situação", linha["Situação"], disabled=True)
+        a1, a2, a3 = st.a1, a2, a3 = st.columns(3)
+
+with a1:
+    campo_copia("BP", bp)
+
+with a2:
+    campo_copia("Matrícula", matricula)
+
+with a3:
+    campo_copia("Situação", linha["Situação"])
+
 
         # Datas e contrato
         a4, a5, a6 = st.columns(3)
