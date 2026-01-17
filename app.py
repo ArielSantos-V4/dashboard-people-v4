@@ -36,7 +36,7 @@ st.set_page_config(
 # --------------------------------------------------
 # ABAS
 # --------------------------------------------------
-aba_dashboard, aba_relatorios = st.tabs([
+aba_dashboard, aba_relatorios, aba_benefícios = st.tabs([
     "📊 Dashboard",
     "📄 Relatórios",
     "🎁 Benefícios"
