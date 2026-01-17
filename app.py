@@ -209,31 +209,89 @@ st.altair_chart(
 st.markdown("---")
 st.subheader("🔎 Consulta individual do investidor")
 
-lista_nomes = sorted(df["Nome"].unique())
+df_consulta = df.copy().fillna("")
+lista_nomes = sorted(df_consulta["Nome"].unique())
+
 nome = st.selectbox("Selecione o investidor", [""] + lista_nomes)
 
+def calcular_idade(data_nascimento):
+    try:
+        dn = pd.to_datetime(data_nascimento)
+        hoje = date.today()
+        return hoje.year - dn.year - ((hoje.month, hoje.day) < (dn.month, dn.day))
+    except:
+        return ""
+
+def calcular_tempo_casa(data_inicio):
+    try:
+        di = pd.to_datetime(data_inicio)
+        hoje = date.today()
+        anos = hoje.year - di.year - ((hoje.month, hoje.day) < (di.month, di.day))
+        meses = (hoje.month - di.month) % 12
+        return f"{anos}a {meses}m"
+    except:
+        return ""
+
 if nome:
-    linha = df[df["Nome"] == nome].iloc[0]
+    linha = df_consulta[df_consulta["Nome"] == nome].iloc[0]
 
-    col1, col2 = st.columns(2)
+    idade = calcular_idade(linha["Data de nascimento"])
+    tempo_casa = calcular_tempo_casa(linha["Data Início"])
 
+    col1, col2, col3 = st.columns([1.2, 1.2, 0.8])
+
+    # ---------------- COLUNA 1 ----------------
     with col1:
         st.markdown("##### Dados principais")
+
         st.text_input("BP", linha["BP"], disabled=True)
         st.text_input("Matrícula", linha["Matrícula"], disabled=True)
         st.text_input("Situação", linha["Situação"], disabled=True)
-        st.text_input("Data início", linha["Data Início_exibicao"], disabled=True)
+
+        st.text_input("Data contrato", linha["Data Início_exibicao"], disabled=True)
         st.text_input("Término previsto", linha["Térm previsto_exibicao"], disabled=True)
-        st.text_input("Modelo de contrato", linha["Modelo de contrato"], disabled=True)
+        st.text_input("Modelo contrato", linha["Modelo de contrato"], disabled=True)
+
         st.text_input("Unidade", linha["Unidade/Atuação"], disabled=True)
         st.text_input("E-mail corporativo", linha["E-mail corporativo"], disabled=True)
 
+        st.text_input("Tempo de casa", tempo_casa, disabled=True)
+
+    # ---------------- COLUNA 2 ----------------
     with col2:
+        st.markdown("##### Centro de custo")
+
+        st.text_input("Centro de custo", linha["Centro de custo"], disabled=True)
+        st.text_input("Descrição CC", linha["Descrição CC"], disabled=True)
+        st.text_input("Senioridade", linha["Senioridade"], disabled=True)
+
         st.markdown("##### Dados pessoais")
+
         st.text_input("CPF", linha["CPF"], disabled=True)
-        st.text_input("Nascimento", linha["Data de nascimento"], disabled=True)
+        st.text_input("Data nascimento", linha["Data de nascimento"], disabled=True)
+        st.text_input("Idade", idade, disabled=True)
+
         st.text_input("Escolaridade", linha["Escolaridade"], disabled=True)
-        st.text_input("Telefone", linha["Telefone pessoal"], disabled=True)
+        st.text_input("Telefone pessoal", linha["Telefone pessoal"], disabled=True)
+        st.text_input("E-mail pessoal", linha["E-mail pessoal"], disabled=True)
+
+    # ---------------- COLUNA 3 ----------------
+    with col3:
+        st.markdown("##### Benefícios")
+
+        st.text_input("Situação plano", linha["Situação plano"], disabled=True)
+        st.text_input("Operadora médico", linha["Operadora médico"], disabled=True)
+        st.text_input("Carteirinha médico", linha["Carteirinha médico"], disabled=True)
+
+        st.text_input("Operadora odonto", linha["Operadora odonto"], disabled=True)
+        st.text_input("Carteirinha odonto", linha["Carteirinha odonto"], disabled=True)
+
+        st.markdown("---")
+        if linha["Link"] != "":
+            st.markdown(
+                f"📁 **[Abrir link]({linha['Link']})**",
+                unsafe_allow_html=True
+            )
 
 # --------------------------------------------------
 # TABELA
