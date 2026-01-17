@@ -26,7 +26,7 @@ st.markdown("""
 h5 {
     font-size: 20px !important;
     margin-top: 6px !important;
-    margin-bottom: 4px !important;
+    margin-bottom: 2px !important;
 }
 
 /* Label */
