@@ -358,6 +358,7 @@ if nome:
         st.markdown("##### 👤 Dados pessoais")
 
         b5, b6, b7 = st.columns(3)
+        codigo_cc = str(linha["CPF"]).replace(".0", "")
         b5.text_input("CPF", linha["CPF"], disabled=True)
         b6.text_input("Nascimento", linha["Data de nascimento"], disabled=True)
 
