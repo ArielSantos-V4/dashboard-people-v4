@@ -249,6 +249,60 @@ st.altair_chart(
     use_container_width=True
 )
 def campo_copiavel(label, valor):
+    if pd.isna(valor) or str(valor).strip() == "":
+        # Campo vazio → sem botão de copiar
+        html = f"""
+        <div class="copy-container">
+            <div style="font-size:12px;color:#aaa;margin-bottom:2px;">
+                {label}
+            </div>
+
+            <div style="
+                background:#1a1a1a;
+                border:1px solid #333;
+                padding:8px 12px;
+                border-radius:6px;
+                color:#777;
+                font-size:14px;
+            ">
+                &nbsp;
+            </div>
+        </div>
+        """
+    else:
+        valor_str = str(valor)
+
+        html = f"""
+        <div class="copy-container">
+            <div style="font-size:12px;color:#aaa;margin-bottom:2px;">
+                {label}
+            </div>
+
+            <div style="
+                background:#1a1a1a;
+                border:1px solid #333;
+                padding:8px 12px;
+                border-radius:6px;
+                color:white;
+                font-size:14px;
+                display:flex;
+                justify-content:space-between;
+                align-items:center;
+                gap:8px;
+            ">
+                <span>{valor_str}</span>
+
+                <button class="copy-btn"
+                    data-value="{valor_str}"
+                    onclick="navigator.clipboard.writeText(this.dataset.value)">
+                    ⧉
+                </button>
+            </div>
+        </div>
+        """
+
+    st.markdown(html, unsafe_allow_html=True)
+
     if pd.isna(valor):
         valor = ""
 
