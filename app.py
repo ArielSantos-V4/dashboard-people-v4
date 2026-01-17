@@ -38,7 +38,7 @@ st.set_page_config(
 # --------------------------------------------------
 aba_dashboard, aba_relatorios = st.tabs([
     "📊 Dashboard",
-    "📄 Relatórios"
+    "📄 Relatórios",
     "🎁 Benefícios"
 ])
 
@@ -589,3 +589,10 @@ with aba_relatorios:
         st.button("📄 Gerar planilha de aniversariantes")
         st.button("📊 Relatório de contratos")
 
+
+# --------------------------------------------------
+# ABA BENEFICIOS
+# --------------------------------------------------
+
+with aba_benefícios:
+    st.info("Área reservada para atualizações futuras.")
