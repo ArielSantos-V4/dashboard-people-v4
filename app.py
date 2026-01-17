@@ -19,40 +19,39 @@ st.markdown("""
 <style>
 
 /* =========================
-   AJUSTE FINO – CONSULTA INDIVIDUAL
+   CONSULTA INDIVIDUAL — COMPACTAÇÃO REAL
    ========================= */
 
-/* Títulos das seções (Dados profissionais, Centro de custo etc) */
+/* Títulos das seções */
 h5 {
     font-size: 12px !important;
-    margin-top: 8px !important;
+    margin-top: 6px !important;
     margin-bottom: 4px !important;
 }
 
-/* Labels dos campos */
+/* Label */
 label {
     font-size: 10.5px !important;
-    margin-bottom: 1px !important;
+    margin-bottom: 0px !important;
     color: #bdbdbd !important;
 }
 
-/* Inputs: altura REAL menor */
+/* 🔥 CONTAINER DO INPUT (o retângulo) */
+div[data-testid="stTextInput"] {
+    height: 30px !important;
+}
+
+/* 🔥 INPUT REAL */
 div[data-testid="stTextInput"] input {
-    height: 28px !important;
-    padding: 2px 6px !important;
+    height: 30px !important;
+    padding: 0px 8px !important;
     font-size: 12px !important;
+    line-height: 30px !important; /* 👈 CENTRALIZA O TEXTO */
 }
 
-/* Selectbox (quando houver) */
-div[data-testid="stSelectbox"] div {
-    min-height: 28px !important;
-    font-size: 12px !important;
-}
-
-/* Espaço vertical ENTRE os campos */
-div[data-testid="stTextInput"],
-div[data-testid="stSelectbox"] {
-    margin-bottom: 2px !important;
+/* Remove espaço entre campos */
+div[data-testid="stTextInput"] {
+    margin-bottom: 4px !important;
 }
 
 /* Remove respiro extra das colunas */
@@ -61,7 +60,7 @@ div[data-testid="column"] {
     padding-bottom: 0px !important;
 }
 
-/* Benefícios: separação mínima */
+/* Benefícios */
 .espaco-beneficio {
     margin-top: 6px;
     margin-bottom: 4px;
