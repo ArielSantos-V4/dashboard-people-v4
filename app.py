@@ -402,7 +402,12 @@ if nome:
 # --------------------------------------------------
 st.markdown("### 📋 Base de investidores")
 
-busca = st.text_input("🔍 Buscar na tabela")
+busca = st.text_input(
+    "Buscar na tabela",
+    placeholder="🔍 Buscar na tabela...",
+    label_visibility="collapsed"
+)
+
 
 df_tabela = df.copy()
 df_tabela["Término do contrato"] = df_tabela["Térm previsto_exibicao"]
