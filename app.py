@@ -1252,70 +1252,71 @@ with aba_benefícios:
             dias_passados = max(0, min((hoje - inicio).days + 1, dias_totais))
             dias_restantes = max(0, (fim - hoje).days)
             
-            # -------- GRID DE CARDS --------
-                st.markdown(f"""
-                <div style="
-                    background:#1f1f1f;
-                    padding:16px;
-                    border-radius:14px;
-                    text-align:center;
-                    color:#ddd;">
-                    <div style="font-size:28px;">{emoji}</div>
-                    <div style="margin-top:6px;font-weight:bold;">
-                        Status atual
-                    </div>
-                    <div style="
-                        margin-top:8px;
-                        padding:8px;
-                        background:{cor_status};
-                        border-radius:8px;
-                        color:black;
-                        font-weight:bold;">
-                        {status}
-                    </div>
+            # -------- GRID DE CARDS (VERTICAL) --------
+
+            st.markdown(f"""
+            <div style="
+                background:#1f1f1f;
+                padding:16px;
+                border-radius:14px;
+                text-align:center;
+                color:#ddd;
+                margin-bottom:12px;">
+                <div style="font-size:28px;">{emoji}</div>
+                <div style="margin-top:6px;font-weight:bold;">
+                    Status atual
                 </div>
-                """, unsafe_allow_html=True)
-            
-            
-                st.markdown(f"""
                 <div style="
-                    background:#1f1f1f;
-                    padding:16px;
-                    border-radius:14px;
-                    text-align:center;
-                    color:#ddd;">
-                    <div style="font-size:28px;">📅</div>
-                    <div style="margin-top:6px;font-weight:bold;">
-                        Dias do período
-                    </div>
-                    <div style="
-                        margin-top:10px;
-                        font-size:22px;
-                        font-weight:bold;
-                        color:#aaa;">
-                        {dias_totais}
-                    </div>
+                    margin-top:8px;
+                    padding:8px;
+                    background:{cor_status};
+                    border-radius:8px;
+                    color:black;
+                    font-weight:bold;">
+                    {status}
                 </div>
-                """, unsafe_allow_html=True)
+            </div>
+            """, unsafe_allow_html=True)
             
-            
-                st.markdown(f"""
+            st.markdown(f"""
+            <div style="
+                background:#1f1f1f;
+                padding:16px;
+                border-radius:14px;
+                text-align:center;
+                color:#ddd;
+                margin-bottom:12px;">
+                <div style="font-size:28px;">📅</div>
+                <div style="margin-top:6px;font-weight:bold;">
+                    Dias do período
+                </div>
                 <div style="
-                    background:#1f1f1f;
-                    padding:16px;
-                    border-radius:14px;
-                    text-align:center;
-                    color:#ddd;">
-                    <div style="font-size:28px;">⏱️</div>
-                    <div style="margin-top:6px;font-weight:bold;">
-                        Dias restantes
-                    </div>
-                    <div style="
-                        margin-top:10px;
-                        font-size:22px;
-                        font-weight:bold;
-                        color:#aaa;">
-                        {dias_restantes}
-                    </div>
+                    margin-top:10px;
+                    font-size:22px;
+                    font-weight:bold;
+                    color:#aaa;">
+                    {dias_totais}
                 </div>
-                """, unsafe_allow_html=True)
+            </div>
+            """, unsafe_allow_html=True)
+            
+            st.markdown(f"""
+            <div style="
+                background:#1f1f1f;
+                padding:16px;
+                border-radius:14px;
+                text-align:center;
+                color:#ddd;">
+                <div style="font-size:28px;">⏱️</div>
+                <div style="margin-top:6px;font-weight:bold;">
+                    Dias restantes
+                </div>
+                <div style="
+                    margin-top:10px;
+                    font-size:22px;
+                    font-weight:bold;
+                    color:#aaa;">
+                    {dias_restantes}
+                </div>
+            </div>
+            """, unsafe_allow_html=True)
