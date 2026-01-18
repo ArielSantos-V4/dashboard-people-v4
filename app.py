@@ -1047,8 +1047,27 @@ with aba_relatorios:
 
 with aba_benefícios:
 
+    
+    st.markdown("<div style='height:20px'></div>", unsafe_allow_html=True)
+
+    # --------------------------------------------------
+    # TOPO
+    # --------------------------------------------------
+    col_logo, col_title = st.columns([1, 6])
+
+    with col_logo:
+        st.image("LOGO VERMELHO.png", width=120)
+
+    with col_title:
+        st.markdown(
+            "<h1> 🩺 Gestão de Benefícios </h1><h3 style='color:#ccc;'>V4 Company</h3>",
+            unsafe_allow_html=True
+        )
+
+    st.markdown("---")
+
     # =====================================================
-    # ABA BENEFÍCIOS – TOPO + INDICADORES
+    # ABA BENEFÍCIOS –  + INDICADORES
     # =====================================================
     
     import plotly.express as px
@@ -1095,19 +1114,6 @@ with aba_benefícios:
             st.warning("Coluna 'Situação no plano' não encontrada.")
 
     from datetime import datetime, timedelta
-    
-    # -------------------------------
-    # TOPO – GESTÃO DE BENEFÍCIOS
-    # -------------------------------
-    
-    col_logo, col_title = st.columns([1, 6])
-    
-    with col_logo:
-        st.image("logo.png", width=80)  # mesma logo das outras abas
-    
-    with col_title:
-        st.markdown("## 🩺 Gestão de Benefícios")
-        st.markdown("---")
     
     # -------------------------------
     # LINHA PRINCIPAL (3 COLUNAS)
