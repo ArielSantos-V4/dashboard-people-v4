@@ -1307,6 +1307,103 @@ with aba_benefícios:
     with col_acoes:
         st.markdown("### ⚙️ Ações")
     
-        st.button("📄 Gerar relatório PDF", use_container_width=True)
-        st.button("📊 Exportar Excel", use_container_width=True)
-        st.button("📨 Enviar por e-mail", use_container_width=True)
+        # ==============================
+        # AÇÃO — GERAR SUBFATURA
+        # ==============================
+        
+        from docx import Document
+        from io import BytesIO
+        from datetime import datetime
+        
+        if st.button("🧾 Gerar Subfatura", use_container_width=True):
+        
+            @st.dialog("🧾 Gerar Subfatura PJ")
+            def gerar_subfatura():
+        
+                st.markdown("Preencha os dados abaixo para gerar a subfatura.")
+        
+                # -----------------------------
+                # SELEÇÃO DO INVESTIDOR
+                # -----------------------------
+                nome_selecionado = st.selectbox(
+                    "Prestador de serviços",
+                    options=sorted(df["Nome"].dropna().unique())
+                )
+        
+                data_vigencia = st.date_input(
+                    "Data de início da vigência",
+                    format="DD/MM/YYYY"
+                )
+        
+                if not nome_selecionado:
+                    st.stop()
+        
+                dados = df[df["Nome"] == nome_selecionado].iloc[0]
+        
+                modelo_contrato = str(dados.get("Modelo de contrato", "")).upper()
+                razao_social = str(dados.get("Razão Social", nome_selecionado))
+                cnpj = str(dados.get("CNPJ", ""))
+        
+                # -----------------------------
+                # VALIDAÇÃO PJ
+                # -----------------------------
+                continuar = True
+        
+                if "PJ" not in modelo_contrato:
+                    st.warning("⚠️ Este investidor **não possui contrato PJ**.")
+        
+                    continuar = st.checkbox(
+                        "Desejo continuar mesmo assim"
+                    )
+        
+                # -----------------------------
+                # GERAR DOCUMENTO
+                # -----------------------------
+                if st.button("📄 Gerar documento"):
+        
+                    if not continuar:
+                        st.stop()
+        
+                    # Carrega modelo
+                    doc = Document("INCLUSÃO SUBFATURA V4.docx")
+        
+                    data_assinatura = datetime.today().strftime("%d de %B de %Y")
+                    data_vigencia_fmt = data_vigencia.strftime("%d/%m/%Y")
+        
+                    # Substituições
+                    substituicoes = {
+                        "RAZÃO SOCIAL": razao_social,
+                        "XX.XXX.XXX/XXXX-XX": cnpj,
+                        "XX/XX/XXXX": data_vigencia_fmt,
+                        "XX de xxxxxx de XXXX": data_assinatura
+                    }
+        
+                    # Percorre parágrafos
+                    for p in doc.paragraphs:
+                        for chave, valor in substituicoes.items():
+                            if chave in p.text:
+                                p.text = p.text.replace(chave, valor)
+        
+                    # Percorre tabelas (caso existam)
+                    for tabela in doc.tables:
+                        for linha in tabela.rows:
+                            for celula in linha.cells:
+                                for chave, valor in substituicoes.items():
+                                    if chave in celula.text:
+                                        celula.text = celula.text.replace(chave, valor)
+        
+                    # Salva em memória
+                    buffer = BytesIO()
+                    doc.save(buffer)
+                    buffer.seek(0)
+        
+                    st.success("✅ Subfatura gerada com sucesso!")
+        
+                    st.download_button(
+                        label="⬇️ Baixar subfatura",
+                        data=buffer,
+                        file_name=f"Subfatura_{nome_selecionado}.docx",
+                        mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                    )
+        
+            gerar_subfatura()
