@@ -867,12 +867,13 @@ with aba_relatorios:
         # INVESTIDORES MEI
         # -------------------------------
         with st.expander("💼 Investidores MEI", expanded=False):
-    
-            # Garante que a coluna existe
+
+            # Verifica se a coluna Modalidade PJ existe
             if "Modalidade PJ" not in df.columns:
-                st.warning("Coluna 'Modalidade PJ' não encontrada.")
+                st.warning("Coluna 'Modalidade PJ' não encontrada no DataFrame.")
+        
             else:
-                # Filtra apenas investidores MEI
+                # Filtra apenas MEI
                 df_mei = df[
                     df["Modalidade PJ"]
                     .astype(str)
@@ -882,22 +883,41 @@ with aba_relatorios:
         
                 if df_mei.empty:
                     st.info("Nenhum investidor MEI encontrado.")
-                else:
-                    # Seleciona apenas as colunas desejadas
-                    df_mei_final = df_mei[
-                        [
-                            "Nome",
-                            "Email Corporativo",
-                            "Data Início",
-                            "Modalidade PJ",
-                        ]
-                    ].copy()
         
-                    # Formata data do contrato (opcional, mas recomendado)
-                    df_mei_final["Data Início"] = pd.to_datetime(
-                        df_mei_final["Data Início"],
-                        errors="coerce"
-                    ).dt.strftime("%d/%m/%Y")
+                else:
+                    # 🔹 MAPEAMENTO SEGURO DE COLUNAS
+                    colunas_map = {
+                        "Nome": None,
+                        "Email Corporativo": None,
+                        "Data Início": None,
+                        "Modalidade PJ": None,
+                    }
+        
+                    for col in df_mei.columns:
+                        col_strip = col.strip().lower()
+                        if col_strip == "nome":
+                            colunas_map["Nome"] = col
+                        elif "email" in col_strip:
+                            colunas_map["Email Corporativo"] = col
+                        elif "data" in col_strip and "início" in col_strip:
+                            colunas_map["Data Início"] = col
+                        elif "modalidade" in col_strip:
+                            colunas_map["Modalidade PJ"] = col
+        
+                    # Remove colunas não encontradas
+                    colunas_validas = {
+                        k: v for k, v in colunas_map.items() if v is not None
+                    }
+        
+                    df_mei_final = df_mei[list(colunas_validas.values())].copy()
+                    df_mei_final.columns = list(colunas_validas.keys())
+        
+                    # Formata data
+                    if "Data Início" in df_mei_final.columns:
+                        df_mei_final["Data Início"] = pd.to_datetime(
+                            df_mei_final["Data Início"],
+                            errors="coerce"
+                        ).dt.strftime("%d/%m/%Y")
         
                     st.dataframe(
                         df_mei_final,
