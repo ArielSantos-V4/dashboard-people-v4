@@ -853,7 +853,11 @@ with aba_relatorios:
                 placeholder="Digite ou selecione um nome"
             )
         
-            if st.button("✅ Gerar título"):
+            col_btn_esq, col_btn_centro, col_btn_dir = st.columns([1, 2, 1])
+
+            with col_btn_centro:
+                if st.button("✅ Gerar título", use_container_width=True):
+
                 if not titulo_doc or not nome_selecionado:
                     st.warning("Preencha o título e selecione uma pessoa")
                 else:
@@ -875,7 +879,7 @@ with aba_relatorios:
                         f"{titulo_doc}"
                     )
         
-                    st.markdown("#### 📄 Título gerado")
+                    st.markdown("#### Título gerado")
                     st.code(titulo_final)
         
         
