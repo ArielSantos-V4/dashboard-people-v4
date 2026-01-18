@@ -228,6 +228,8 @@ with aba_dashboard:
     # --------------------------------------------------
     df["Térm previsto_exibicao"] = df["Térm previsto"].dt.strftime("%d/%m/%Y")
     df["Data Início_exibicao"] = df["Data Início"].dt.strftime("%d/%m/%Y")
+    df["Data de nascimento_exibicao"] = df["Data de nascimento"].dt.strftime("%d/%m/%Y")
+    df["Data do contrato_exibicao"] = df["Data do contrato"].dt.strftime("%d/%m/%Y")
 
     # --------------------------------------------------
     # SIDEBAR
@@ -381,9 +383,8 @@ with aba_dashboard:
             b5, b6, b7 = st.columns(3)
             cpf = formatar_cpf(linha["CPF"])
             b5.text_input("CPF", cpf, disabled=True)
-            b6.text_input("Nascimento", linha["Data de nascimento"], disabled=True)
-    
-    
+            b6.text_input("Nascimento", linha["Data de nascimento_exibicao"], disabled=True)
+  
             idade = ""
             if linha["Data de nascimento"] != "":
                 idade = int((datetime.today() - pd.to_datetime(linha["Data de nascimento"])).days / 365.25)
