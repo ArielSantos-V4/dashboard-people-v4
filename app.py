@@ -864,25 +864,32 @@ with aba_relatorios:
         # BOTÃO – TÍTULO DE DOC PARA AUTOMAÇÃO
         # ---------------------------------
         
+        def limpar_titulo():
+            st.session_state.pop("titulo_doc", None)
+            st.session_state.pop("titulo_gerado", None)
+        
         @st.dialog("📝 Gerador de título para automação")
         def modal_titulo_doc():
         
             # ---------- CAMPO TÍTULO + BOTÃO LIMPAR ----------
-            col_input, col_clear = st.columns([6, 1])
+            col_input, col_clear = st.columns([5, 1])
         
             with col_input:
-                titulo_doc = st.text_input(
+                st.text_input(
                     "Título do arquivo",
                     placeholder="Cole aqui o título do arquivo",
                     key="titulo_doc"
                 )
         
             with col_clear:
-                st.markdown("<div style='height:28px'></div>", unsafe_allow_html=True)
-                if st.button("❌", help="Limpar título"):
-                    st.session_state["titulo_doc"] = ""
+                st.markdown("<div style='height:26px'></div>", unsafe_allow_html=True)
+                st.button(
+                    "❌",
+                    help="Limpar título",
+                    on_click=limpar_titulo
+                )
         
-            # ---------- SELECT DE NOMES (ALFABÉTICO E VAZIO) ----------
+            # ---------- SELECT DE NOMES (ALFABÉTICO / EM BRANCO) ----------
             lista_nomes = sorted(df["Nome"].dropna().unique())
         
             nome_selecionado = st.selectbox(
@@ -898,6 +905,8 @@ with aba_relatorios:
         
             with col_centro:
                 if st.button("✅ Gerar título", use_container_width=True):
+        
+                    titulo_doc = st.session_state.get("titulo_doc", "")
         
                     if not nome_selecionado or not titulo_doc:
                         st.warning("Selecione um nome e informe o título do arquivo.")
@@ -927,21 +936,18 @@ with aba_relatorios:
                         f"{titulo_doc}"
                     )
         
-            # ---------- EXIBIÇÃO DO TÍTULO (TAMANHO NORMAL) ----------
+            # ---------- TÍTULO GERADO (TAMANHO NORMAL) ----------
             if "titulo_gerado" in st.session_state:
                 st.markdown("#### 📄 Título gerado")
                 st.code(st.session_state["titulo_gerado"])
         
         
-        # ---------- BOTÃO QUE ABRE O MODAL (LIMPA TUDO ANTES) ----------
+        # ---------- BOTÃO QUE ABRE O MODAL (RESET TOTAL) ----------
         if st.button("📝 Título de doc para automação"):
-        
             st.session_state.pop("titulo_gerado", None)
             st.session_state.pop("titulo_doc", None)
             st.session_state.pop("nome_selecionado", None)
-        
             modal_titulo_doc()
-
 
 # --------------------------------------------------
 # ABA BENEFICIOS
