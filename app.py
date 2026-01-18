@@ -223,13 +223,10 @@ with aba_dashboard:
     df["Térm previsto"] = parse_data_br(df["Térm previsto"])
 
     # --------------------------------------------------
-    # DATAS
+    # DATAS — APENAS EXIBIÇÃO
     # --------------------------------------------------
-    df["Térm previsto"] = pd.to_datetime(df["Térm previsto"], errors="coerce")
-    df["Data Início"] = pd.to_datetime(df["Data Início"], errors="coerce")
-    
-    df["Térm previsto_exibicao"] = df["Térm previsto"].dt.strftime("%d/%m/%Y").fillna("")
-    df["Data Início_exibicao"] = df["Data Início"].dt.strftime("%d/%m/%Y").fillna("")
+    df["Térm previsto_exibicao"] = df["Térm previsto"].dt.strftime("%d/%m/%Y")
+    df["Data Início_exibicao"] = df["Data Início"].dt.strftime("%d/%m/%Y")
 
     # --------------------------------------------------
     # SIDEBAR
@@ -667,22 +664,10 @@ with aba_relatorios:
         
             df_aniversario = df.copy()
         
-            # 🔥 conversão segura (resolve pessoas faltando)
-            df_aniversario = df.copy()
+            df_aniversario = df[
+                df["Data de nascimento"].dt.month == mes_selecionado
+            ]
 
-            # 🔥 LIMPEZA FORTE DE DATA
-            df_aniversario["Data de nascimento"] = (
-                df_aniversario["Data de nascimento"]
-                .astype(str)
-                .str.strip()
-                .replace("", pd.NA)
-            )
-            
-            df_aniversario["Data de nascimento"] = pd.to_datetime(
-                df_aniversario["Data de nascimento"],
-                dayfirst=True,
-                errors="coerce"
-            )
             df_check = df.copy()
 
             df_check["Data de nascimento_raw"] = df_check["Data de nascimento"]
@@ -807,11 +792,11 @@ with aba_relatorios:
                 .replace("Indeterminado", pd.NA)
             )
         
-            df_vencimento["Térm previsto"] = pd.to_datetime(
-                df_vencimento["Térm previsto"],
-                dayfirst=True,
-                errors="coerce"
-            )
+            df_vencimento = df[
+                df["Térm previsto"].notna() &
+                (df["Térm previsto"].dt.date >= data_inicio) &
+                (df["Térm previsto"].dt.date <= data_fim)
+            ]
         
             # -------------------------------
             # DATAS INVÁLIDAS (PADRÃO IGUAL)
