@@ -665,6 +665,111 @@ with aba_relatorios:
                     df_final.drop(columns=["Dia"])
                 )
 
+# -------------------------------
+# VENCIMENTO DE CONTRATOS
+# -------------------------------
+
+with st.expander("⏳ Vencimento de contratos", expanded=False):
+
+    # Filtro de período
+    col_d1, col_d2 = st.columns(2)
+
+    hoje = datetime.today().date()
+
+    with col_d1:
+        data_inicio = st.date_input(
+            "De",
+            value=hoje
+        )
+
+    with col_d2:
+        data_fim = st.date_input(
+            "Até",
+            value=hoje + timedelta(days=30)
+        )
+
+    df_vencimento = df.copy()
+
+    # -------------------------------
+    # LIMPEZA FORTE DA DATA
+    # -------------------------------
+    df_vencimento["Térm previsto_raw"] = df_vencimento["Térm previsto"]
+
+    df_vencimento["Térm previsto"] = (
+        df_vencimento["Térm previsto"]
+        .astype(str)
+        .str.strip()
+        .replace("", pd.NA)
+        .replace("Indeterminado", pd.NA)
+    )
+
+    df_vencimento["Térm previsto"] = pd.to_datetime(
+        df_vencimento["Térm previsto"],
+        dayfirst=True,
+        errors="coerce"
+    )
+
+    # -------------------------------
+    # DATAS INVÁLIDAS
+    # -------------------------------
+    df_invalidos = df_vencimento[
+        df_vencimento["Térm previsto"].isna() &
+        df_vencimento["Térm previsto_raw"].notna() &
+        (df_vencimento["Térm previsto_raw"] != "Indeterminado")
+    ][["Nome", "Térm previsto_raw"]]
+
+    total_invalidos = len(df_invalidos)
+
+    if total_invalidos > 0:
+        col_warn, col_link = st.columns([5, 2])
+
+        with col_warn:
+            st.caption(f"⚠️ {total_invalidos} pessoas com data de término inválida")
+
+        with col_link:
+            if st.button("Ver datas inválidas", key="ver_invalidos_contrato"):
+                st.session_state["mostrar_invalidos_contrato"] = True
+
+    if st.session_state.get("mostrar_invalidos_contrato"):
+        st.markdown("#### ❌ Datas inválidas de término de contrato")
+        st.table(
+            df_invalidos.reset_index(drop=True)
+        )
+
+    # -------------------------------
+    # FILTRO POR PERÍODO
+    # -------------------------------
+    df_vencimento = df_vencimento[
+        (df_vencimento["Térm previsto"].notna()) &
+        (df_vencimento["Térm previsto"].dt.date >= data_inicio) &
+        (df_vencimento["Térm previsto"].dt.date <= data_fim)
+    ]
+
+    if df_vencimento.empty:
+        st.info("Nenhum contrato vencendo no período selecionado")
+    else:
+        df_vencimento["Término previsto"] = df_vencimento["Térm previsto"].dt.strftime("%d/%m/%Y")
+        df_vencimento["Data início"] = pd.to_datetime(
+            df_vencimento["Data Início"],
+            errors="coerce"
+        ).dt.strftime("%d/%m/%Y")
+
+        df_final = df_vencimento[
+            [
+                "Nome",
+                "E-mail corporativo",
+                "Data início",
+                "Término previsto",
+                "Modelo de contrato",
+                "Modalidade PJ"
+            ]
+        ].sort_values("Término previsto")
+
+        df_final = df_final.reset_index(drop=True)
+        df_final.index = [""] * len(df_final)
+
+        st.table(df_final)
+
 
     # --------------------------------------------------
     # COLUNA DIREITA — AÇÕES
