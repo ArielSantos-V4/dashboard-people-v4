@@ -1176,7 +1176,17 @@ with aba_benefícios:
                         <h4>⚠️ Investidor não ativo no plano</h4>
                         <p>Este investidor não possui carteirinhas ativas no momento.</p>
                         <hr style="opacity:0.2;">
-                        <p><strong>Situação atual:</strong><br>{situacao}</p>
+                        <div style="
+                            margin-top: 12px;
+                            padding: 10px;
+                            border-radius: 8px;
+                            background-color: #8B0000;
+                            color: white;
+                            font-weight: bold;
+                        ">
+                            Situação atual no plano: {situacao}
+                        </div>
+
                     </div>
                     """,
                     unsafe_allow_html=True
