@@ -207,17 +207,6 @@ with aba_dashboard:
     
     # 👇 AQUI É O LUGAR CERTO
     df = df.fillna("")
-
-    # ===============================
-    # NORMALIZA DATAS (BASE)
-    # ===============================
-    
-    df["Térm previsto_dt"] = pd.to_datetime(
-        df["Térm previsto"],
-        dayfirst=True,
-        errors="coerce"
-    )
-
         
     # --------------------------------------------------
     # BACKUP RAW (ANTES DE CONVERTER)
@@ -835,10 +824,10 @@ with aba_relatorios:
                 .replace("Indeterminado", pd.NA)
             )
         
-            df_vencimento = df[
-                df["Térm previsto"].notna() &
-                (df["Térm previsto_dt"].dt.date >= data_inicio) &
-                (df["Térm previsto_dt"].dt.date <= data_fim)
+            df_vencimento = df_vencimento[
+                df_vencimento["Térm previsto_dt"].notna() &
+                (df_vencimento["Térm previsto_dt"].dt.date >= data_inicio) &
+                (df_vencimento["Térm previsto_dt"].dt.date <= data_fim)
             ]
         
             # -------------------------------
@@ -893,7 +882,7 @@ with aba_relatorios:
                         "Modelo de contrato",
                         "Modalidade PJ"
                     ]
-                ].sort_values("Térm previsto_dt")
+                ].sort_values("Térm previsto_dt", na_position="last")
         
                 df_final = df_final.reset_index(drop=True)
                 df_final.index = [""] * len(df_final)
