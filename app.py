@@ -1079,7 +1079,7 @@ with aba_benefícios:
     # ---------------------------------
     with col_grafico:
 
-        st.markdown("### 📊 Status no plano")
+        st.markdown("<h3 style='margin-bottom:20px'>📊 Status no plano</h3>", unsafe_allow_html=True)
         st.markdown("<div style='height:20px'></div>", unsafe_allow_html=True)
     
         if "Situação no plano" in df.columns:
