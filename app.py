@@ -1138,7 +1138,7 @@ with aba_benefícios:
     # ---------------------------------
     with col_consulta:
     
-        st.markdown("### 🔎 Consulta rápida de carteirinhas")
+        st.markdown("### 🔎 Consulta de carteirinhas")
     
         nome_beneficio = st.selectbox(
             "Selecione o investidor",
