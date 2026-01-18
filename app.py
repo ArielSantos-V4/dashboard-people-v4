@@ -1219,106 +1219,97 @@ with aba_benefícios:
                 )
 
 
-        # ---------------------------------
-        # COLUNA 3 — LEMBRETE DE PRAZOS
-        # ---------------------------------
-        from calendar import monthrange
-        from datetime import datetime, timedelta
+        # ==============================
+        # BLOCO 3 — ACOMPANHAMENTO
+        # ==============================
         
-        with col_lembrete:
+        import streamlit as st
+        from datetime import date
         
-            st.markdown("### 🗓️ Movimentações do plano")
+        st.markdown("## 🧭 Acompanhamento do Período")
         
-            hoje = datetime.today()
-            ano, mes, dia_atual = hoje.year, hoje.month, hoje.day
+        # -------- CONFIGURAÇÕES DO PERÍODO --------
+        inicio = date(2026, 1, 16)
+        fim = date(2026, 1, 31)
+        hoje = date.today()
         
-            primeiro_dia_semana = datetime(ano, mes, 1).weekday()  # 0=Seg
-            _, ultimo_dia = monthrange(ano, mes)
+        # -------- LÓGICA DE STATUS --------
+        if hoje < inicio:
+            status = "Período ainda não iniciado"
+            cor_status = "#555"
+        elif inicio <= hoje <= fim:
+            status = "Período de acompanhamento ativo"
+            cor_status = "#2E8B57"
+        else:
+            status = "Período encerrado"
+            cor_status = "#8B0000"
         
-            # -------------------------------
-            # DEFINE PERÍODO ATUAL
-            # -------------------------------
-            if dia_atual <= 5:
-                periodo = "Solicitação de documentação"
-                cor = "#FFA500"
-                dias_inicio, dias_fim = 1, 5
-            elif dia_atual <= 15:
-                periodo = "Envio para a operadora"
-                cor = "#FFD700"
-                dias_inicio, dias_fim = 6, 15
-            else:
-                periodo = "Acompanhamento e envio de carteirinhas"
-                cor = "#2E8B57"
-                dias_inicio, dias_fim = 16, ultimo_dia
+        # -------- CÁLCULOS --------
+        total_dias = (fim - inicio).days
+        dia_atual = max(0, min((hoje - inicio).days, total_dias))
+        percentual = dia_atual / total_dias if total_dias > 0 else 1
+        dias_restantes = (fim - hoje).days
         
-            # -------------------------------
-            # CALENDÁRIO (ÚNICO LOOP)
-            # -------------------------------
-            dias_html = ""
+        # -------- TIMELINE VISUAL --------
+        st.markdown("""
+        ### 🕒 Linha do tempo
+        """)
         
-            # cabeçalho
-            for d in ["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"]:
-                dias_html += f"<div style='text-align:center;font-weight:bold;color:#999'>{d}</div>"
+        st.markdown(f"""
+        <div style="margin-top:10px;">
+          <div style="display:flex; justify-content:space-between;
+                      font-size:13px; color:#aaa;">
+            <span>{inicio.strftime('%d/%m')}</span>
+            <span>{fim.strftime('%d/%m')}</span>
+          </div>
         
-            # espaços antes do dia 1
-            for _ in range(primeiro_dia_semana):
-                dias_html += "<div></div>"
+          <div style="position:relative; height:14px;
+                      background:#333;
+                      border-radius:10px;
+                      margin-top:6px;">
         
-            # dias do mês — COMEÇA NO 1
-            for dia in range(1, ultimo_dia + 1):
-                if dias_inicio <= dia <= dias_fim:
-                    dias_html += f"""
-                    <div style="background:{cor};color:black;padding:6px;
-                                border-radius:6px;text-align:center;font-weight:bold;">
-                        {dia}
-                    </div>
-                    """
-                else:
-                    dias_html += f"""
-                    <div style="background:#1f1f1f;color:#aaa;padding:6px;
-                                border-radius:6px;text-align:center;">
-                        {dia}
-                    </div>
-                    """
+            <div style="
+              width:{percentual*100}%;
+              height:100%;
+              background:#2E8B57;
+              border-radius:10px;">
+            </div>
         
-            st.markdown(
-                f"""
-                <div style="display:grid;
-                            grid-template-columns: repeat(7, 1fr);
-                            gap:6px;
-                            margin-bottom:15px;">
-                    {dias_html}
-                </div>
-                """,
-                unsafe_allow_html=True
-            )
+            <div style="
+              position:absolute;
+              left:calc({percentual*100}% - 6px);
+              top:-6px;
+              width:18px;
+              height:18px;
+              background:#fff;
+              border-radius:50%;
+              border:3px solid #2E8B57;">
+            </div>
         
-            # -------------------------------
-            # STATUS
-            # -------------------------------
-            st.markdown(
-                f"""
-                <div style="padding:12px;border-radius:8px;
-                            background:#2b2b2b;color:white;margin-bottom:10px;">
-                    <strong>Status atual:</strong><br>
-                    {periodo}
-                </div>
-                """,
-                unsafe_allow_html=True
-            )
+          </div>
+        </div>
+        """, unsafe_allow_html=True)
         
-            # -------------------------------
-            # CONTAGEM
-            # -------------------------------
-            ultimo_dia_mes = (hoje.replace(day=28) + timedelta(days=4)).replace(day=1) - timedelta(days=1)
-            dias_restantes = (ultimo_dia_mes - hoje).days + 1
+        # -------- MENSAGEM DE STATUS --------
+        st.markdown(f"""
+        <div style="margin-top:14px;
+                    padding:12px;
+                    background:{cor_status};
+                    border-radius:10px;
+                    color:black;
+                    font-weight:bold;">
+        📌 {status}
+        </div>
+        """, unsafe_allow_html=True)
         
-            st.markdown(
-                f"""
-                <div style="padding:12px;border-radius:8px;
-                            background:#3a3a3a;color:white;">
-                    ⏳ <strong>{dias_restantes} dias</strong> para iniciar o próximo ciclo
-                </div>
-                """,
-                unsafe_allow_html=True
-            )
+        # -------- CONTAGEM REGRESSIVA --------
+        if hoje <= fim:
+            st.markdown(f"""
+            <div style="margin-top:8px;
+                        padding:10px;
+                        background:#1f1f1f;
+                        border-radius:10px;
+                        color:#ddd;">
+            ⏳ Faltam <b>{dias_restantes}</b> dias para o encerramento do período
+            </div>
+            """, unsafe_allow_html=True)
