@@ -1262,39 +1262,29 @@ with aba_benefícios:
         
         # cabeçalho
         for d in ["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"]:
-            dias_html += f"""
-            <div style="font-weight:bold;text-align:center;color:#999;">
-                {d}
-            </div>
-            """
+            dias_html += f"<div style='text-align:center;font-weight:bold;color:#999'>{d}</div>"
         
         # espaços antes do dia 1
         for _ in range(primeiro_dia_semana):
             dias_html += "<div></div>"
         
-        # dias do mês (1 → último)
+        # dias do mês — COMEÇA NO 1
         for dia in range(1, ultimo_dia + 1):
             if dias_inicio <= dia <= dias_fim:
                 dias_html += f"""
-                <div style="
-                    background:{cor};
-                    color:black;
-                    padding:6px;
-                    border-radius:6px;
-                    text-align:center;
-                    font-weight:bold;
-                ">{dia}</div>
+                <div style="background:{cor};color:black;padding:6px;
+                            border-radius:6px;text-align:center;font-weight:bold;">
+                    {dia}
+                </div>
                 """
             else:
                 dias_html += f"""
-                <div style="
-                    background:#1f1f1f;
-                    color:#aaa;
-                    padding:6px;
-                    border-radius:6px;
-                    text-align:center;
-                ">{dia}</div>
+                <div style="background:#1f1f1f;color:#aaa;padding:6px;
+                            border-radius:6px;text-align:center;">
+                    {dia}
+                </div>
                 """
+
         
         st.markdown(
             f"""
