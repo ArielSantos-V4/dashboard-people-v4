@@ -1373,10 +1373,6 @@ with aba_benefícios:
                         f"Modelo atual: **{modelo_contrato}**"
                     )
         
-                    continuar = st.checkbox("Deseja continuar mesmo assim?")
-                    if not continuar:
-                        st.stop()
-        
                 # -------- ABRE TEMPLATE --------
                 doc = Document("INCLUSÃO SUBFATURA V4.docx")
         
