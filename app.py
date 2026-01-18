@@ -1220,7 +1220,7 @@ with aba_benefícios:
 
 
         # ==============================
-        # BLOCO 3 — ACOMPANHAMENTO
+        # BLOCO 3 — ACOMPANHAMENTO (CARDS DE STATUS)
         # ==============================
         
         import streamlit as st
@@ -1229,87 +1229,96 @@ with aba_benefícios:
         st.markdown("## 🧭 Acompanhamento do Período")
         
         # -------- CONFIGURAÇÃO DO PERÍODO --------
-        inicio = date(date.today().year, date.today().month, 16)
-        fim = date(date.today().year, date.today().month, 28)
-        
+        inicio = date(2026, 1, 16)
+        fim = date(2026, 1, 31)
         hoje = date.today()
         
-        # -------- STATUS DO PERÍODO --------
+        # -------- LÓGICA DE STATUS --------
         if hoje < inicio:
             status = "Período ainda não iniciado"
-            cor_status = "#555555"
+            cor_status = "#444"
+            emoji = "⏳"
         elif inicio <= hoje <= fim:
             status = "Período de acompanhamento ativo"
             cor_status = "#2E8B57"
+            emoji = "📌"
         else:
             status = "Período encerrado"
             cor_status = "#8B0000"
+            emoji = "✅"
         
         # -------- CÁLCULOS --------
-        total_dias = max((fim - inicio).days, 1)
-        dia_atual = max(0, min((hoje - inicio).days, total_dias))
-        percentual = dia_atual / total_dias
-        largura_barra = max(6, percentual * 100)
-        dias_restantes = max((fim - hoje).days, 0)
+        dias_totais = (fim - inicio).days + 1
+        dias_passados = max(0, min((hoje - inicio).days + 1, dias_totais))
+        dias_restantes = max(0, (fim - hoje).days)
         
-        # -------- TIMELINE VISUAL --------
-        st.markdown("### 🕒 Linha do tempo")
+        # -------- GRID DE CARDS --------
+        col1, col2, col3 = st.columns(3)
         
-        st.markdown(f"""
-        <div style="margin-top:12px;">
-          <div style="display:flex; justify-content:space-between;
-                      font-size:13px; color:#aaa;">
-            <span>{inicio.strftime('%d/%m')}</span>
-            <span>{fim.strftime('%d/%m')}</span>
-          </div>
-        
-          <div style="position:relative; height:14px;
-                      background:#333;
-                      border-radius:10px;
-                      margin-top:6px;">
-        
+        with col1:
+            st.markdown(f"""
             <div style="
-              width:{largura_barra}%;
-              height:100%;
-              background:#2E8B57;
-              border-radius:10px;">
-            </div>
-        
-            <div style="
-              position:absolute;
-              left:calc({largura_barra}% - 9px);
-              top:-6px;
-              width:18px;
-              height:18px;
-              background:#ffffff;
-              border-radius:50%;
-              border:3px solid #2E8B57;">
-            </div>
-        
-          </div>
-        </div>
-        """, unsafe_allow_html=True)
-        
-        # -------- STATUS ATUAL --------
-        st.markdown(f"""
-        <div style="margin-top:14px;
-                    padding:12px;
+                background:#1f1f1f;
+                padding:16px;
+                border-radius:14px;
+                text-align:center;
+                color:#ddd;">
+                <div style="font-size:28px;">{emoji}</div>
+                <div style="margin-top:6px;font-weight:bold;">
+                    Status atual
+                </div>
+                <div style="
+                    margin-top:8px;
+                    padding:8px;
                     background:{cor_status};
-                    border-radius:10px;
+                    border-radius:8px;
                     color:black;
                     font-weight:bold;">
-        📌 {status}
-        </div>
-        """, unsafe_allow_html=True)
+                    {status}
+                </div>
+            </div>
+            """, unsafe_allow_html=True)
         
-        # -------- CONTAGEM REGRESSIVA --------
-        if hoje <= fim:
+        with col2:
             st.markdown(f"""
-            <div style="margin-top:8px;
-                        padding:10px;
-                        background:#1f1f1f;
-                        border-radius:10px;
-                        color:#ddd;">
-            ⏳ Faltam <b>{dias_restantes}</b> dias para o encerramento do período
+            <div style="
+                background:#1f1f1f;
+                padding:16px;
+                border-radius:14px;
+                text-align:center;
+                color:#ddd;">
+                <div style="font-size:28px;">📅</div>
+                <div style="margin-top:6px;font-weight:bold;">
+                    Dias do período
+                </div>
+                <div style="
+                    margin-top:10px;
+                    font-size:22px;
+                    font-weight:bold;
+                    color:#aaa;">
+                    {dias_totais}
+                </div>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        with col3:
+            st.markdown(f"""
+            <div style="
+                background:#1f1f1f;
+                padding:16px;
+                border-radius:14px;
+                text-align:center;
+                color:#ddd;">
+                <div style="font-size:28px;">⏱️</div>
+                <div style="margin-top:6px;font-weight:bold;">
+                    Dias restantes
+                </div>
+                <div style="
+                    margin-top:10px;
+                    font-size:22px;
+                    font-weight:bold;
+                    color:#aaa;">
+                    {dias_restantes}
+                </div>
             </div>
             """, unsafe_allow_html=True)
