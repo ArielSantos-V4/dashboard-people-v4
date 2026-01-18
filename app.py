@@ -876,7 +876,7 @@ with aba_relatorios:
         
             with col_input:
                 st.text_input(
-                    "Título do arquivo",
+                    "Título oiginal do arquivo",
                     placeholder="Cole aqui o título do arquivo",
                     key="titulo_doc"
                 )
