@@ -1303,7 +1303,7 @@ with aba_benefícios:
 
     with col_acoes:
         # ==============================
-        # AÇÃO — GERAR SUBFATURA (MODAL FINAL)
+        # AÇÃO — GERAR SUBFATURA (VERSÃO FINAL ESTÁVEL)
         # ==============================
         
         from docx import Document
@@ -1320,6 +1320,14 @@ with aba_benefícios:
         st.markdown("### ⚙️ Ações")
         
         
+        def substituir_runs(paragraphs, mapa):
+            for p in paragraphs:
+                for run in p.runs:
+                    for chave, valor in mapa.items():
+                        if chave in run.text:
+                            run.text = run.text.replace(chave, valor)
+        
+        
         @st.dialog("📄 Gerar Subfatura")
         def modal_subfatura():
         
@@ -1328,58 +1336,57 @@ with aba_benefícios:
         
             data_vigencia = st.date_input("Data de início da vigência")
         
-            st.caption(
-                f"📅 Vigência selecionada: **{data_vigencia.strftime('%d/%m/%Y')}**"
-            )
+            st.caption(f"📅 Vigência: **{data_vigencia.strftime('%d/%m/%Y')}**")
         
-            st.markdown("<div style='text-align:center;margin-top:20px;'>", unsafe_allow_html=True)
-        
-            gerar = st.button("✅ Gerar documento")
-        
-            st.markdown("</div>", unsafe_allow_html=True)
+            c1, c2, c3 = st.columns([1,2,1])
+            with c2:
+                gerar = st.button("✅ Gerar documento", use_container_width=True)
         
             if gerar:
         
                 dados = df[df["Nome"] == nome_escolhido].iloc[0]
         
-                razao_social = dados["Razão social"]
-                cnpj = dados["CNPJ"]
-                cpf = dados["CPF"]
-                email_pessoal = dados["E-mail pessoal"]
-                modelo_contrato = dados["Modelo de contrato"]
+                razao_social = str(dados["Razão social"])
+                cnpj = str(dados["CNPJ"])
+                cpf = str(dados["CPF"])
+                email_pessoal = str(dados["E-mail pessoal"])
+                modelo_contrato = str(dados["Modelo de contrato"])
         
-                # -------- VALIDAÇÃO PJ --------
-                if "PJ" not in str(modelo_contrato).upper():
+                if "PJ" not in modelo_contrato.upper():
                     st.warning(
-                        f"⚠️ O investidor **{nome_escolhido}** não possui contrato PJ.\n\n"
-                        f"Modelo de contrato atual: **{modelo_contrato}**"
+                        f"⚠️ **{nome_escolhido}** não possui contrato PJ.\n\n"
+                        f"Modelo atual: **{modelo_contrato}**"
                     )
-        
                     if not st.checkbox("Deseja continuar mesmo assim?"):
                         st.stop()
         
                 doc = Document("INCLUSÃO SUBFATURA V4.docx")
         
-                # -------- DATAS --------
                 vigencia_formatada = data_vigencia.strftime("%d/%m/%Y")
-        
                 hoje = datetime.today()
-                data_assinatura = (
-                    f"{hoje.day} de {MESES_PT[hoje.month]} de {hoje.year}"
-                )
+                data_assinatura = f"{hoje.day} de {MESES_PT[hoje.month]} de {hoje.year}"
         
-                # -------- SUBSTITUIÇÃO SEGURA (MANTÉM FORMATAÇÃO) --------
-                for p in doc.paragraphs:
-                    for run in p.runs:
-                        run.text = (
-                            run.text
-                            .replace("RAZÃO SOCIAL", str(razao_social))
-                            .replace("XX.XXX.XXX/XXXX-XX", str(cnpj))
-                            .replace("XX/XX/XXXX", vigencia_formatada)
-                            .replace("XX de xxxxxx de XXXX", data_assinatura)
-                        )
+                mapa = {
+                    "RAZÃO SOCIAL": razao_social,
+                    "XX.XXX.XXX/XXXX-XX": cnpj,
+                    "XX/XX/XXXX": vigencia_formatada,
+                    "XX de xxxxxx de XXXX": data_assinatura
+                }
         
-                cpf_limpo = re.sub(r"\D", "", str(cpf))
+                # -------- CORPO --------
+                substituir_runs(doc.paragraphs, mapa)
+        
+                # -------- TABELAS --------
+                for table in doc.tables:
+                    for row in table.rows:
+                        for cell in row.cells:
+                            substituir_runs(cell.paragraphs, mapa)
+        
+                # -------- CABEÇALHOS (MANTÉM IMAGENS) --------
+                for section in doc.sections:
+                    substituir_runs(section.header.paragraphs, mapa)
+        
+                cpf_limpo = re.sub(r"\D", "", cpf)
         
                 nome_arquivo = (
                     f"{nome_escolhido}__{cpf_limpo}__{email_pessoal}__Subfatura.docx"
@@ -1389,7 +1396,7 @@ with aba_benefícios:
         
                 with open(nome_arquivo, "rb") as f:
                     st.download_button(
-                        "⬇️ Download automático",
+                        "⬇️ Baixar Subfatura",
                         data=f,
                         file_name=nome_arquivo,
                         mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
