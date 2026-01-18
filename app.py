@@ -1240,7 +1240,26 @@ with aba_benefícios:
         ])
     
         with abas[0]:
-            st.info("Relatório de investidores pendentes no plano (tabela virá aqui)")
+            st.markdown("#### 📂 Investidores com documentação pendente")
+        
+            # --- FILTRO: somente pendentes ---
+            df_pendentes = df[df["Situação no plano"] == "Pendente"]
+        
+            # --- SELEÇÃO DAS COLUNAS ---
+            tabela_docs = df_pendentes[[
+                "Nome",
+                "E-mail corporativo",
+                "Modelo de contrato",
+                "Solicitar documentação",
+                "Situação no plano"
+            ]]
+        
+            st.dataframe(
+                tabela_docs,
+                use_container_width=True,
+                hide_index=True
+            )
+
     
         with abas[1]:
             st.info("Relatório de ivestidores para enviar à DBL (tabela virá aqui)")
