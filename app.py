@@ -145,6 +145,7 @@ with aba_dashboard:
         return pd.read_csv(url)
     
     df = load_google_sheet()
+    df = df.sort_values("Nome", ascending=True).reset_index(drop=True)
     df.columns = df.columns.str.strip()
     df = df.fillna("")
     
@@ -843,10 +844,15 @@ with aba_relatorios:
                 placeholder="Cole aqui o título do arquivo"
             )
         
-            pessoa = st.selectbox(
-                "Pessoa",
-                options=df["Nome"].dropna().unique()
+           lista_nomes = sorted(df["Nome"].dropna().unique())
+
+            nome_selecionado = st.selectbox(
+                "Selecione o nome",
+                options=[""] + lista_nomes,
+                index=0,
+                placeholder="Digite ou selecione um nome"
             )
+
         
             if st.button("✅ Gerar título"):
                 dados = df[df["Nome"] == pessoa].iloc[0]
