@@ -1219,3 +1219,43 @@ with aba_benefícios:
                 )
 
     st.markdown("---")
+
+    # ==============================
+    # BLOCO — RELATÓRIOS & AÇÕES
+    # ==============================
+    
+    st.markdown("## 📑 Relatórios e Ações")
+    
+    # -------- GRID PRINCIPAL --------
+    col_relatorios, col_acoes = st.columns([7, 3])
+    
+    # ==============================
+    # COLUNA ESQUERDA — RELATÓRIOS
+    # ==============================
+    with col_relatorios:
+        st.markdown("### 📊 Relatórios")
+    
+        abas = st.tabs([
+            "📄 Geral",
+            "👥 Colaboradores",
+            "📅 Movimentações"
+        ])
+    
+        with abas[0]:
+            st.info("Relatório geral (tabela virá aqui)")
+    
+        with abas[1]:
+            st.info("Relatório de colaboradores (tabela virá aqui)")
+    
+        with abas[2]:
+            st.info("Relatório de movimentações (tabela virá aqui)")
+    
+    # ==============================
+    # COLUNA DIREITA — AÇÕES
+    # ==============================
+    with col_acoes:
+        st.markdown("### ⚙️ Ações")
+    
+        st.button("📄 Gerar relatório PDF", use_container_width=True)
+        st.button("📊 Exportar Excel", use_container_width=True)
+        st.button("📨 Enviar por e-mail", use_container_width=True)
