@@ -1314,41 +1314,35 @@ with aba_benefícios:
         
         st.markdown("### ⚙️ Ações")
         
+        if "mostrar_subfatura" not in st.session_state:
+            st.session_state.mostrar_subfatura = False
+        
         if st.button("📄 Gerar Subfatura", use_container_width=True):
-            st.session_state["modal_subfatura"] = True
+            st.session_state.mostrar_subfatura = True
         
-        # ---------- MODAL ----------
-        if st.session_state.get("modal_subfatura", False):
+        # ---------- CAIXA FLUTUANTE (STREAMLIT SAFE) ----------
+        if st.session_state.mostrar_subfatura:
         
-            st.markdown("""
-            <div style="
-                position:fixed;
-                top:0; left:0;
-                width:100vw; height:100vh;
-                background:rgba(0,0,0,0.6);
-                z-index:9999;
-                display:flex;
-                align-items:center;
-                justify-content:center;">
-            """, unsafe_allow_html=True)
+            st.markdown("---")
         
-            with st.container():
-                st.markdown("""
-                <div style="
-                    background:#1f1f1f;
-                    padding:24px;
-                    border-radius:14px;
-                    width:420px;">
-                """, unsafe_allow_html=True)
-        
+            with st.container(border=True):
                 st.markdown("### 📄 Gerar Subfatura (PDF)")
         
                 nomes = sorted(df["Nome"].dropna().unique())
                 nome = st.selectbox("Investidor", nomes)
                 data_vigencia = st.date_input("Início da vigência")
         
-                if st.button("✅ Gerar PDF", use_container_width=True):
+                col_ok, col_cancel = st.columns(2)
         
+                with col_ok:
+                    gerar = st.button("✅ Gerar PDF", use_container_width=True)
+        
+                with col_cancel:
+                    if st.button("❌ Cancelar", use_container_width=True):
+                        st.session_state.mostrar_subfatura = False
+                        st.experimental_rerun()
+        
+                if gerar:
                     dados = df[df["Nome"] == nome].iloc[0]
         
                     razao_social = dados["Razão social"]
@@ -1357,17 +1351,15 @@ with aba_benefícios:
                     email = dados["E-mail pessoal"]
                     modelo = dados["Modelo de contrato"]
         
-                    # valida PJ
                     if "PJ" not in str(modelo).upper():
-                        st.warning("⚠️ Investidor não é PJ. Confirme para continuar.")
-                        if not st.checkbox("Continuar mesmo assim"):
+                        st.warning("⚠️ Investidor não é PJ.")
+                        if not st.checkbox("Gerar mesmo assim"):
                             st.stop()
         
                     nome_pdf = f"{nome}__{cpf}__{email}__Subfatura.pdf"
         
                     c = canvas.Canvas(nome_pdf, pagesize=A4)
                     largura, altura = A4
-        
                     y = altura - 3*cm
         
                     c.setFont("Helvetica-Bold", 12)
@@ -1402,7 +1394,3 @@ with aba_benefícios:
                         )
         
                     st.success("PDF gerado com sucesso ✅")
-                    st.session_state["modal_subfatura"] = False
-        
-                st.markdown("</div>", unsafe_allow_html=True)
-            st.markdown("</div>", unsafe_allow_html=True)
