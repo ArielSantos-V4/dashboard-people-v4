@@ -661,9 +661,30 @@ with aba_relatorios:
                 df_final = df_final.reset_index(drop=True)
                 df_final.index = [""] * len(df_final)
         
-                st.table(
-                    df_final.drop(columns=["Dia"])
+                st.dataframe(
+                    df_final.drop(columns=["Dia"]),
+                    use_container_width=True,
+                    hide_index=True,
+                    column_config={
+                        "Nascimento": st.column_config.TextColumn(
+                            "Nascimento",
+                            width="small"
+                        ),
+                        "Idade que completa": st.column_config.TextColumn(
+                            "Idade que completa",
+                            width="small"
+                        ),
+                        "Nome": st.column_config.TextColumn(
+                            "Nome",
+                            width="large"
+                        ),
+                        "E-mail corporativo": st.column_config.TextColumn(
+                            "E-mail corporativo",
+                            width="large"
+                        ),
+                    }
                 )
+
 
         # -------------------------------
         # VENCIMENTO DE CONTRATOS
@@ -680,14 +701,14 @@ with aba_relatorios:
         
             with col_d1:
                 data_inicio = st.date_input(
-                    "De (dd/mm/aaaa)",
+                    "De:",
                     value=hoje,
                     format="DD/MM/YYYY"
                 )
         
             with col_d2:
                 data_fim = st.date_input(
-                    "Até (dd/mm/aaaa)",
+                    "Até:",
                     value=hoje + timedelta(days=30),
                     format="DD/MM/YYYY"
                 )
