@@ -195,8 +195,6 @@ with aba_dashboard:
             dayfirst=True,
             errors="coerce"
         )
-        
-    df = df.fillna("")
     
     # --------------------------------------------------
     # LOAD + ORGANIZAÇÃO
@@ -205,7 +203,9 @@ with aba_dashboard:
     df.columns = df.columns.str.strip()
     df = df.sort_values("Nome").reset_index(drop=True)
     
-    
+    # 👇 AQUI É O LUGAR CERTO
+    df = df.fillna("")
+        
     # --------------------------------------------------
     # BACKUP RAW (ANTES DE CONVERTER)
     # --------------------------------------------------
