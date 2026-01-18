@@ -1079,7 +1079,7 @@ with aba_benefícios:
     # ---------------------------------
     with col_grafico:
     
-        st.markdown("### 📊 Situação no plano")
+        st.markdown("### 📊 Status no plano")
     
         if "Situação no plano" in df.columns:
     
@@ -1097,9 +1097,13 @@ with aba_benefícios:
     
             grafico_plano = (
                 alt.Chart(df_plano)
-                .mark_arc(innerRadius=60)  # 🔥 sem borda branca
+                .mark_arc(
+                    innerRadius=80,   # 👈 tamanho do buraco
+                    outerRadius=140,  # 👈 tamanho externo → define a ESPESSURA
+                    stroke=None       # 👈 remove borda branca
+                )
                 .encode(
-                    theta="Quantidade:Q",
+                    theta=alt.Theta("Quantidade:Q", stack=True),
                     color=alt.Color(
                         "Situação:N",
                         scale=alt.Scale(
@@ -1115,9 +1119,9 @@ with aba_benefícios:
                         legend=alt.Legend(
                             title="Situação",
                             orient="bottom",
-                            columns=2,          # 👈 quebra a legenda em 2 colunas
-                            labelLimit=180,     # evita cortar textos longos
-                            symbolSize=120
+                            columns=2,
+                            labelLimit=200,
+                            symbolSize=140
                         ),
                     ),
                     tooltip=[
@@ -1126,8 +1130,12 @@ with aba_benefícios:
                         alt.Tooltip("Percentual:Q", title="Percentual", format=".1f"),
                     ],
                 )
-                .properties(height=260)
+                .properties(
+                    height=320,   # 👈 altura suficiente
+                    width=320     # 👈 largura suficiente
+                )
             )
+
     
             st.altair_chart(grafico_plano, use_container_width=True)
     
@@ -1180,7 +1188,7 @@ with aba_benefícios:
     # ---------------------------------
     with col_lembrete:
 
-        st.markdown("### 🕒 Lembrete de movimentações")
+        st.markdown("### 🕒 Movimentações")
 
         hoje = datetime.today()
         dia = hoje.day
