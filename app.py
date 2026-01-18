@@ -835,93 +835,39 @@ with aba_relatorios:
         # BOTÃO – TÍTULO DE DOC PARA AUTOMAÇÃO
         # ---------------------------------
         
-        if "abrir_modal_titulo" not in st.session_state:
-            st.session_state.abrir_modal_titulo = False
+        @st.dialog("📝 Gerador de título para automação")
+        def modal_titulo_doc():
         
-        if st.button("📝 Título de doc para automação"):
-            st.session_state.abrir_modal_titulo = True
-        
-        # ---------------------------------
-        # MODAL CENTRALIZADO (FUNDO ESCURO)
-        # ---------------------------------
-        if st.session_state.abrir_modal_titulo:
-        
-            st.markdown(
-                """
-                <style>
-                .overlay {
-                    position: fixed;
-                    top: 0;
-                    left: 0;
-                    width: 100vw;
-                    height: 100vh;
-                    background: rgba(0,0,0,0.6);
-                    z-index: 9998;
-                }
-                .modal {
-                    position: fixed;
-                    top: 50%;
-                    left: 50%;
-                    transform: translate(-50%, -50%);
-                    background: #1c1c1c;
-                    padding: 30px;
-                    border-radius: 12px;
-                    width: 500px;
-                    z-index: 9999;
-                }
-                </style>
-                <div class="overlay"></div>
-                """,
-                unsafe_allow_html=True
+            titulo_doc = st.text_input(
+                "Título do arquivo",
+                placeholder="Cole aqui o título do arquivo"
             )
         
-            with st.container():
-                st.markdown(
-                    "<div class='modal'>",
-                    unsafe_allow_html=True
+            pessoa = st.selectbox(
+                "Pessoa",
+                options=df["Nome"].dropna().unique()
+            )
+        
+            if st.button("✅ Gerar título"):
+                dados = df[df["Nome"] == pessoa].iloc[0]
+        
+                cpf_limpo = (
+                    str(dados.get("CPF", ""))
+                    .replace(".", "")
+                    .replace("-", "")
+                    .replace("/", "")
                 )
         
-                st.markdown("### 🧩 Gerador de título para automação")
+                email_pessoal = dados.get("E-mail pessoal", "")
         
-                titulo_doc = st.text_input(
-                    "Título do arquivo",
-                    placeholder="Cole aqui o título do arquivo"
-                )
+                titulo_final = f"{pessoa} __ {cpf_limpo} __ {email_pessoal} __ {titulo_doc}"
         
-                pessoa = st.selectbox(
-                    "Pessoa",
-                    options=df["Nome"].dropna().unique()
-                )
+                st.markdown("#### 📄 Título gerado")
+                st.code(titulo_final)
         
-                col1, col2 = st.columns(2)
         
-                with col1:
-                    gerar = st.button("✅ Gerar título")
-        
-                with col2:
-                    if st.button("❌ Cancelar"):
-                        st.session_state.abrir_modal_titulo = False
-                        st.rerun()
-        
-                if gerar and titulo_doc and pessoa:
-                    dados = df[df["Nome"] == pessoa].iloc[0]
-        
-                    cpf_limpo = (
-                        str(dados.get("CPF", ""))
-                        .replace(".", "")
-                        .replace("-", "")
-                        .replace("/", "")
-                    )
-        
-                    email_pessoal = dados.get("E-mail pessoal", "")
-        
-                    titulo_final = f"{pessoa} __ {cpf_limpo} __ {email_pessoal} __ {titulo_doc}"
-        
-                    st.markdown("#### 📄 Título gerado")
-                    st.code(titulo_final)
-        
-                st.markdown("</div>", unsafe_allow_html=True)
-
+        if st.button("📝 Título de doc para automação"):
+            modal_titulo_doc()
 
 
 # --------------------------------------------------
