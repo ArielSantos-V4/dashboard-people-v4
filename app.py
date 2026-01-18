@@ -1251,10 +1251,6 @@ with aba_benefícios:
         dias_restantes = (fim - hoje).days
         
         # -------- TIMELINE VISUAL --------
-        st.markdown("""
-        ### 🕒 Linha do tempo
-        """)
-        
         st.markdown(f"""
         <div style="margin-top:10px;">
           <div style="display:flex; justify-content:space-between;
@@ -1268,17 +1264,18 @@ with aba_benefícios:
                       border-radius:10px;
                       margin-top:6px;">
         
+            <!-- Barra de progresso -->
             <div style="
-              width: max(6%, 13.333333333333334%);
+              width:{largura_barra}%;
               height:100%;
               background:#2E8B57;
               border-radius:10px;">
             </div>
-
         
+            <!-- Indicador do dia atual -->
             <div style="
               position:absolute;
-              left:calc({percentual*100}% - 6px);
+              left:calc({largura_barra}% - 9px);
               top:-6px;
               width:18px;
               height:18px;
