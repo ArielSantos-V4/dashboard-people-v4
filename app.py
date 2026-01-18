@@ -469,7 +469,8 @@ with aba_dashboard:
     
     
     df_tabela = df.copy()
-    
+    df = df.fillna("")
+
     # Datas exibidas
     df_tabela["Término do contrato"] = df_tabela["Térm previsto_exibicao"]
     df_tabela["Data de início"] = df_tabela["Data Início_exibicao"]
