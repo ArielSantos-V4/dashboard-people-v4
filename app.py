@@ -181,11 +181,11 @@ with aba_dashboard:
 
     
     def parse_data_br(coluna):
-    return pd.to_datetime(
-        coluna.astype(str).str.strip().replace("", pd.NA),
-        dayfirst=True,
-        errors="coerce"
-    )
+        return pd.to_datetime(
+            coluna.astype(str).str.strip().replace("", pd.NA),
+            dayfirst=True,
+            errors="coerce"
+        )
 
     df = load_google_sheet()
     df = df.sort_values("Nome", ascending=True).reset_index(drop=True)
