@@ -882,7 +882,7 @@ with aba_relatorios:
                 )
         
             with col_clear:
-                st.markdown("<div style='height:26px'></div>", unsafe_allow_html=True)
+                st.markdown("<div style='height:20px'></div>", unsafe_allow_html=True)
                 st.button(
                     "❌",
                     help="Limpar título",
