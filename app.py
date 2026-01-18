@@ -1223,9 +1223,7 @@ with aba_benefícios:
     # ==============================
     # BLOCO — RELATÓRIOS & AÇÕES
     # ==============================
-    
-    st.markdown("## 📑 Relatórios e Ações")
-    
+        
     # -------- GRID PRINCIPAL --------
     col_relatorios, col_acoes = st.columns([7, 3])
     
@@ -1236,19 +1234,19 @@ with aba_benefícios:
         st.markdown("### 📊 Relatórios")
     
         abas = st.tabs([
-            "📄 Geral",
-            "👥 Colaboradores",
-            "📅 Movimentações"
+            "📂 Solicitar docs",
+            "📩 Enviar para DBL",
+            "🆗 Aguardando ativação"
         ])
     
         with abas[0]:
-            st.info("Relatório geral (tabela virá aqui)")
+            st.info("Relatório de investidores pendentes no plano (tabela virá aqui)")
     
         with abas[1]:
-            st.info("Relatório de colaboradores (tabela virá aqui)")
+            st.info("Relatório de ivestidores para enviar à DBL (tabela virá aqui)")
     
         with abas[2]:
-            st.info("Relatório de movimentações (tabela virá aqui)")
+            st.info("Relatório de investidores aguardando ativação no plano (tabela virá aqui)")
     
     # ==============================
     # COLUNA DIREITA — AÇÕES
