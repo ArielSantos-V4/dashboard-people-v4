@@ -1279,7 +1279,7 @@ with aba_benefícios:
                 </div>
                 """, unsafe_allow_html=True)
             
-            with col2:
+            
                 st.markdown(f"""
                 <div style="
                     background:#1f1f1f;
@@ -1301,7 +1301,7 @@ with aba_benefícios:
                 </div>
                 """, unsafe_allow_html=True)
             
-            with col3:
+            
                 st.markdown(f"""
                 <div style="
                     background:#1f1f1f;
