@@ -844,35 +844,44 @@ with aba_relatorios:
                 placeholder="Cole aqui o título do arquivo"
             )
         
-    lista_nomes = sorted(df["Nome"].dropna().unique())
-
-    nome_selecionado = st.selectbox(
-        "Selecione o nome",
-        options=[""] + lista_nomes,
-        index=0,
-        placeholder="Digite ou selecione um nome"
-    )
+            lista_nomes = sorted(df["Nome"].dropna().unique())
+        
+            nome_selecionado = st.selectbox(
+                "Selecione o nome",
+                options=[""] + lista_nomes,
+                index=0,
+                placeholder="Digite ou selecione um nome"
+            )
         
             if st.button("✅ Gerar título"):
-                dados = df[df["Nome"] == pessoa].iloc[0]
+                if not titulo_doc or not nome_selecionado:
+                    st.warning("Preencha o título e selecione uma pessoa")
+                else:
+                    dados = df[df["Nome"] == nome_selecionado].iloc[0]
         
-                cpf_limpo = (
-                    str(dados.get("CPF", ""))
-                    .replace(".", "")
-                    .replace("-", "")
-                    .replace("/", "")
-                )
+                    cpf_limpo = (
+                        str(dados.get("CPF", ""))
+                        .replace(".", "")
+                        .replace("-", "")
+                        .replace("/", "")
+                    )
         
-                email_pessoal = dados.get("E-mail pessoal", "")
+                    email_pessoal = dados.get("E-mail pessoal", "")
         
-                titulo_final = f"{pessoa} __ {cpf_limpo} __ {email_pessoal} __ {titulo_doc}"
+                    titulo_final = (
+                        f"{nome_selecionado} __ "
+                        f"{cpf_limpo} __ "
+                        f"{email_pessoal} __ "
+                        f"{titulo_doc}"
+                    )
         
-                st.markdown("#### 📄 Título gerado")
-                st.code(titulo_final)
+                    st.markdown("#### 📄 Título gerado")
+                    st.code(titulo_final)
         
         
         if st.button("📝 Título de doc para automação"):
             modal_titulo_doc()
+
 
 
 # --------------------------------------------------
