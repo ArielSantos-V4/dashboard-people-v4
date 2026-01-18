@@ -553,10 +553,13 @@ with aba_dashboard:
     estagio = len(df[df["Modelo de contrato"] == "Estágio"])
     
     df_adm = df[df["Início na V4_dt"].notna()]
+
     media_admissoes = (
-        df_adm.groupby(df_adm["Início na V4_dt"].dt.to_period("M"))
+        df_adm
+        .groupby(df_adm["Início na V4_dt"].dt.to_period("M"))
+        .size()
+        .mean()
     )
-    
     
     # --------------------------------------------------
     # KPIs VISUAIS
