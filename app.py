@@ -657,7 +657,7 @@ with aba_relatorios:
     # --------------------------------------------------
     # LAYOUT PRINCIPAL — RELATÓRIOS
     # --------------------------------------------------
-    col_relatorios, col_divisor, col_acoes = st.columns([8, 0.1, 2])
+    col_relatorios, col_divisor, col_acoes = st.columns([7, 0.1, 3])
     
     with col_divisor:
         st.markdown(
