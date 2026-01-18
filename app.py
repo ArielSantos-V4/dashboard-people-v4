@@ -1098,9 +1098,9 @@ with aba_benefícios:
             grafico_plano = (
                 alt.Chart(df_plano)
                 .mark_arc(
-                    innerRadius=80,   # 👈 tamanho do buraco
-                    outerRadius=140,  # 👈 tamanho externo → define a ESPESSURA
-                    stroke=None       # 👈 remove borda branca
+                    innerRadius=80,
+                    outerRadius=130,   # 🔻 um pouco menor para caber melhor
+                    stroke=None
                 )
                 .encode(
                     theta=alt.Theta("Quantidade:Q", stack=True),
@@ -1121,21 +1121,21 @@ with aba_benefícios:
                             orient="bottom",
                             columns=2,
                             labelLimit=200,
-                            symbolSize=140
+                            symbolSize=120,
+                            offset=20        # 👈 empurra legenda para baixo
                         ),
                     ),
                     tooltip=[
                         alt.Tooltip("Situação:N", title="Situação"),
-                        alt.Tooltip("Quantidade:Q", title="Quantidade"),
-                        alt.Tooltip("Percentual:Q", title="Percentual", format=".1f"),
+                        alt.Tooltip("Quantidade:Q", title="Qtd"),
+                        alt.Tooltip("Percentual:Q", title="%", format=".1f"),
                     ],
                 )
                 .properties(
-                    height=320,   # 👈 altura suficiente
-                    width=320     # 👈 largura suficiente
+                    width=320,
+                    height=380      # 👈 MAIS ALTURA = não corta legenda
                 )
             )
-
     
             st.altair_chart(grafico_plano, use_container_width=True)
     
