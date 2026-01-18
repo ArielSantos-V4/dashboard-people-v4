@@ -671,31 +671,37 @@ with aba_relatorios:
         
         with st.expander("⏳ Vencimento de contratos", expanded=False):
         
-            # Filtro de período
+            # -------------------------------
+            # FILTRO DE PERÍODO
+            # -------------------------------
             col_d1, col_d2 = st.columns(2)
-
+        
+            hoje = datetime.today().date()
+        
             with col_d1:
                 data_inicio = st.date_input(
                     "De (dd/mm/aaaa)",
                     value=hoje,
                     format="DD/MM/YYYY"
                 )
-            
+        
             with col_d2:
                 data_fim = st.date_input(
                     "Até (dd/mm/aaaa)",
                     value=hoje + timedelta(days=30),
                     format="DD/MM/YYYY"
                 )
-
+        
+            # -------------------------------
+            # BASE
+            # -------------------------------
+            df_vencimento = df.copy()
         
             # -------------------------------
             # LIMPEZA FORTE DA DATA
             # -------------------------------
-            df_vencimento = df.copy()
-            
             df_vencimento["Térm previsto_raw"] = df_vencimento["Térm previsto"]
-            
+        
             df_vencimento["Térm previsto"] = (
                 df_vencimento["Térm previsto"]
                 .astype(str)
@@ -703,66 +709,45 @@ with aba_relatorios:
                 .replace("", pd.NA)
                 .replace("Indeterminado", pd.NA)
             )
-            
+        
             df_vencimento["Térm previsto"] = pd.to_datetime(
                 df_vencimento["Térm previsto"],
                 dayfirst=True,
                 errors="coerce"
             )
-            
+        
             # -------------------------------
-            # FORMATAÇÃO DAS DATAS
-            # -------------------------------
-            df_vencimento["Término previsto"] = df_vencimento["Térm previsto"].dt.strftime("%d/%m/%Y")
-            
-            df_vencimento["Data do contrato"] = pd.to_datetime(
-                df_vencimento["Data do contrato"],
-                dayfirst=True,
-                errors="coerce"
-            ).dt.strftime("%d/%m/%Y")
-
-                    
-            # -------------------------------
-            # DATAS INVÁLIDAS (PADRÃO IGUAL AO OUTRO)
+            # DATAS INVÁLIDAS (PADRÃO IGUAL)
             # -------------------------------
             df_invalidos = df_vencimento[
                 df_vencimento["Térm previsto"].isna() &
                 df_vencimento["Térm previsto_raw"].notna() &
                 (df_vencimento["Térm previsto_raw"] != "Indeterminado")
             ][["Nome", "Térm previsto_raw"]]
-            
-            qtd_invalidos = len(df_invalidos)
-            
-            if qtd_invalidos > 0:
-                col_warn, col_btn = st.columns([7, 3])
-            
+        
+            if not df_invalidos.empty:
+                col_warn, col_link = st.columns([5, 2])
+        
                 with col_warn:
-                    st.caption(f"⚠️ {qtd_invalidos} pessoas com data de término inválida")
-            
-                with col_btn:
-                    if st.button("Ver datas inválidas", key="btn_invalidos_contrato"):
-                        st.session_state["mostrar_invalidos_contrato"] = True
-            
-            # TABELA FORA DO LAYOUT (solta)
-            if st.session_state.get("mostrar_invalidos_contrato"):
-                st.markdown("### ❌ Datas inválidas de término de contrato")
-            
-                df_invalidos["Data informada"] = (
-                    df_invalidos["Térm previsto_raw"]
-                    .astype(str)
-                    .str.replace("-", "/", regex=False)
-                )
-            
-                st.table(
-                    df_invalidos[["Nome", "Data informada"]]
-                    .reset_index(drop=True)
-                )
-
+                    st.warning(
+                        f"⚠️ {len(df_invalidos)} pessoas com data de término inválida"
+                    )
+        
+                with col_link:
+                    with st.popover("👀 Ver aqui"):
+                        df_invalidos_view = (
+                            df_invalidos
+                            .rename(columns={"Térm previsto_raw": "Data informada"})
+                            .reset_index(drop=True)
+                        )
+        
+                        st.table(df_invalidos_view)
+        
             # -------------------------------
             # FILTRO POR PERÍODO
             # -------------------------------
             df_vencimento = df_vencimento[
-                (df_vencimento["Térm previsto"].notna()) &
+                df_vencimento["Térm previsto"].notna() &
                 (df_vencimento["Térm previsto"].dt.date >= data_inicio) &
                 (df_vencimento["Térm previsto"].dt.date <= data_fim)
             ]
@@ -770,25 +755,19 @@ with aba_relatorios:
             if df_vencimento.empty:
                 st.info("Nenhum contrato vencendo no período selecionado")
             else:
-                df_vencimento["Término previsto"] = df_vencimento["Térm previsto"].dt.strftime("%d/%m/%Y")
-                df_vencimento["Data do contrato"] = pd.to_datetime(
-                df_vencimento["Data do contrato"],
-                dayfirst=True,
-                errors="coerce"
-            ).dt.strftime("%d/%m/%Y")
-            
+                df_vencimento["Término previsto"] = (
+                    df_vencimento["Térm previsto"]
+                    .dt.strftime("%d/%m/%Y")
+                )
         
                 df_final = df_vencimento[
                     [
                         "Nome",
                         "E-mail corporativo",
-                        "Data do contrato",
                         "Término previsto",
                         "Modelo de contrato",
                         "Modalidade PJ"
                     ]
-
-                
                 ].sort_values("Término previsto")
         
                 df_final = df_final.reset_index(drop=True)
