@@ -1051,7 +1051,49 @@ with aba_benefícios:
     # ABA BENEFÍCIOS – TOPO + INDICADORES
     # =====================================================
     
-    import matplotlib.pyplot as plt
+    import plotly.express as px
+
+    with col1:
+        st.markdown("### 📊 Situação no plano")
+    
+        if "Situação no plano" in df.columns:
+            dados_plano = (
+                df["Situação no plano"]
+                .fillna("Não informado")
+                .value_counts()
+                .reset_index()
+            )
+            dados_plano.columns = ["Situação", "Quantidade"]
+    
+            fig = px.pie(
+                dados_plano,
+                names="Situação",
+                values="Quantidade",
+                hole=0.4,
+                color_discrete_sequence=[
+                    "#2E8B57",  # verde
+                    "#FFA500",  # laranja
+                    "#DC143C",  # vermelho
+                    "#8B4513",  # marrom
+                    "#708090",  # cinza
+                    "#9370DB"   # roxo
+                ]
+            )
+    
+            fig.update_traces(
+                textinfo="percent+label"
+            )
+    
+            fig.update_layout(
+                showlegend=True,
+                margin=dict(t=20, b=20, l=20, r=20)
+            )
+    
+            st.plotly_chart(fig, use_container_width=True)
+    
+        else:
+            st.warning("Coluna 'Situação no plano' não encontrada.")
+
     from datetime import datetime, timedelta
     
     # -------------------------------
