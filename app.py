@@ -1355,7 +1355,6 @@ with aba_benefícios:
         # -------- BLOCO SIMULANDO MODAL --------
         if st.session_state.get("abrir_subfatura", False):
         
-            st.markdown("---")
             st.markdown("## 📄 Gerar Subfatura")
         
             nomes = sorted(df["Nome"].dropna().unique())
@@ -1455,7 +1454,6 @@ with aba_benefícios:
         
         if st.session_state.get("abrir_termo", False):
         
-            st.markdown("---")
             st.markdown("## 📝 Gerar Termo de Subestipulante")
         
             nomes = sorted(df["Nome"].dropna().unique())
