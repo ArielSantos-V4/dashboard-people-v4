@@ -773,7 +773,34 @@ with aba_relatorios:
                 df_final = df_final.reset_index(drop=True)
                 df_final.index = [""] * len(df_final)
         
-                st.table(df_final)
+                st.dataframe(
+                    df_final,
+                    use_container_width=True,
+                    hide_index=True,
+                    column_config={
+                        "Término previsto": st.column_config.TextColumn(
+                            "Término previsto",
+                            width="small"
+                        ),
+                        "Modelo de contrato": st.column_config.TextColumn(
+                            "Modelo de contrato",
+                            width="small"
+                        ),
+                        "Modalidade PJ": st.column_config.TextColumn(
+                            "Modalidade PJ",
+                            width="medium"
+                        ),
+                        "Nome": st.column_config.TextColumn(
+                            "Nome",
+                            width="large"
+                        ),
+                        "E-mail corporativo": st.column_config.TextColumn(
+                            "E-mail corporativo",
+                            width="large"
+                        ),
+                    }
+                )
+
 
 
     # --------------------------------------------------
