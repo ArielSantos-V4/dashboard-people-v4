@@ -854,46 +854,46 @@ with aba_relatorios:
             )
         
             col_btn_esq, col_btn_centro, col_btn_dir = st.columns([1, 2, 1])
-
+        
             with col_btn_centro:
                 if st.button("✅ Gerar título", use_container_width=True):
-            
+        
                     if not nome_selecionado or not titulo_doc:
                         st.warning("Selecione um nome e informe o título do arquivo.")
                         return
-            
+        
                     dados_filtrados = df[df["Nome"] == nome_selecionado]
-            
+        
                     if dados_filtrados.empty:
                         st.error("Não foi possível localizar os dados dessa pessoa.")
                         return
-            
+        
                     dados = dados_filtrados.iloc[0]
-            
+        
                     cpf_limpo = (
                         str(dados.get("CPF", ""))
                         .replace(".", "")
                         .replace("-", "")
                         .replace("/", "")
                     )
-            
+        
                     email_pessoal = dados.get("E-mail pessoal", "")
-            
-                    titulo_final = (
+        
+                    st.session_state["titulo_gerado"] = (
                         f"{nome_selecionado} __ "
                         f"{cpf_limpo} __ "
                         f"{email_pessoal} __ "
                         f"{titulo_doc}"
                     )
-            
-                    st.markdown("#### 📄 Título gerado")
-                    st.code(titulo_final)
-            
-                    
+        
+            # 🔽 FORA DAS COLUNAS → largura normal
+            if "titulo_gerado" in st.session_state:
+                st.markdown("#### Título gerado")
+                st.code(st.session_state["titulo_gerado"])
+        
         
         if st.button("📝 Título de doc para automação"):
             modal_titulo_doc()
-
 
 
 # --------------------------------------------------
