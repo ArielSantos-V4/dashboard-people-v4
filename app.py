@@ -1047,7 +1047,6 @@ with aba_relatorios:
 
 with aba_benefícios:
 
-    
     st.markdown("<div style='height:20px'></div>", unsafe_allow_html=True)
 
     # --------------------------------------------------
@@ -1060,131 +1059,98 @@ with aba_benefícios:
 
     with col_title:
         st.markdown(
-            "<h1> 🩺 Gestão de Benefícios </h1><h3 style='color:#ccc;'>V4 Company</h3>",
+            "<h1> 🩺 Gestão de Benefícios </h1>"
+            "<h3 style='color:#ccc;'>V4 Company</h3>",
             unsafe_allow_html=True
         )
 
     st.markdown("---")
 
-    # =====================================================
-    # ABA BENEFÍCIOS –  + INDICADORES
-    # =====================================================
-    
-    import plotly.express as px
+    from datetime import datetime, timedelta
+    import altair as alt
 
-    with col1:
+    # --------------------------------------------------
+    # LAYOUT — BENEFÍCIOS
+    # --------------------------------------------------
+    col_grafico, col_consulta, col_lembrete = st.columns([3, 4, 3])
+
+    # ---------------------------------
+    # COLUNA 1 — GRÁFICO SITUAÇÃO NO PLANO
+    # ---------------------------------
+    with col_grafico:
+
         st.markdown("### 📊 Situação no plano")
-    
+
         if "Situação no plano" in df.columns:
-            dados_plano = (
+
+            df_plano = (
                 df["Situação no plano"]
                 .fillna("Não informado")
                 .value_counts()
                 .reset_index()
             )
-            dados_plano.columns = ["Situação", "Quantidade"]
-    
-            fig = px.pie(
-                dados_plano,
-                names="Situação",
-                values="Quantidade",
-                hole=0.4,
-                color_discrete_sequence=[
-                    "#2E8B57",  # verde
-                    "#FFA500",  # laranja
-                    "#DC143C",  # vermelho
-                    "#8B4513",  # marrom
-                    "#708090",  # cinza
-                    "#9370DB"   # roxo
-                ]
+
+            df_plano.columns = ["Situação", "Quantidade"]
+
+            total = df_plano["Quantidade"].sum()
+            df_plano["Percentual"] = (df_plano["Quantidade"] / total) * 100
+
+            grafico_plano = (
+                alt.Chart(df_plano)
+                .mark_arc(
+                    innerRadius=60,
+                    stroke="white",
+                    strokeWidth=2
+                )
+                .encode(
+                    theta=alt.Theta("Quantidade:Q"),
+                    color=alt.Color(
+                        "Situação:N",
+                        scale=alt.Scale(
+                            range=[
+                                "#E30613",  # vermelho V4
+                                "#B0000A",  # vermelho escuro
+                                "#FF6B6B",  # vermelho claro
+                                "#6B0000",  # vinho
+                                "#A40000",  # vermelho médio
+                                "#4A4A4A",  # cinza escuro
+                            ]
+                        ),
+                        legend=alt.Legend(
+                            title="Situação",
+                            orient="bottom"
+                        ),
+                    ),
+                    tooltip=[
+                        alt.Tooltip("Situação:N", title="Situação"),
+                        alt.Tooltip("Quantidade:Q", title="Quantidade"),
+                        alt.Tooltip("Percentual:Q", title="Percentual", format=".1f"),
+                    ],
+                )
+                .properties(height=260)
             )
-    
-            fig.update_traces(
-                textinfo="percent+label"
-            )
-    
-            fig.update_layout(
-                showlegend=True,
-                margin=dict(t=20, b=20, l=20, r=20)
-            )
-    
-            st.plotly_chart(fig, use_container_width=True)
-    
+
+            st.altair_chart(grafico_plano, use_container_width=True)
+
         else:
             st.warning("Coluna 'Situação no plano' não encontrada.")
 
-    from datetime import datetime, timedelta
-    
-    # --------------------------------------------------
-    # LAYOUT — BENEFÍCIOS
-    # --------------------------------------------------
-    
-    col_grafico, col_consulta, col_lembrete = st.columns([3, 4, 3])
-    
-    # ---------------------------------
-    # COLUNA 1 — GRÁFICO SITUAÇÃO NO PLANO
-    # ---------------------------------
-    with col_grafico:
-    
-        st.markdown("### 📊 Situação no plano")
-    
-        df_plano = (
-            df["Situação no plano"]
-            .fillna("Não informado")
-            .value_counts()
-            .reset_index()
-        )
-    
-        df_plano.columns = ["Situação", "Quantidade"]
-    
-        total = df_plano["Quantidade"].sum()
-        df_plano["Percentual"] = (df_plano["Quantidade"] / total) * 100
-    
-        grafico_plano = (
-            alt.Chart(df_plano)
-            .mark_arc(innerRadius=60)
-            .encode(
-                theta="Quantidade:Q",
-                color=alt.Color(
-                    "Situação:N",
-                    scale=alt.Scale(
-                        range=[
-                            "#E30613",
-                            "#B0000A",
-                            "#FF6B6B",
-                            "#6B0000",
-                            "#A40000",
-                        ]
-                    ),
-                    legend=alt.Legend(title="Situação")
-                ),
-                tooltip=[
-                    alt.Tooltip("Situação:N", title="Situação"),
-                    alt.Tooltip("Quantidade:Q", title="Qtd"),
-                    alt.Tooltip("Percentual:Q", title="%", format=".1f"),
-                ],
-            )
-        )
-    
-        st.altair_chart(grafico_plano, use_container_width=True)
-    
-    
     # ---------------------------------
     # COLUNA 2 — CONSULTA CARTEIRINHAS
     # ---------------------------------
     with col_consulta:
-    
+
         st.markdown("### 🔎 Consulta rápida de carteirinhas")
-    
+
         nome_beneficio = st.selectbox(
             "Selecione o investidor",
             options=[""] + sorted(df["Nome"].dropna().unique()),
             placeholder="Digite ou selecione um nome"
         )
-    
+
         if nome_beneficio:
             dados = df[df["Nome"] == nome_beneficio].iloc[0]
-    
+
             st.text_input(
                 "Carteirinha médico",
                 str(dados.get("Carteirinha médico", "")),
@@ -1195,9 +1161,9 @@ with aba_benefícios:
                 str(dados.get("Operadora Médico", "")),
                 disabled=True
             )
-    
+
             st.markdown("<div style='height:10px'></div>", unsafe_allow_html=True)
-    
+
             st.text_input(
                 "Carteirinha odonto",
                 str(dados.get("Carteirinha odonto", "")),
@@ -1208,33 +1174,33 @@ with aba_benefícios:
                 str(dados.get("Operadora Odonto", "")),
                 disabled=True
             )
-    
-    
+
     # ---------------------------------
     # COLUNA 3 — LEMBRETE DE PRAZOS
     # ---------------------------------
     with col_lembrete:
-    
+
         st.markdown("### 🕒 Lembrete de movimentações")
-    
+
         hoje = datetime.today()
         dia = hoje.day
         ultimo_dia_mes = (hoje.replace(day=28) + timedelta(days=4)).replace(day=1) - timedelta(days=1)
         dias_para_proximo_mes = (ultimo_dia_mes - hoje).days
-    
+
         if dia <= 5:
             mensagem = "📥 Período de **solicitação de documentação** aos investidores."
         elif dia <= 15:
             mensagem = "📤 Período de **envio da documentação** para a operadora."
         else:
             mensagem = "🔄 Período de **acompanhamento e envio de carteirinhas**."
-    
+
         st.info(
             f"""
             **Status atual:**  
             {mensagem}
-    
+
             ⏳ Faltam **{dias_para_proximo_mes + 1} dias**
             para iniciar um novo ciclo (solicitação de documentos).
             """
         )
+
