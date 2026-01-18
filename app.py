@@ -1303,18 +1303,19 @@ with aba_benefícios:
 
     with col_acoes:
         # ==============================
-        # AÇÃO — GERAR SUBFATURA (MODAL REAL)
+        # AÇÃO — GERAR SUBFATURA (MODAL FINAL)
         # ==============================
         
         from docx import Document
         import re
         from datetime import datetime
-        import locale
         
-        try:
-            locale.setlocale(locale.LC_TIME, "pt_BR.UTF-8")
-        except:
-            pass
+        MESES_PT = {
+            1: "janeiro", 2: "fevereiro", 3: "março",
+            4: "abril", 5: "maio", 6: "junho",
+            7: "julho", 8: "agosto", 9: "setembro",
+            10: "outubro", 11: "novembro", 12: "dezembro"
+        }
         
         st.markdown("### ⚙️ Ações")
         
@@ -1327,7 +1328,17 @@ with aba_benefícios:
         
             data_vigencia = st.date_input("Data de início da vigência")
         
-            if st.button("✅ Gerar documento"):
+            st.caption(
+                f"📅 Vigência selecionada: **{data_vigencia.strftime('%d/%m/%Y')}**"
+            )
+        
+            st.markdown("<div style='text-align:center;margin-top:20px;'>", unsafe_allow_html=True)
+        
+            gerar = st.button("✅ Gerar documento")
+        
+            st.markdown("</div>", unsafe_allow_html=True)
+        
+            if gerar:
         
                 dados = df[df["Nome"] == nome_escolhido].iloc[0]
         
@@ -1344,23 +1355,29 @@ with aba_benefícios:
                         f"Modelo de contrato atual: **{modelo_contrato}**"
                     )
         
-                    continuar = st.checkbox("Deseja continuar mesmo assim?")
-                    if not continuar:
+                    if not st.checkbox("Deseja continuar mesmo assim?"):
                         st.stop()
         
                 doc = Document("INCLUSÃO SUBFATURA V4.docx")
         
+                # -------- DATAS --------
                 vigencia_formatada = data_vigencia.strftime("%d/%m/%Y")
-                data_assinatura = datetime.today().strftime("%d de %B de %Y")
         
+                hoje = datetime.today()
+                data_assinatura = (
+                    f"{hoje.day} de {MESES_PT[hoje.month]} de {hoje.year}"
+                )
+        
+                # -------- SUBSTITUIÇÃO SEGURA (MANTÉM FORMATAÇÃO) --------
                 for p in doc.paragraphs:
-                    p.text = (
-                        p.text
-                        .replace("RAZÃO SOCIAL", str(razao_social))
-                        .replace("XX.XXX.XXX/XXXX-XX", str(cnpj))
-                        .replace("XX/XX/XXXX", vigencia_formatada)
-                        .replace("XX de xxxxxx de XXXX", data_assinatura)
-                    )
+                    for run in p.runs:
+                        run.text = (
+                            run.text
+                            .replace("RAZÃO SOCIAL", str(razao_social))
+                            .replace("XX.XXX.XXX/XXXX-XX", str(cnpj))
+                            .replace("XX/XX/XXXX", vigencia_formatada)
+                            .replace("XX de xxxxxx de XXXX", data_assinatura)
+                        )
         
                 cpf_limpo = re.sub(r"\D", "", str(cpf))
         
@@ -1372,7 +1389,7 @@ with aba_benefícios:
         
                 with open(nome_arquivo, "rb") as f:
                     st.download_button(
-                        "⬇️ Baixar Subfatura",
+                        "⬇️ Download automático",
                         data=f,
                         file_name=nome_arquivo,
                         mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
@@ -1381,6 +1398,5 @@ with aba_benefícios:
                 st.success("Documento gerado com sucesso ✅")
         
         
-        # -------- BOTÃO QUE ABRE O MODAL --------
         if st.button("📄 Gerar Subfatura", use_container_width=True):
             modal_subfatura()
