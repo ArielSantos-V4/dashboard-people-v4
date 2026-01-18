@@ -207,6 +207,17 @@ with aba_dashboard:
     
     # 👇 AQUI É O LUGAR CERTO
     df = df.fillna("")
+
+    # ===============================
+    # NORMALIZA DATAS (BASE)
+    # ===============================
+    
+    df["Térm previsto_dt"] = pd.to_datetime(
+        df["Térm previsto"],
+        dayfirst=True,
+        errors="coerce"
+    )
+
         
     # --------------------------------------------------
     # BACKUP RAW (ANTES DE CONVERTER)
