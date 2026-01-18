@@ -692,6 +692,8 @@ with aba_relatorios:
             # -------------------------------
             # LIMPEZA FORTE DA DATA
             # -------------------------------
+            df_vencimento = df.copy()
+
             df_vencimento["Térm previsto_raw"] = df_vencimento["Térm previsto"]
         
             df_vencimento["Térm previsto"] = (
@@ -702,12 +704,16 @@ with aba_relatorios:
                 .replace("Indeterminado", pd.NA)
             )
         
-            df_vencimento["Térm previsto"] = pd.to_datetime(
-                df_vencimento["Térm previsto"],
-                dayfirst=True,
-                errors="coerce"
-            )
-        
+            else:
+                df_vencimento["Término previsto"] = df_vencimento["Térm previsto"].dt.strftime("%d/%m/%Y")
+            
+                df_vencimento["Data do contrato"] = pd.to_datetime(
+                    df_vencimento["Data do contrato"],
+                    dayfirst=True,
+                    errors="coerce"
+                ).dt.strftime("%d/%m/%Y")
+            
+                    
             # -------------------------------
             # DATAS INVÁLIDAS (PADRÃO IGUAL AO OUTRO)
             # -------------------------------
