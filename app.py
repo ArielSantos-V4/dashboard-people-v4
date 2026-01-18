@@ -195,7 +195,8 @@ with aba_dashboard:
             dayfirst=True,
             errors="coerce"
         )
-    
+        
+    df = df.fillna("")
     
     # --------------------------------------------------
     # LOAD + ORGANIZAÇÃO
@@ -469,7 +470,6 @@ with aba_dashboard:
     
     
     df_tabela = df.copy()
-    df = df.fillna("")
 
     # Datas exibidas
     df_tabela["Término do contrato"] = df_tabela["Térm previsto_exibicao"]
