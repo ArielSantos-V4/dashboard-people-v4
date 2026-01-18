@@ -183,6 +183,13 @@ with aba_dashboard:
     df.columns = df.columns.str.strip()
     df = df.fillna("")
     
+    # -------- PADRONIZAÇÃO DE DATAS (FORMATO BR) --------
+    df["Data de nascimento"] = parse_data_br(df["Data de nascimento"])
+    df["Data Início"] = parse_data_br(df["Data Início"])
+    df["Data do contrato"] = parse_data_br(df["Data do contrato"])
+    df["Térm previsto"] = parse_data_br(df["Térm previsto"])
+
+    
     # --------------------------------------------------
     # DATAS
     # --------------------------------------------------
