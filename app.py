@@ -1311,7 +1311,6 @@ with aba_benefícios:
         from datetime import datetime
         import locale
         
-        # força mês em português
         try:
             locale.setlocale(locale.LC_TIME, "pt_BR.UTF-8")
         except:
@@ -1319,78 +1318,69 @@ with aba_benefícios:
         
         st.markdown("### ⚙️ Ações")
         
-        # -------- BOTÃO PRINCIPAL --------
-        if st.button("📄 Gerar Subfatura", use_container_width=True):
-            st.session_state["abrir_subfatura"] = True
         
+        @st.dialog("📄 Gerar Subfatura")
+        def modal_subfatura():
         
-        # -------- MODAL REAL --------
-        if st.session_state.get("abrir_subfatura", False):
+            nomes = sorted(df["Nome"].dropna().unique())
+            nome_escolhido = st.selectbox("Selecione o investidor", nomes)
         
-            def gerar_subfatura():
-                st.markdown("### 📄 Gerar Subfatura (PJ)")
+            data_vigencia = st.date_input("Data de início da vigência")
         
-                nomes = sorted(df["Nome"].dropna().unique())
-                nome_escolhido = st.selectbox("Selecione o investidor", nomes)
+            if st.button("✅ Gerar documento"):
         
-                data_vigencia = st.date_input("Data de início da vigência")
+                dados = df[df["Nome"] == nome_escolhido].iloc[0]
         
-                if st.button("✅ Gerar documento"):
+                razao_social = dados["Razão social"]
+                cnpj = dados["CNPJ"]
+                cpf = dados["CPF"]
+                email_pessoal = dados["E-mail pessoal"]
+                modelo_contrato = dados["Modelo de contrato"]
         
-                    dados = df[df["Nome"] == nome_escolhido].iloc[0]
-        
-                    razao_social = dados["Razão social"]
-                    cnpj = dados["CNPJ"]
-                    cpf = dados["CPF"]
-                    email_pessoal = dados["E-mail pessoal"]
-                    modelo_contrato = dados["Modelo de contrato"]
-        
-                    # -------- VALIDAÇÃO PJ --------
-                    if "PJ" not in str(modelo_contrato).upper():
-                        st.warning(
-                            f"⚠️ O investidor **{nome_escolhido}** não possui contrato PJ.\n\n"
-                            f"Modelo de contrato atual: **{modelo_contrato}**"
-                        )
-        
-                        continuar = st.checkbox("Deseja continuar mesmo assim?")
-                        if not continuar:
-                            return
-        
-                    # -------- ABRE TEMPLATE --------
-                    doc = Document("INCLUSÃO SUBFATURA V4.docx")
-        
-                    vigencia_formatada = data_vigencia.strftime("%d/%m/%Y")
-                    data_assinatura = datetime.today().strftime("%d de %B de %Y")
-        
-                    # -------- SUBSTITUI CAMPOS --------
-                    for p in doc.paragraphs:
-                        p.text = (
-                            p.text
-                            .replace("RAZÃO SOCIAL", str(razao_social))
-                            .replace("XX.XXX.XXX/XXXX-XX", str(cnpj))
-                            .replace("XX/XX/XXXX", vigencia_formatada)
-                            .replace("XX de xxxxxx de XXXX", data_assinatura)
-                        )
-        
-                    cpf_limpo = re.sub(r"\D", "", str(cpf))
-        
-                    nome_arquivo = (
-                        f"{nome_escolhido}__{cpf_limpo}__{email_pessoal}__Subfatura.docx"
+                # -------- VALIDAÇÃO PJ --------
+                if "PJ" not in str(modelo_contrato).upper():
+                    st.warning(
+                        f"⚠️ O investidor **{nome_escolhido}** não possui contrato PJ.\n\n"
+                        f"Modelo de contrato atual: **{modelo_contrato}**"
                     )
         
-                    doc.save(nome_arquivo)
+                    continuar = st.checkbox("Deseja continuar mesmo assim?")
+                    if not continuar:
+                        st.stop()
         
-                    with open(nome_arquivo, "rb") as f:
-                        st.download_button(
-                            "⬇️ Baixar Subfatura",
-                            data=f,
-                            file_name=nome_arquivo,
-                            mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-                        )
+                doc = Document("INCLUSÃO SUBFATURA V4.docx")
         
-                    st.success("Documento gerado com sucesso ✅")
+                vigencia_formatada = data_vigencia.strftime("%d/%m/%Y")
+                data_assinatura = datetime.today().strftime("%d de %B de %Y")
         
-                    st.session_state["abrir_subfatura"] = False
+                for p in doc.paragraphs:
+                    p.text = (
+                        p.text
+                        .replace("RAZÃO SOCIAL", str(razao_social))
+                        .replace("XX.XXX.XXX/XXXX-XX", str(cnpj))
+                        .replace("XX/XX/XXXX", vigencia_formatada)
+                        .replace("XX de xxxxxx de XXXX", data_assinatura)
+                    )
+        
+                cpf_limpo = re.sub(r"\D", "", str(cpf))
+        
+                nome_arquivo = (
+                    f"{nome_escolhido}__{cpf_limpo}__{email_pessoal}__Subfatura.docx"
+                )
+        
+                doc.save(nome_arquivo)
+        
+                with open(nome_arquivo, "rb") as f:
+                    st.download_button(
+                        "⬇️ Baixar Subfatura",
+                        data=f,
+                        file_name=nome_arquivo,
+                        mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                    )
+        
+                st.success("Documento gerado com sucesso ✅")
         
         
-            st.dialog("📄 Gerar Subfatura")(gerar_subfatura)
+        # -------- BOTÃO QUE ABRE O MODAL --------
+        if st.button("📄 Gerar Subfatura", use_container_width=True):
+            modal_subfatura()
