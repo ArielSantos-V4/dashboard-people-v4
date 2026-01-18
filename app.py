@@ -990,7 +990,7 @@ with aba_relatorios:
             
             with botao_container:
                 if st.button("✅ Gerar subfatura", use_container_width=True):
-                    gerar_documento = True
+                    gerar_subaftura = True
         
                     titulo_doc = st.session_state.get("titulo_doc", "")
                     nome_selecionado = st.session_state.get("nome_selecionado", "")
@@ -1354,7 +1354,7 @@ with aba_benefícios:
         
             col1, col2, col3 = st.columns([1, 2, 1])
             with col2:
-                gerar = st.button("✅ Gerar documento", use_container_width=True)
+                gerar = st.button("✅ Gerar subfatura", use_container_width=True)
         
             if gerar:
         
