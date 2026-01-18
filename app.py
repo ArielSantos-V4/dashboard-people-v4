@@ -616,10 +616,6 @@ with aba_relatorios:
             
             df_invalidos = df_check[df_check["Data de nascimento"].isna()]
 
-            # 🔍 DEBUG VISUAL (opcional, pode remover depois)
-            total = len(df_aniversario)
-            invalidas = df_aniversario["Data de nascimento"].isna().sum()
-            st.caption(f"⚠️ Datas inválidas: {invalidas} de {total}")
 
             # 🔔 LISTAR PESSOAS COM DATA INVÁLIDA
             if not df_invalidos.empty:
