@@ -1222,103 +1222,103 @@ with aba_benefícios:
         # ==============================
         # BLOCO 3 — ACOMPANHAMENTO (CARDS DE STATUS)
         # ==============================
-        
-        import streamlit as st
-        from datetime import date
-        
-        st.markdown("## 🧭 Acompanhamento do Período")
-        
-        # -------- CONFIGURAÇÃO DO PERÍODO --------
-        inicio = date(2026, 1, 16)
-        fim = date(2026, 1, 31)
-        hoje = date.today()
-        
-        # -------- LÓGICA DE STATUS --------
-        if hoje < inicio:
-            status = "Período ainda não iniciado"
-            cor_status = "#444"
-            emoji = "⏳"
-        elif inicio <= hoje <= fim:
-            status = "Período de acompanhamento ativo"
-            cor_status = "#2E8B57"
-            emoji = "📌"
-        else:
-            status = "Período encerrado"
-            cor_status = "#8B0000"
-            emoji = "✅"
-        
-        # -------- CÁLCULOS --------
-        dias_totais = (fim - inicio).days + 1
-        dias_passados = max(0, min((hoje - inicio).days + 1, dias_totais))
-        dias_restantes = max(0, (fim - hoje).days)
-        
-        # -------- GRID DE CARDS --------
-        col1, col2, col3 = st.columns(3)
-        
-        with col1:
-            st.markdown(f"""
-            <div style="
-                background:#1f1f1f;
-                padding:16px;
-                border-radius:14px;
-                text-align:center;
-                color:#ddd;">
-                <div style="font-size:28px;">{emoji}</div>
-                <div style="margin-top:6px;font-weight:bold;">
-                    Status atual
-                </div>
+            with col_lembrete:
+            import streamlit as st
+            from datetime import date
+            
+            st.markdown("## 🧭 Acompanhamento do Período")
+            
+            # -------- CONFIGURAÇÃO DO PERÍODO --------
+            inicio = date(2026, 1, 16)
+            fim = date(2026, 1, 31)
+            hoje = date.today()
+            
+            # -------- LÓGICA DE STATUS --------
+            if hoje < inicio:
+                status = "Período ainda não iniciado"
+                cor_status = "#444"
+                emoji = "⏳"
+            elif inicio <= hoje <= fim:
+                status = "Período de acompanhamento ativo"
+                cor_status = "#2E8B57"
+                emoji = "📌"
+            else:
+                status = "Período encerrado"
+                cor_status = "#8B0000"
+                emoji = "✅"
+            
+            # -------- CÁLCULOS --------
+            dias_totais = (fim - inicio).days + 1
+            dias_passados = max(0, min((hoje - inicio).days + 1, dias_totais))
+            dias_restantes = max(0, (fim - hoje).days)
+            
+            # -------- GRID DE CARDS --------
+            col1, col2, col3 = st.columns(3)
+            
+            with col1:
+                st.markdown(f"""
                 <div style="
-                    margin-top:8px;
-                    padding:8px;
-                    background:{cor_status};
-                    border-radius:8px;
-                    color:black;
-                    font-weight:bold;">
-                    {status}
+                    background:#1f1f1f;
+                    padding:16px;
+                    border-radius:14px;
+                    text-align:center;
+                    color:#ddd;">
+                    <div style="font-size:28px;">{emoji}</div>
+                    <div style="margin-top:6px;font-weight:bold;">
+                        Status atual
+                    </div>
+                    <div style="
+                        margin-top:8px;
+                        padding:8px;
+                        background:{cor_status};
+                        border-radius:8px;
+                        color:black;
+                        font-weight:bold;">
+                        {status}
+                    </div>
                 </div>
-            </div>
-            """, unsafe_allow_html=True)
-        
-        with col2:
-            st.markdown(f"""
-            <div style="
-                background:#1f1f1f;
-                padding:16px;
-                border-radius:14px;
-                text-align:center;
-                color:#ddd;">
-                <div style="font-size:28px;">📅</div>
-                <div style="margin-top:6px;font-weight:bold;">
-                    Dias do período
-                </div>
+                """, unsafe_allow_html=True)
+            
+            with col2:
+                st.markdown(f"""
                 <div style="
-                    margin-top:10px;
-                    font-size:22px;
-                    font-weight:bold;
-                    color:#aaa;">
-                    {dias_totais}
+                    background:#1f1f1f;
+                    padding:16px;
+                    border-radius:14px;
+                    text-align:center;
+                    color:#ddd;">
+                    <div style="font-size:28px;">📅</div>
+                    <div style="margin-top:6px;font-weight:bold;">
+                        Dias do período
+                    </div>
+                    <div style="
+                        margin-top:10px;
+                        font-size:22px;
+                        font-weight:bold;
+                        color:#aaa;">
+                        {dias_totais}
+                    </div>
                 </div>
-            </div>
-            """, unsafe_allow_html=True)
-        
-        with col3:
-            st.markdown(f"""
-            <div style="
-                background:#1f1f1f;
-                padding:16px;
-                border-radius:14px;
-                text-align:center;
-                color:#ddd;">
-                <div style="font-size:28px;">⏱️</div>
-                <div style="margin-top:6px;font-weight:bold;">
-                    Dias restantes
-                </div>
+                """, unsafe_allow_html=True)
+            
+            with col3:
+                st.markdown(f"""
                 <div style="
-                    margin-top:10px;
-                    font-size:22px;
-                    font-weight:bold;
-                    color:#aaa;">
-                    {dias_restantes}
+                    background:#1f1f1f;
+                    padding:16px;
+                    border-radius:14px;
+                    text-align:center;
+                    color:#ddd;">
+                    <div style="font-size:28px;">⏱️</div>
+                    <div style="margin-top:6px;font-weight:bold;">
+                        Dias restantes
+                    </div>
+                    <div style="
+                        margin-top:10px;
+                        font-size:22px;
+                        font-weight:bold;
+                        color:#aaa;">
+                        {dias_restantes}
+                    </div>
                 </div>
-            </div>
-            """, unsafe_allow_html=True)
+                """, unsafe_allow_html=True)
