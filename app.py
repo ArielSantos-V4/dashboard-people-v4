@@ -1442,7 +1442,6 @@ with aba_benefícios:
 
         
                 st.success("Subfatura gerada com sucesso ✅")
-
         # ==============================
         # AÇÃO — GERAR TERMO DE SUBESTIPULANTE
         # ==============================
