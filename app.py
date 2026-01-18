@@ -1121,45 +1121,52 @@ with aba_benefícios:
     
     col1, col2, col3 = st.columns([3, 3, 3])
     
-    # =====================================================
-    # 1️⃣ GRÁFICO – SITUAÇÃO NO PLANO
-    # =====================================================
+    # ---------------------------------
+    # GRÁFICO — SITUAÇÃO NO PLANO
+    # ---------------------------------
     
-    with col1:
-        st.markdown("### 📊 Situação no plano")
+    st.markdown("### 📊 Situação no plano")
     
-        if "Situação no plano" in df.columns:
-            dados_plano = (
-                df["Situação no plano"]
-                .fillna("Não informado")
-                .value_counts()
-            )
+    df_plano = (
+        df["Situação no plano"]
+        .fillna("Não informado")
+        .value_counts()
+        .reset_index()
+    )
     
-            fig, ax = plt.subplots()
+    df_plano.columns = ["Situação", "Quantidade"]
     
-            # ❌ nunca usar azul
-            cores = [
-                "#2E8B57",  # verde
-                "#FFA500",  # laranja
-                "#DC143C",  # vermelho
-                "#8B4513",  # marrom
-                "#708090",  # cinza
-                "#9370DB"   # roxo
+    total = df_plano["Quantidade"].sum()
+    df_plano["Percentual"] = (df_plano["Quantidade"] / total) * 100
+    
+    grafico_plano = (
+        alt.Chart(df_plano)
+        .mark_arc(innerRadius=60)
+        .encode(
+            theta=alt.Theta("Quantidade:Q"),
+            color=alt.Color(
+                "Situação:N",
+                scale=alt.Scale(
+                    range=[
+                        "#E30613",  # vermelho V4
+                        "#B0000A",  # vermelho escuro
+                        "#FF6B6B",  # vermelho claro
+                        "#6B0000",  # vinho
+                        "#A40000",  # variação
+                    ]
+                ),
+                legend=alt.Legend(title="Situação")
+            ),
+            tooltip=[
+                alt.Tooltip("Situação:N", title="Situação"),
+                alt.Tooltip("Quantidade:Q", title="Qtd"),
+                alt.Tooltip("Percentual:Q", title="%", format=".1f"),
             ]
+        )
+    )
     
-            ax.pie(
-                dados_plano,
-                labels=dados_plano.index,
-                autopct="%1.1f%%",
-                startangle=90,
-                colors=cores[:len(dados_plano)]
-            )
-    
-            ax.axis("equal")
-            st.pyplot(fig)
-    
-        else:
-            st.warning("Coluna 'Situação no plano' não encontrada.")
+    st.altair_chart(grafico_plano, use_container_width=True)
+
     
     # =====================================================
     # 2️⃣ CONSULTA RÁPIDA DE CARTEIRINHAS
