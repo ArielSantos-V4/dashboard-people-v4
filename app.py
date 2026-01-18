@@ -168,12 +168,11 @@ with aba_dashboard:
     @st.cache_data(ttl=600)
     def load_google_sheet():
         sheet_id = "13EPwhiXgh8BkbhyrEy2aCy3cv1O8npxJ_hA-HmLZ-pY"
-        gid = 2056973316  # <-- AQUI
+        gid = 2056973316
     
         url = f"https://docs.google.com/spreadsheets/d/{sheet_id}/gviz/tq?gid={gid}&tqx=out:csv"
-        df = pd.read_csv(url)
+        return pd.read_csv(url)
     
-        return df
     
     def parse_data_br(coluna):
         return pd.to_datetime(
@@ -181,27 +180,41 @@ with aba_dashboard:
             dayfirst=True,
             errors="coerce"
         )
-
+    
+    
+    # --------------------------------------------------
+    # LOAD + ORGANIZAÇÃO
+    # --------------------------------------------------
     df = load_google_sheet()
-    df = df.sort_values("Nome", ascending=True).reset_index(drop=True)
     df.columns = df.columns.str.strip()
-    df = df.fillna("")
+    df = df.sort_values("Nome").reset_index(drop=True)
     
-    st.write(
-        df.loc[df["Nome"] == "Ariel Santos", ["Data Início"]]
-    )
     
-    # -------- PADRONIZAÇÃO DE DATAS (FORMATO BR) --------
+    # --------------------------------------------------
+    # BACKUP RAW (ANTES DE CONVERTER)
+    # --------------------------------------------------
+    df["Data Início_raw"] = df["Data Início"]
+    df["Data de nascimento_raw"] = df["Data de nascimento"]
+    df["Data do contrato_raw"] = df["Data do contrato"]
+    df["Térm previsto_raw"] = df["Térm previsto"]
+    
+    
+    # --------------------------------------------------
+    # CONVERSÃO CORRETA (DAYFIRST)
+    # --------------------------------------------------
     df["Data de nascimento"] = parse_data_br(df["Data de nascimento"])
     df["Data Início"] = parse_data_br(df["Data Início"])
     df["Data do contrato"] = parse_data_br(df["Data do contrato"])
     df["Térm previsto"] = parse_data_br(df["Térm previsto"])
-
+    
+    
+    # --------------------------------------------------
+    # TESTE DE SANIDADE (CONFIRMA SE NÃO INVERTEU)
+    # --------------------------------------------------
     st.write(
-        df.loc[df["Nome"] == "Ariel Santos", ["Data Início"]]
+        df.loc[df["Nome"] == "Ariel Santos", ["Data Início_raw", "Data Início"]]
     )
 
-    
     # --------------------------------------------------
     # DATAS
     # --------------------------------------------------
@@ -228,8 +241,10 @@ with aba_dashboard:
     # TOPO
     # --------------------------------------------------
     col_logo, col_title = st.columns([1, 6])
+    
     with col_logo:
         st.image("LOGO VERMELHO.png", width=120)
+        
     with col_title:
         st.markdown("<h1>Dashboard People</h1><h3 style='color:#ccc;'>V4 Company</h3>", unsafe_allow_html=True)
     
