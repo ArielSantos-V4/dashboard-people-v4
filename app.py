@@ -1269,11 +1269,12 @@ with aba_benefícios:
                       margin-top:6px;">
         
             <div style="
-              width:{percentual*100}%;
+              width: max(6%, 13.333333333333334%);
               height:100%;
               background:#2E8B57;
               border-radius:10px;">
             </div>
+
         
             <div style="
               position:absolute;
