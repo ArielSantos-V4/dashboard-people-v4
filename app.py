@@ -1436,7 +1436,7 @@ with aba_benefícios:
                 
                 with col_btn2:
                     st.link_button(
-                        "🔁 Converter em PDF",
+                        "🔁 Converter PDF",
                         "https://www.ilovepdf.com/pt/word_para_pdf",
                         use_container_width=True
                     )
