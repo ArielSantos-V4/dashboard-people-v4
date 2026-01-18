@@ -32,7 +32,35 @@ st.set_page_config(
     layout="wide",
     page_icon="LOGO VERMELHO.png"
 )
-
+# --------------------------------------------------
+# LOGIN
+# --------------------------------------------------
+def check_password(username, password):
+    users = st.secrets["users"]
+    if username not in users:
+        return False, None
+    return password == users[username]["password"], users[username]["name"]
+    
+if "authenticated" not in st.session_state:
+    st.session_state.authenticated = False
+    
+if not st.session_state.authenticated:
+    st.title("🔐 Login — Dashboard People V4")
+    
+    username = st.text_input("Usuário")
+    password = st.text_input("Senha", type="password")
+    
+    if st.button("Entrar"):
+        valid, name = check_password(username, password)
+        if valid:
+            st.session_state.authenticated = True
+            st.session_state.user_name = name
+            st.rerun()
+        else:
+            st.error("Usuário ou senha inválidos")
+    
+    st.stop()
+        
 # --------------------------------------------------
 # ABAS
 # --------------------------------------------------
