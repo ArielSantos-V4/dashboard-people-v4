@@ -987,7 +987,6 @@ with aba_relatorios:
             )
         
             # ---------- BOTÃO CENTRALIZADO ----------
-            col_esq, col_centro, col_dir = st.columns([1, 2, 1])
         
             with col_centro:
                 if st.button("✅ Gerar título", use_container_width=True):
