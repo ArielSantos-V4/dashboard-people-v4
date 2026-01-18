@@ -847,7 +847,7 @@ with aba_relatorios:
             lista_nomes = sorted(df["Nome"].dropna().unique())
         
             nome_selecionado = st.selectbox(
-                "Selecione o nome",
+                "Selecione o investidor",
                 options=[""] + lista_nomes,
                 index=0,
                 placeholder="Digite ou selecione um nome"
@@ -858,8 +858,18 @@ with aba_relatorios:
             with col_btn_centro:
                 if st.button("✅ Gerar título", use_container_width=True):
 
-                 if not titulo_doc or not nome_selecionado:
-                     st.warning("Preencha o título e selecione uma pessoa")
+                 if not nome_selecionado or not titulo_doc:
+                    st.warning("Selecione um nome e informe o título do arquivo.")
+                    return
+                
+                dados_filtrados = df[df["Nome"] == nome_selecionado]
+                
+                if dados_filtrados.empty:
+                    st.error("Não foi possível localizar os dados dessa pessoa.")
+                    return
+                
+                dados = dados_filtrados.iloc[0]
+
                 
                 else:
                     dados = df[df["Nome"] == nome_selecionado].iloc[0]
