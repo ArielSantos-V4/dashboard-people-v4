@@ -1046,4 +1046,140 @@ with aba_relatorios:
 # --------------------------------------------------
 
 with aba_benefícios:
-    st.info("Área reservada para atualizações futuras.")
+
+# =====================================================
+# ABA BENEFÍCIOS – TOPO + INDICADORES
+# =====================================================
+
+import matplotlib.pyplot as plt
+from datetime import datetime, timedelta
+
+# -------------------------------
+# TOPO – GESTÃO DE BENEFÍCIOS
+# -------------------------------
+
+col_logo, col_title = st.columns([1, 6])
+
+with col_logo:
+    st.image("logo.png", width=80)  # mesma logo das outras abas
+
+with col_title:
+    st.markdown("## 🩺 Gestão de Benefícios")
+    st.markdown("---")
+
+# -------------------------------
+# LINHA PRINCIPAL (3 COLUNAS)
+# -------------------------------
+
+col1, col2, col3 = st.columns([3, 3, 3])
+
+# =====================================================
+# 1️⃣ GRÁFICO – SITUAÇÃO NO PLANO
+# =====================================================
+
+with col1:
+    st.markdown("### 📊 Situação no plano")
+
+    if "Situação no plano" in df.columns:
+        dados_plano = (
+            df["Situação no plano"]
+            .fillna("Não informado")
+            .value_counts()
+        )
+
+        fig, ax = plt.subplots()
+
+        # ❌ nunca usar azul
+        cores = [
+            "#2E8B57",  # verde
+            "#FFA500",  # laranja
+            "#DC143C",  # vermelho
+            "#8B4513",  # marrom
+            "#708090",  # cinza
+            "#9370DB"   # roxo
+        ]
+
+        ax.pie(
+            dados_plano,
+            labels=dados_plano.index,
+            autopct="%1.1f%%",
+            startangle=90,
+            colors=cores[:len(dados_plano)]
+        )
+
+        ax.axis("equal")
+        st.pyplot(fig)
+
+    else:
+        st.warning("Coluna 'Situação no plano' não encontrada.")
+
+# =====================================================
+# 2️⃣ CONSULTA RÁPIDA DE CARTEIRINHAS
+# =====================================================
+
+with col2:
+    st.markdown("### 🔍 Consulta rápida de carteirinhas")
+
+    if "Nome" not in df.columns:
+        st.warning("Coluna 'Nome' não encontrada.")
+    else:
+        nomes = (
+            df["Nome"]
+            .dropna()
+            .sort_values()
+            .unique()
+        )
+
+        pessoa = st.selectbox("Selecione a pessoa", nomes)
+
+        dados = df[df["Nome"] == pessoa].iloc[0]
+
+        st.markdown("**🩺 Plano Médico**")
+        st.write(f"Carteirinha: {dados.get('Carteirinha médico', '') or ''}")
+        st.write(f"Operadora: {dados.get('Operadora Médico', '') or ''}")
+
+        st.markdown("---")
+
+        st.markdown("**🦷 Plano Odontológico**")
+        st.write(f"Carteirinha: {dados.get('Carteirinha odonto', '') or ''}")
+        st.write(f"Operadora: {dados.get('Operadora Odonto', '') or ''}")
+
+# =====================================================
+# 3️⃣ LEMBRETE DE MOVIMENTAÇÕES DO PLANO
+# =====================================================
+
+with col3:
+    st.markdown("### ⏰ Movimentações do plano")
+
+    hoje = datetime.today().date()
+    dia = hoje.day
+
+    if 1 <= dia <= 5:
+        mensagem = (
+            "📄 **Solicitação de documentação**\n\n"
+            "Período para solicitar documentos aos investidores "
+            "para inclusão no plano."
+        )
+
+    elif 6 <= dia < 15:
+        dias_restantes = 15 - dia
+        mensagem = (
+            "📤 **Preparação e envio ao plano**\n\n"
+            f"Faltam **{dias_restantes} dias** para o envio da documentação "
+            "(dia 15)."
+        )
+
+    else:
+        proximo_mes = (hoje.replace(day=28) + timedelta(days=4)).replace(day=1)
+        dias_para_prox = (proximo_mes - hoje).days
+
+        mensagem = (
+            "✅ **Acompanhamento e envio de carteirinhas**\n\n"
+            "Estamos acompanhando as movimentações do plano e "
+            "enviando as carteirinhas aos investidores.\n\n"
+            f"⏳ Faltam **{dias_para_prox} dias** para o próximo "
+            "período de solicitação (dia 01)."
+        )
+
+    st.info(mensagem)
+
