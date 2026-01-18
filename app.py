@@ -1059,7 +1059,7 @@ with aba_benefícios:
 
     with col_title:
         st.markdown(
-            "<h1> 🩺 Gestão de Benefícios </h1>"
+            "<h1> Gestão de Benefícios </h1>"
             "<h3 style='color:#ccc;'>V4 Company</h3>",
             unsafe_allow_html=True
         )
