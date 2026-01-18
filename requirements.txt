@@ -6,3 +6,4 @@ google-auth
 streamlit-authenticator
 pyyaml
 geopy
+python-docx
