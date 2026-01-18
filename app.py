@@ -1250,8 +1250,7 @@ with aba_benefícios:
                 "Nome",
                 "E-mail corporativo",
                 "Modelo de contrato",
-                "Solicitar documentação",
-                "Situação no plano"
+                "Solicitar documentação"
             ]]
         
             st.dataframe(
