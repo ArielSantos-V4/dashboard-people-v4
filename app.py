@@ -885,6 +885,14 @@ with aba_relatorios:
                     st.info("Nenhum investidor MEI encontrado.")
         
                 else:
+
+                    # 🔔 ALERTA – TOTAL DE INVESTIDORES MEI
+                    total_mei = len(df_mei)
+                    
+                    st.warning(
+                        f"⚠️ Temos **{total_mei} investidores na modalidade MEI** que precisam regularizar a forma de contratação."
+                    )
+
                     # 🔹 MAPEAMENTO SEGURO DE COLUNAS
                     colunas_map = {
                         "Nome": None,
