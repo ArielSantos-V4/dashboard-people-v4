@@ -917,10 +917,10 @@ with aba_relatorios:
                     df_mei_final = df_mei[list(colunas_validas.values())].copy()
                     df_mei_final.columns = list(colunas_validas.keys())
         
-                    # Formata data
-                    if "Data Início" in df_mei_final.columns:
-                        df_mei_final["Data Início"] = pd.to_datetime(
-                            df_mei_final["Data Início"],
+                    # Formata data do contrato
+                    if "Data do contrato" in df_mei_final.columns:
+                        df_mei_final["Data do contrato"] = pd.to_datetime(
+                            df_mei_final["Data do contrato"],
                             errors="coerce"
                         ).dt.strftime("%d/%m/%Y")
         
