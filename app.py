@@ -1282,7 +1282,24 @@ with aba_benefícios:
 
     
         with abas[2]:
-            st.info("Relatório de investidores aguardando ativação no plano (tabela virá aqui)")
+            st.markdown("#### Investidores aguardando retorno da DBL")
+        
+            # --- FILTRO: aguardando DBL ---
+            df_dbl_status = df[df["Situação no plano"] == "Aguardando DBL"]
+        
+            # --- COLUNAS EXIBIDAS ---
+            tabela_dbl_status = df_dbl_status[[
+                "Nome",
+                "E-mail corporativo",
+                "Modelo de contrato"
+            ]]
+        
+            st.dataframe(
+                tabela_dbl_status,
+                use_container_width=True,
+                hide_index=True
+            )
+
     
     # ==============================
     # COLUNA DIREITA — AÇÕES
