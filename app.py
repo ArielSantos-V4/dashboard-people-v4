@@ -589,11 +589,27 @@ with aba_relatorios:
             df_aniversario = df.copy()
         
             # 🔥 conversão segura (resolve pessoas faltando)
+            df_aniversario = df.copy()
+
+            # 🔥 LIMPEZA FORTE DE DATA
+            df_aniversario["Data de nascimento"] = (
+                df_aniversario["Data de nascimento"]
+                .astype(str)
+                .str.strip()
+                .replace("", pd.NA)
+            )
+            
             df_aniversario["Data de nascimento"] = pd.to_datetime(
                 df_aniversario["Data de nascimento"],
-                errors="coerce",
-                dayfirst=True
+                dayfirst=True,
+                errors="coerce"
             )
+            
+            # 🔍 DEBUG VISUAL (opcional, pode remover depois)
+            total = len(df_aniversario)
+            invalidas = df_aniversario["Data de nascimento"].isna().sum()
+            st.caption(f"⚠️ Datas inválidas: {invalidas} de {total}")
+
         
             # 🔥 filtro por mês
             df_aniversario = df_aniversario[
