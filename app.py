@@ -28,7 +28,7 @@ def formatar_cnpj(valor):
 # --------------------------------------------------
 
 st.set_page_config(
-    page_title="Dashboard People | V4 Company",
+    page_title="People | V4 Company",
     layout="wide",
     page_icon="LOGO VERMELHO.png"
 )
