@@ -1114,7 +1114,10 @@ with aba_benefícios:
                         ),
                         legend=alt.Legend(
                             title="Situação",
-                            orient="bottom"
+                            orient="bottom",
+                            columns=2,          # 👈 quebra a legenda em 2 colunas
+                            labelLimit=180,     # evita cortar textos longos
+                            symbolSize=120
                         ),
                     ),
                     tooltip=[
