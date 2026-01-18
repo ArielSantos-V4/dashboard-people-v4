@@ -1137,41 +1137,77 @@ with aba_benefícios:
     # COLUNA 2 — CONSULTA CARTEIRINHAS
     # ---------------------------------
     with col_consulta:
-
+    
         st.markdown("### 🔎 Consulta rápida de carteirinhas")
-
+    
         nome_beneficio = st.selectbox(
             "Selecione o investidor",
             options=[""] + sorted(df["Nome"].dropna().unique()),
             placeholder="Digite ou selecione um nome"
         )
-
-        if nome_beneficio:
+    
+        consultar = st.button("🔍 Consultar carteirinhas", use_container_width=True)
+    
+        if nome_beneficio and consultar:
+    
             dados = df[df["Nome"] == nome_beneficio].iloc[0]
+    
+            cart_med = str(dados.get("Carteirinha médico", "")).strip()
+            oper_med = str(dados.get("Operadora Médico", "")).strip()
+            cart_odo = str(dados.get("Carteirinha odonto", "")).strip()
+            oper_odo = str(dados.get("Operadora Odonto", "")).strip()
+            situacao = str(dados.get("Situação no plano", "Não informado"))
+    
+            # 🔴 CASO NÃO TENHA CARTEIRINHA (NÃO ATIVO)
+            if not cart_med and not cart_odo:
+    
+                st.markdown(
+                    f"""
+                    <div style="
+                        position: relative;
+                        padding: 25px;
+                        border-radius: 12px;
+                        background: rgba(0,0,0,0.55);
+                        backdrop-filter: blur(6px);
+                        -webkit-backdrop-filter: blur(6px);
+                        color: white;
+                        text-align: center;
+                    ">
+                        <h4>⚠️ Investidor não ativo no plano</h4>
+                        <p>Este investidor não possui carteirinhas ativas no momento.</p>
+                        <hr style="opacity:0.2;">
+                        <p><strong>Situação atual:</strong><br>{situacao}</p>
+                    </div>
+                    """,
+                    unsafe_allow_html=True
+                )
+    
+            # 🟢 CASO TENHA CARTEIRINHA
+            else:
+                st.text_input(
+                    "Carteirinha médico",
+                    cart_med if cart_med else "—",
+                    disabled=True
+                )
+                st.text_input(
+                    "Operadora médico",
+                    oper_med if oper_med else "—",
+                    disabled=True
+                )
+    
+                st.markdown("<div style='height:10px'></div>", unsafe_allow_html=True)
+    
+                st.text_input(
+                    "Carteirinha odonto",
+                    cart_odo if cart_odo else "—",
+                    disabled=True
+                )
+                st.text_input(
+                    "Operadora odonto",
+                    oper_odo if oper_odo else "—",
+                    disabled=True
+                )
 
-            st.text_input(
-                "Carteirinha médico",
-                str(dados.get("Carteirinha médico", "")),
-                disabled=True
-            )
-            st.text_input(
-                "Operadora médico",
-                str(dados.get("Operadora Médico", "")),
-                disabled=True
-            )
-
-            st.markdown("<div style='height:10px'></div>", unsafe_allow_html=True)
-
-            st.text_input(
-                "Carteirinha odonto",
-                str(dados.get("Carteirinha odonto", "")),
-                disabled=True
-            )
-            st.text_input(
-                "Operadora odonto",
-                str(dados.get("Operadora Odonto", "")),
-                disabled=True
-            )
 
     # ---------------------------------
     # COLUNA 3 — LEMBRETE DE PRAZOS
