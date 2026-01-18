@@ -985,43 +985,40 @@ with aba_relatorios:
                 key="nome_selecionado",
                 placeholder="Digite ou selecione um nome"
             )
+
+            if st.button("✅ Gerar subfatura", use_container_width=True):
+                gerar_subaftura = True
+       
+                titulo_doc = st.session_state.get("titulo_doc", "")
+                nome_selecionado = st.session_state.get("nome_selecionado", "")
         
-            botao_container = st.container()
-            
-            with botao_container:
-                if st.button("✅ Gerar subfatura", use_container_width=True):
-                    gerar_subaftura = True
+                if not nome_selecionado or not titulo_doc:
+                    st.warning("Selecione um nome e informe o título do arquivo.")
+                    return
         
-                    titulo_doc = st.session_state.get("titulo_doc", "")
-                    nome_selecionado = st.session_state.get("nome_selecionado", "")
+                dados_filtrados = df[df["Nome"] == nome_selecionado]
+       
+                if dados_filtrados.empty:
+                    st.error("Não foi possível localizar os dados dessa pessoa.")
+                    return
         
-                    if not nome_selecionado or not titulo_doc:
-                        st.warning("Selecione um nome e informe o título do arquivo.")
-                        return
-        
-                    dados_filtrados = df[df["Nome"] == nome_selecionado]
-        
-                    if dados_filtrados.empty:
-                        st.error("Não foi possível localizar os dados dessa pessoa.")
-                        return
-        
-                    dados = dados_filtrados.iloc[0]
-        
-                    cpf_limpo = (
-                        str(dados.get("CPF", ""))
-                        .replace(".", "")
-                        .replace("-", "")
-                        .replace("/", "")
-                    )
-        
-                    email_pessoal = dados.get("E-mail pessoal", "")
-        
-                    st.session_state["titulo_gerado"] = (
-                        f"{nome_selecionado} __ "
-                        f"{cpf_limpo} __ "
-                        f"{email_pessoal} __ "
-                        f"{titulo_doc}"
-                    )
+                dados = dados_filtrados.iloc[0]
+     
+                cpf_limpo = (
+                    str(dados.get("CPF", ""))
+                    .replace(".", "")
+                    .replace("-", "")
+                    .replace("/", "")
+                )
+       
+                email_pessoal = dados.get("E-mail pessoal", "")
+       
+                st.session_state["titulo_gerado"] = (
+                    f"{nome_selecionado} __ "
+                    f"{cpf_limpo} __ "
+                    f"{email_pessoal} __ "
+                    f"{titulo_doc}"
+                )
         
             # ---------- TÍTULO GERADO ----------
             if "titulo_gerado" in st.session_state:
