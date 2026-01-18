@@ -632,7 +632,6 @@ with aba_relatorios:
                     ].reset_index(drop=True)
         
                     st.table(df_invalidos_view)
-
             
                     
             # 🔥 filtro por mês
