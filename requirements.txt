@@ -7,3 +7,4 @@ streamlit-authenticator
 pyyaml
 geopy
 python-docx
+reportlab
