@@ -1233,7 +1233,9 @@ with aba_benefícios:
             ano = hoje.year
             mes = hoje.month
             dia_atual = hoje.day
-        
+            
+            primeiro_dia_semana = datetime(ano, mes, 1).weekday()  # 0=Segunda
+            
             _, ultimo_dia = monthrange(ano, mes)
         
             # -------------------------------
@@ -1300,8 +1302,6 @@ with aba_benefícios:
     
             
             from calendar import monthrange
-    
-            primeiro_dia_semana = datetime(ano, mes, 1).weekday()  # 0=Segunda
     
             for dia in range(1, ultimo_dia + 1):
                 if dias_inicio <= dia <= dias_fim:
