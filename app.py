@@ -1320,7 +1320,7 @@ with aba_benefícios:
         
                 for chave, valor in mapa.items():
                     if chave in texto:
-                        texto = texto.replace(chave, valor)
+                        texto = texto.replace(chave, str(valor))
                         alterou = True
         
                 if alterou:
