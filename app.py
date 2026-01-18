@@ -614,12 +614,9 @@ with aba_relatorios:
                 .reset_index(drop=True)
             )
         
-            st.dataframe(
-                df_final.drop(columns=["Dia"]),
-                use_container_width=True,
-                hide_index=True
-            )
-
+            st.table(
+            df_final.drop(columns=["Dia"])
+        )
 
     # --------------------------------------------------
     # COLUNA DIREITA — AÇÕES
