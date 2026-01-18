@@ -1262,7 +1262,25 @@ with aba_benefícios:
 
     
         with abas[1]:
-            st.info("Relatório de ivestidores para enviar à DBL (tabela virá aqui)")
+            st.markdown("#### Investidores para envio à DBL")
+        
+            # --- FILTRO: aguardando documentação ---
+            df_dbl = df[df["Situação no plano"] == "Aguardando docs"]
+        
+            # --- SELEÇÃO DAS COLUNAS ---
+            tabela_dbl = df_dbl[[
+                "Nome",
+                "E-mail corporativo",
+                "Modelo de contrato",
+                "Enviar no EB"
+            ]]
+        
+            st.dataframe(
+                tabela_dbl,
+                use_container_width=True,
+                hide_index=True
+            )
+
     
         with abas[2]:
             st.info("Relatório de investidores aguardando ativação no plano (tabela virá aqui)")
