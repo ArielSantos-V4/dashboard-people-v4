@@ -1115,126 +1115,126 @@ with aba_benefícios:
 
     from datetime import datetime, timedelta
     
-    # -------------------------------
-    # LINHA PRINCIPAL (3 COLUNAS)
-    # -------------------------------
+    # --------------------------------------------------
+    # LAYOUT — BENEFÍCIOS
+    # --------------------------------------------------
     
-    col1, col2, col3 = st.columns([3, 3, 3])
+    col_grafico, col_consulta, col_lembrete = st.columns([3, 4, 3])
     
     # ---------------------------------
-    # GRÁFICO — SITUAÇÃO NO PLANO
+    # COLUNA 1 — GRÁFICO SITUAÇÃO NO PLANO
     # ---------------------------------
+    with col_grafico:
     
-    st.markdown("### 📊 Situação no plano")
+        st.markdown("### 📊 Situação no plano")
     
-    df_plano = (
-        df["Situação no plano"]
-        .fillna("Não informado")
-        .value_counts()
-        .reset_index()
-    )
-    
-    df_plano.columns = ["Situação", "Quantidade"]
-    
-    total = df_plano["Quantidade"].sum()
-    df_plano["Percentual"] = (df_plano["Quantidade"] / total) * 100
-    
-    grafico_plano = (
-        alt.Chart(df_plano)
-        .mark_arc(innerRadius=60)
-        .encode(
-            theta=alt.Theta("Quantidade:Q"),
-            color=alt.Color(
-                "Situação:N",
-                scale=alt.Scale(
-                    range=[
-                        "#E30613",  # vermelho V4
-                        "#B0000A",  # vermelho escuro
-                        "#FF6B6B",  # vermelho claro
-                        "#6B0000",  # vinho
-                        "#A40000",  # variação
-                    ]
-                ),
-                legend=alt.Legend(title="Situação")
-            ),
-            tooltip=[
-                alt.Tooltip("Situação:N", title="Situação"),
-                alt.Tooltip("Quantidade:Q", title="Qtd"),
-                alt.Tooltip("Percentual:Q", title="%", format=".1f"),
-            ]
+        df_plano = (
+            df["Situação no plano"]
+            .fillna("Não informado")
+            .value_counts()
+            .reset_index()
         )
-    )
     
-    st.altair_chart(grafico_plano, use_container_width=True)
-
+        df_plano.columns = ["Situação", "Quantidade"]
     
-    # =====================================================
-    # 2️⃣ CONSULTA RÁPIDA DE CARTEIRINHAS
-    # =====================================================
+        total = df_plano["Quantidade"].sum()
+        df_plano["Percentual"] = (df_plano["Quantidade"] / total) * 100
     
-    with col2:
-        st.markdown("### 🔍 Consulta rápida de carteirinhas")
+        grafico_plano = (
+            alt.Chart(df_plano)
+            .mark_arc(innerRadius=60)
+            .encode(
+                theta="Quantidade:Q",
+                color=alt.Color(
+                    "Situação:N",
+                    scale=alt.Scale(
+                        range=[
+                            "#E30613",
+                            "#B0000A",
+                            "#FF6B6B",
+                            "#6B0000",
+                            "#A40000",
+                        ]
+                    ),
+                    legend=alt.Legend(title="Situação")
+                ),
+                tooltip=[
+                    alt.Tooltip("Situação:N", title="Situação"),
+                    alt.Tooltip("Quantidade:Q", title="Qtd"),
+                    alt.Tooltip("Percentual:Q", title="%", format=".1f"),
+                ],
+            )
+        )
     
-        if "Nome" not in df.columns:
-            st.warning("Coluna 'Nome' não encontrada.")
-        else:
-            nomes = (
-                df["Nome"]
-                .dropna()
-                .sort_values()
-                .unique()
+        st.altair_chart(grafico_plano, use_container_width=True)
+    
+    
+    # ---------------------------------
+    # COLUNA 2 — CONSULTA CARTEIRINHAS
+    # ---------------------------------
+    with col_consulta:
+    
+        st.markdown("### 🔎 Consulta rápida de carteirinhas")
+    
+        nome_beneficio = st.selectbox(
+            "Selecione o investidor",
+            options=[""] + sorted(df["Nome"].dropna().unique()),
+            placeholder="Digite ou selecione um nome"
+        )
+    
+        if nome_beneficio:
+            dados = df[df["Nome"] == nome_beneficio].iloc[0]
+    
+            st.text_input(
+                "Carteirinha médico",
+                str(dados.get("Carteirinha médico", "")),
+                disabled=True
+            )
+            st.text_input(
+                "Operadora médico",
+                str(dados.get("Operadora Médico", "")),
+                disabled=True
             )
     
-            pessoa = st.selectbox("Selecione a pessoa", nomes)
+            st.markdown("<div style='height:10px'></div>", unsafe_allow_html=True)
     
-            dados = df[df["Nome"] == pessoa].iloc[0]
+            st.text_input(
+                "Carteirinha odonto",
+                str(dados.get("Carteirinha odonto", "")),
+                disabled=True
+            )
+            st.text_input(
+                "Operadora odonto",
+                str(dados.get("Operadora Odonto", "")),
+                disabled=True
+            )
     
-            st.markdown("**🩺 Plano Médico**")
-            st.write(f"Carteirinha: {dados.get('Carteirinha médico', '') or ''}")
-            st.write(f"Operadora: {dados.get('Operadora Médico', '') or ''}")
     
-            st.markdown("---")
+    # ---------------------------------
+    # COLUNA 3 — LEMBRETE DE PRAZOS
+    # ---------------------------------
+    with col_lembrete:
     
-            st.markdown("**🦷 Plano Odontológico**")
-            st.write(f"Carteirinha: {dados.get('Carteirinha odonto', '') or ''}")
-            st.write(f"Operadora: {dados.get('Operadora Odonto', '') or ''}")
+        st.markdown("### 🕒 Lembrete de movimentações")
     
-    # =====================================================
-    # 3️⃣ LEMBRETE DE MOVIMENTAÇÕES DO PLANO
-    # =====================================================
-    
-    with col3:
-        st.markdown("### ⏰ Movimentações do plano")
-    
-        hoje = datetime.today().date()
+        hoje = datetime.today()
         dia = hoje.day
+        ultimo_dia_mes = (hoje.replace(day=28) + timedelta(days=4)).replace(day=1) - timedelta(days=1)
+        dias_para_proximo_mes = (ultimo_dia_mes - hoje).days
     
-        if 1 <= dia <= 5:
-            mensagem = (
-                "📄 **Solicitação de documentação**\n\n"
-                "Período para solicitar documentos aos investidores "
-                "para inclusão no plano."
-            )
-    
-        elif 6 <= dia < 15:
-            dias_restantes = 15 - dia
-            mensagem = (
-                "📤 **Preparação e envio ao plano**\n\n"
-                f"Faltam **{dias_restantes} dias** para o envio da documentação "
-                "(dia 15)."
-            )
-    
+        if dia <= 5:
+            mensagem = "📥 Período de **solicitação de documentação** aos investidores."
+        elif dia <= 15:
+            mensagem = "📤 Período de **envio da documentação** para a operadora."
         else:
-            proximo_mes = (hoje.replace(day=28) + timedelta(days=4)).replace(day=1)
-            dias_para_prox = (proximo_mes - hoje).days
+            mensagem = "🔄 Período de **acompanhamento e envio de carteirinhas**."
     
-            mensagem = (
-                "✅ **Acompanhamento e envio de carteirinhas**\n\n"
-                "Estamos acompanhando as movimentações do plano e "
-                "enviando as carteirinhas aos investidores.\n\n"
-                f"⏳ Faltam **{dias_para_prox} dias** para o próximo "
-                "período de solicitação (dia 01)."
-            )
+        st.info(
+            f"""
+            **Status atual:**  
+            {mensagem}
     
-        st.info(mensagem)
-
+            ⏳ Faltam **{dias_para_proximo_mes + 1} dias**
+            para iniciar um novo ciclo (solicitação de documentos).
+            """
+        )
