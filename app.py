@@ -1492,15 +1492,19 @@ with aba_benefícios:
                     "XX de xxxxxx de XXXX": data_assinatura
                 }
         
+                # Parágrafos normais
                 substituir_texto(doc.paragraphs, mapa)
-        
+                
+                # Tabelas
                 for table in doc.tables:
                     for row in table.rows:
                         for cell in row.cells:
                             substituir_texto(cell.paragraphs, mapa)
-        
+                
+                # Cabeçalho
                 for section in doc.sections:
                     substituir_texto(section.header.paragraphs, mapa)
+
         
                 cpf_limpo = re.sub(r"\D", "", cpf)
         
