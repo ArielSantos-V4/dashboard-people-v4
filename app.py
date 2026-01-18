@@ -348,7 +348,7 @@ with aba_dashboard:
         
             tempo_casa = ""
             if linha["Início na V4"] != "":
-                delta = datetime.today() - pd.to_datetime(linha["Data Início"])
+                delta = datetime.today() - linha["Início na V4_dt"]
                 anos = delta.days // 365
                 meses = (delta.days % 365) // 30
                 dias = (delta.days % 365) % 30
