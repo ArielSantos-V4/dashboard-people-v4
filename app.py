@@ -889,20 +889,25 @@ with aba_relatorios:
                     colunas_map = {
                         "Nome": None,
                         "Email Corporativo": None,
-                        "Data Início": None,
+                        "Data do contrato": None,
                         "Modalidade PJ": None,
                     }
-        
+                    
                     for col in df_mei.columns:
-                        col_strip = col.strip().lower()
-                        if col_strip == "nome":
+                        c = col.strip().lower()
+                    
+                        if c == "nome":
                             colunas_map["Nome"] = col
-                        elif "email" in col_strip:
+                    
+                        elif "mail" in c:
                             colunas_map["Email Corporativo"] = col
-                        elif "data" in col_strip and "início" in col_strip:
-                            colunas_map["Data Início"] = col
-                        elif "modalidade" in col_strip:
+                    
+                        elif any(x in c for x in ["contrato", "admiss"]):
+                            colunas_map["Data do contrato"] = col
+                    
+                        elif "modalidade" in c:
                             colunas_map["Modalidade PJ"] = col
+
         
                     # Remove colunas não encontradas
                     colunas_validas = {
