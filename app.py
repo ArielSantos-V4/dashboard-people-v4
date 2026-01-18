@@ -844,15 +844,14 @@ with aba_relatorios:
                 placeholder="Cole aqui o título do arquivo"
             )
         
-               lista_nomes = sorted(df["Nome"].dropna().unique())
-    
-                nome_selecionado = st.selectbox(
-                    "Selecione o nome",
-                    options=[""] + lista_nomes,
-                    index=0,
-                    placeholder="Digite ou selecione um nome"
-                )
+    lista_nomes = sorted(df["Nome"].dropna().unique())
 
+    nome_selecionado = st.selectbox(
+        "Selecione o nome",
+        options=[""] + lista_nomes,
+        index=0,
+        placeholder="Digite ou selecione um nome"
+    )
         
             if st.button("✅ Gerar título"):
                 dados = df[df["Nome"] == pessoa].iloc[0]
