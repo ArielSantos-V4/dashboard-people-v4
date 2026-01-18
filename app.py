@@ -1349,7 +1349,7 @@ with aba_benefícios:
                     cnpj = str(investidor["N"])
         
                     cpf = re.sub(r"\D", "", str(investidor["CPF"]))
-                    email_pessoal = str(investidor["Email pessoal"])
+                    email_pessoal = str(investidor["E-mail pessoal"])
         
                     data_vigencia_fmt = data_vigencia.strftime("%d/%m/%Y")
                     data_assinatura = datetime.now().strftime("%d de %B de %Y")
