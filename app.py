@@ -882,7 +882,7 @@ with aba_relatorios:
                         "Modelo de contrato",
                         "Modalidade PJ"
                     ]
-                ].sort_values("Término previsto")
+                ].sort_values("Térm previsto_dt")
         
                 df_final = df_final.reset_index(drop=True)
                 df_final.index = [""] * len(df_final)
