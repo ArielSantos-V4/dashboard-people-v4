@@ -1340,7 +1340,7 @@ with aba_benefícios:
         if st.session_state.get("abrir_subfatura", False):
         
             st.markdown("---")
-            st.markdown("## 📄 Gerar Subfatura (PJ)")
+            st.markdown("## 📄 Gerar Subfatura")
         
             nomes = sorted(df["Nome"].dropna().unique())
             nome_escolhido = st.selectbox("Selecione o investidor", nomes)
