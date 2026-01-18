@@ -221,9 +221,18 @@ with aba_dashboard:
     # CONVERSÃO CORRETA (DAYFIRST)
     # --------------------------------------------------
     df["Data de nascimento"] = parse_data_br(df["Data de nascimento"])
-    df["Início na V4"] = parse_data_br(df["Início na V4"])
     df["Data do contrato"] = parse_data_br(df["Data do contrato"])
     df["Térm previsto"] = parse_data_br(df["Térm previsto"])
+    
+    # mantém texto original
+    df["Início na V4_raw"] = df["Início na V4"]
+    
+    # cria datetime REAL para cálculos
+    df["Início na V4_dt"] = parse_data_br(df["Início na V4_raw"])
+    
+    # cria a coluna FINAL de exibição
+    df["Início na V4"] = df["Início na V4_dt"].dt.strftime("%d/%m/%Y").fillna("")
+
 
     # --------------------------------------------------
     # DATAS — FORMATAÇÃO FINAL (SEM COLUNAS NOVAS)
@@ -235,11 +244,6 @@ with aba_dashboard:
         .fillna("")
     )
     
-    df["Início na V4"] = (
-        df["Início na V4"]
-        .dt.strftime("%d/%m/%Y")
-        .fillna("")
-    )
     
     df["Data do contrato"] = (
         df["Data do contrato"]
@@ -252,6 +256,7 @@ with aba_dashboard:
         dayfirst=True,
         errors="coerce"
     )
+    df["Início na V4"] = df["Início na V4_dt"].dt.strftime("%d/%m/%Y").fillna("")
 
     # Térm previsto: data vira dd/mm/yyyy | texto continua texto
     df["Térm previsto"] = df["Térm previsto"].apply(
@@ -526,19 +531,17 @@ with aba_dashboard:
             df_tabela.astype(str)
             .apply(lambda x: x.str.contains(busca, case=False).any(), axis=1)
         ]
+        
+    df_tabela.insert(
+        df_tabela.columns.get_loc("Nome") + 1,
+        "Início na V4",
+        df_tabela.pop("Início na V4")
+    )
+    
 
     st.dataframe(
         df_tabela.drop(
-            columns=[
-                "Data de nascimento",
-                "Data do contrato",
-                "Início na V4",
-                "Térm previsto",
-                "Data de nascimento",
-                "Data do contrato",
-                "Início na V4",
-                "Térm previsto"
-            ],
+            columns=[c for c in df_tabela.columns if c.endswith("_raw") or c.endswith("_dt")],
             errors="ignore"
         ),
         use_container_width=True,
