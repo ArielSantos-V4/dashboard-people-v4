@@ -1427,7 +1427,7 @@ with aba_benefícios:
                 with col_btn1:
                     with open(nome_arquivo, "rb") as f:
                         st.download_button(
-                            "⬇️ Baixar Subfatura",
+                            "⬇️ Download",
                             data=f,
                             file_name=nome_arquivo,
                             mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
@@ -1436,7 +1436,7 @@ with aba_benefícios:
                 
                 with col_btn2:
                     st.link_button(
-                        "🔁 Converter para PDF",
+                        "🔁 Converter em PDF",
                         "https://www.ilovepdf.com/pt/word_para_pdf",
                         use_container_width=True
                     )
