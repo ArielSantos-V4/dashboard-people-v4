@@ -834,7 +834,7 @@ with aba_relatorios:
                     [
                         "Nome",
                         "E-mail corporativo",
-                        "Término previsto"
+                        "Térm previsto"
                     ]
                 ].reset_index(drop=True)
         
