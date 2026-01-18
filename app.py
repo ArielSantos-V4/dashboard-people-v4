@@ -588,11 +588,14 @@ with aba_relatorios:
         
             df_aniversario = df.copy()
         
+            # 🔥 conversão segura (resolve pessoas faltando)
             df_aniversario["Data de nascimento"] = pd.to_datetime(
                 df_aniversario["Data de nascimento"],
-                errors="coerce"
+                errors="coerce",
+                dayfirst=True
             )
         
+            # 🔥 filtro por mês
             df_aniversario = df_aniversario[
                 df_aniversario["Data de nascimento"].dt.month == mes_selecionado
             ]
@@ -603,15 +606,20 @@ with aba_relatorios:
                 ano_atual = datetime.today().year
         
                 df_aniversario["Nascimento"] = df_aniversario["Data de nascimento"].dt.strftime("%d/%m/%Y")
+        
                 df_aniversario["Idade que completa"] = (
                     ano_atual - df_aniversario["Data de nascimento"].dt.year
-                )
+                ).astype(int).astype(str) + " anos"
         
                 df_aniversario["Dia"] = df_aniversario["Data de nascimento"].dt.day
         
                 df_final = df_aniversario[
                     ["Nome", "E-mail corporativo", "Nascimento", "Idade que completa", "Dia"]
                 ].sort_values("Dia")
+        
+                # 🔥 remove índice visual
+                df_final = df_final.reset_index(drop=True)
+                df_final.index = [""] * len(df_final)
         
                 st.table(
                     df_final.drop(columns=["Dia"])
