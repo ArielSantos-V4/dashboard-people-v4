@@ -1323,7 +1323,7 @@ with aba_benefícios:
         
         if st.session_state.get("abrir_modal_subfatura", False):
         
-            with st.modal("📄 Gerar Subfatura"):
+            with st.dialog("📄 Gerar Subfatura"):
         
                 # Lista de nomes disponíveis (com base na tabela carregada)
                 nomes = df["Nome"].dropna().unique().tolist()
