@@ -1442,9 +1442,6 @@ with aba_benefícios:
 
         
                 st.success("Subfatura gerada com sucesso ✅")
-                
-        if st.button("❌ Fechar"):
-            st.session_state["abrir_subfatura"] = False
 
         # ==============================
         # AÇÃO — GERAR TERMO DE SUBESTIPULANTE
