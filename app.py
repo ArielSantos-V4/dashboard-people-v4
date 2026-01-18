@@ -1445,3 +1445,90 @@ with aba_benefícios:
                 st.success("Subfatura gerada com sucesso ✅")
         
                 st.session_state["abrir_subfatura"] = False
+
+        # ==============================
+        # AÇÃO — GERAR TERMO DE SUBESTIPULANTE
+        # ==============================
+        
+        if st.button("📝 Gerar Termo de Subestipulante", use_container_width=True):
+            st.session_state["abrir_termo"] = True
+        
+        if st.session_state.get("abrir_termo", False):
+        
+            st.markdown("---")
+            st.markdown("## 📝 Gerar Termo de Subestipulante")
+        
+            nomes = sorted(df["Nome"].dropna().unique())
+            nome_escolhido = st.selectbox(
+                "Selecione o investidor",
+                nomes,
+                key="termo_nome"
+            )
+        
+            st.markdown("<br>", unsafe_allow_html=True)
+        
+            col1, col2, col3 = st.columns([1, 2, 1])
+            with col2:
+                gerar_termo = st.button("✅ Gerar Termo", use_container_width=True)
+        
+            if gerar_termo:
+        
+                dados = df[df["Nome"] == nome_escolhido].iloc[0]
+        
+                razao_social = str(dados["Razão social"])
+                cnpj = formatar_cnpj(dados["CNPJ"])
+                cpf = str(dados["CPF"])
+                email_pessoal = str(dados["E-mail pessoal"])
+        
+                # -------- ABRE TEMPLATE --------
+                doc = Document("Termo de integração de subestipulante.docx")
+        
+                hoje = date.today()
+                data_assinatura = f"{hoje.day} de {MESES_PT[hoje.month]} de {hoje.year}"
+        
+                mapa = {
+                    "RAZÃO SOCIAL": razao_social,
+                    "XX.XXX.XXX/XXXX-XX": cnpj,
+                    "XX de xxxxxx de XXXX": data_assinatura
+                }
+        
+                substituir_texto(doc.paragraphs, mapa)
+        
+                for table in doc.tables:
+                    for row in table.rows:
+                        for cell in row.cells:
+                            substituir_texto(cell.paragraphs, mapa)
+        
+                for section in doc.sections:
+                    substituir_texto(section.header.paragraphs, mapa)
+        
+                cpf_limpo = re.sub(r"\D", "", cpf)
+        
+                nome_arquivo = (
+                    f"{nome_escolhido}__{cpf_limpo}__{email_pessoal}__Termo_Subestipulante.docx"
+                )
+        
+                doc.save(nome_arquivo)
+        
+                col_btn1, col_btn2 = st.columns(2)
+        
+                with col_btn1:
+                    with open(nome_arquivo, "rb") as f:
+                        st.download_button(
+                            "⬇️ Download",
+                            data=f,
+                            file_name=nome_arquivo,
+                            mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                            use_container_width=True
+                        )
+        
+                with col_btn2:
+                    st.link_button(
+                        "🔁 Converter PDF",
+                        "https://www.ilovepdf.com/pt/word_para_pdf",
+                        use_container_width=True
+                    )
+        
+                st.success("Termo de Subestipulante gerado com sucesso ✅")
+        
+                st.session_state["abrir_termo"] = False
