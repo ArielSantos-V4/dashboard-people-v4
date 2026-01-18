@@ -1222,29 +1222,116 @@ with aba_benefícios:
     # ---------------------------------
     # COLUNA 3 — LEMBRETE DE PRAZOS
     # ---------------------------------
+    from calendar import monthrange
+    from datetime import datetime, timedelta
+    
     with col_lembrete:
-
-        st.markdown("### 🕒 Movimentações")
-
+    
+        st.markdown("### 🗓️ Movimentações do plano")
+    
         hoje = datetime.today()
-        dia = hoje.day
-        ultimo_dia_mes = (hoje.replace(day=28) + timedelta(days=4)).replace(day=1) - timedelta(days=1)
-        dias_para_proximo_mes = (ultimo_dia_mes - hoje).days
-
-        if dia <= 5:
-            mensagem = "📥 Período de **solicitação de documentação** aos investidores."
-        elif dia <= 15:
-            mensagem = "📤 Período de **envio da documentação** para a operadora."
+        ano = hoje.year
+        mes = hoje.month
+        dia_atual = hoje.day
+    
+        _, ultimo_dia = monthrange(ano, mes)
+    
+        # -------------------------------
+        # DEFINE PERÍODO ATUAL
+        # -------------------------------
+        if dia_atual <= 5:
+            periodo = "Solicitação de documentação"
+            cor = "#FFA500"  # laranja
+            dias_inicio = 1
+            dias_fim = 5
+        elif dia_atual <= 15:
+            periodo = "Envio para a operadora"
+            cor = "#FFD700"  # amarelo
+            dias_inicio = 6
+            dias_fim = 15
         else:
-            mensagem = "🔄 Período de **acompanhamento e envio de carteirinhas**."
-
-        st.info(
+            periodo = "Acompanhamento e envio de carteirinhas"
+            cor = "#2E8B57"  # verde
+            dias_inicio = 16
+            dias_fim = ultimo_dia
+    
+        # -------------------------------
+        # CALENDÁRIO
+        # -------------------------------
+        dias_html = ""
+    
+        for dia in range(1, ultimo_dia + 1):
+            if dias_inicio <= dia <= dias_fim:
+                dias_html += f"""
+                <div style="
+                    background:{cor};
+                    color:black;
+                    padding:6px;
+                    border-radius:6px;
+                    text-align:center;
+                    font-weight:bold;
+                ">{dia}</div>
+                """
+            else:
+                dias_html += f"""
+                <div style="
+                    background:#1f1f1f;
+                    color:#aaa;
+                    padding:6px;
+                    border-radius:6px;
+                    text-align:center;
+                ">{dia}</div>
+                """
+    
+        st.markdown(
             f"""
-            **Status atual:**  
-            {mensagem}
-
-            ⏳ Faltam **{dias_para_proximo_mes + 1} dias**
-            para iniciar um novo ciclo (solicitação de documentos).
-            """
+            <div style="
+                display:grid;
+                grid-template-columns: repeat(7, 1fr);
+                gap:6px;
+                margin-bottom:15px;
+            ">
+                {dias_html}
+            </div>
+            """,
+            unsafe_allow_html=True
         )
-
+    
+        # -------------------------------
+        # STATUS ATUAL (SEPARADO)
+        # -------------------------------
+        st.markdown(
+            f"""
+            <div style="
+                padding:12px;
+                border-radius:8px;
+                background:#2b2b2b;
+                color:white;
+                margin-bottom:10px;
+            ">
+                <strong>Status atual:</strong><br>
+                {periodo}
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
+    
+        # -------------------------------
+        # CONTAGEM REGRESSIVA (SEPARADA)
+        # -------------------------------
+        ultimo_dia_mes = (hoje.replace(day=28) + timedelta(days=4)).replace(day=1) - timedelta(days=1)
+        dias_restantes = (ultimo_dia_mes - hoje).days + 1
+    
+        st.markdown(
+            f"""
+            <div style="
+                padding:12px;
+                border-radius:8px;
+                background:#3a3a3a;
+                color:white;
+            ">
+                ⏳ <strong>{dias_restantes} dias</strong> para iniciar o próximo ciclo
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
