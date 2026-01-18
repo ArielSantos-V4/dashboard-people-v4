@@ -1240,7 +1240,7 @@ with aba_benefícios:
         ])
     
         with abas[0]:
-            st.markdown("#### 📂 Investidores com documentação pendente")
+            st.markdown("#### Investidores com documentação pendente")
         
             # --- FILTRO: somente pendentes ---
             df_pendentes = df[df["Situação no plano"] == "Pendente"]
