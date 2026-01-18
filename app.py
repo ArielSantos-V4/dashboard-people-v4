@@ -791,14 +791,17 @@ with aba_relatorios:
             with col1:
                 data_inicio = st.date_input(
                     "Data inicial",
-                    value=datetime.today().date()
+                    value=datetime.today().date(),
+                    format="DD/MM/YYYY"
                 )
-        
+            
             with col2:
                 data_fim = st.date_input(
                     "Data final",
-                    value=datetime.today().date() + relativedelta(months=3)
+                    value=datetime.today().date() + relativedelta(months=3),
+                    format="DD/MM/YYYY"
                 )
+
         
             # 🔹 garante coluna datetime (NUNCA usar a original para .dt)
             df["Térm previsto_dt"] = pd.to_datetime(
