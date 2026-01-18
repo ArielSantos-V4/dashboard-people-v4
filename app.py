@@ -220,49 +220,30 @@ with aba_dashboard:
     # --------------------------------------------------
     # CONVERSÃO CORRETA (DAYFIRST)
     # --------------------------------------------------
-    df["Data de nascimento"] = parse_data_br(df["Data de nascimento"])
-    df["Data do contrato"] = parse_data_br(df["Data do contrato"])
-    df["Térm previsto"] = parse_data_br(df["Térm previsto"])
     
-    # mantém texto original
+    # BACKUP TEXTO ORIGINAL
     df["Início na V4_raw"] = df["Início na V4"]
+    df["Data de nascimento_raw"] = df["Data de nascimento"]
+    df["Data do contrato_raw"] = df["Data do contrato"]
+    df["Térm previsto_raw"] = df["Térm previsto"]
     
-    # cria datetime REAL para cálculos
+    # DATETIME (PARA CÁLCULOS)
     df["Início na V4_dt"] = parse_data_br(df["Início na V4_raw"])
+    df["Data de nascimento_dt"] = parse_data_br(df["Data de nascimento_raw"])
+    df["Data do contrato_dt"] = parse_data_br(df["Data do contrato_raw"])
+    df["Térm previsto_dt"] = parse_data_br(df["Térm previsto_raw"])
     
-    # cria a coluna FINAL de exibição
+    # TEXTO FINAL (EXIBIÇÃO)
     df["Início na V4"] = df["Início na V4_dt"].dt.strftime("%d/%m/%Y").fillna("")
-
-
-    # --------------------------------------------------
-    # DATAS — FORMATAÇÃO FINAL (SEM COLUNAS NOVAS)
-    # --------------------------------------------------
+    df["Data de nascimento"] = df["Data de nascimento_dt"].dt.strftime("%d/%m/%Y").fillna("")
+    df["Data do contrato"] = df["Data do contrato_dt"].dt.strftime("%d/%m/%Y").fillna("")
     
-    df["Data de nascimento"] = (
-        df["Data de nascimento"]
-        .dt.strftime("%d/%m/%Y")
-        .fillna("")
+    # Térm previsto: data vira data, texto continua texto
+    df["Térm previsto"] = df["Térm previsto_raw"].where(
+        df["Térm previsto_dt"].isna(),
+        df["Térm previsto_dt"].dt.strftime("%d/%m/%Y")
     )
-    
-    
-    df["Data do contrato"] = (
-        df["Data do contrato"]
-        .dt.strftime("%d/%m/%Y")
-        .fillna("")
-    )
-    
-    df["Início na V4_dt"] = pd.to_datetime(
-        df["Início na V4"],
-        dayfirst=True,
-        errors="coerce"
-    )
-    df["Início na V4"] = df["Início na V4_dt"].dt.strftime("%d/%m/%Y").fillna("")
 
-    # Térm previsto: data vira dd/mm/yyyy | texto continua texto
-    df["Térm previsto"] = df["Térm previsto"].apply(
-        lambda x: x.strftime("%d/%m/%Y") if isinstance(x, pd.Timestamp) else x
-    ).fillna("")
-    
     # --------------------------------------------------
     # SIDEBAR
     # --------------------------------------------------
@@ -557,8 +538,15 @@ with aba_dashboard:
     prox_30_dias = hoje + timedelta(days=30)
     
     headcount = len(df)
-    contratos_vencer = df[(df["Térm previsto"].notna()) & (df["Térm previsto"] <= prox_30_dias)]
-    contratos_vencidos = df[(df["Térm previsto"].notna()) & (df["Térm previsto"] < hoje)]
+    contratos_vencer = df[
+        df["Térm previsto_dt"].notna() &
+        (df["Térm previsto_dt"] <= prox_30_dias)
+    ]
+    
+    contratos_vencidos = df[
+        df["Térm previsto_dt"].notna() &
+        (df["Térm previsto_dt"] < hoje)
+    ]
     
     pj = len(df[df["Modelo de contrato"] == "PJ"])
     clt = len(df[df["Modelo de contrato"] == "CLT"])
