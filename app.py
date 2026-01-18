@@ -200,6 +200,10 @@ with aba_dashboard:
     # LOAD + ORGANIZAÇÃO
     # --------------------------------------------------
     df = load_google_sheet()
+
+    st.write(df.columns.tolist())
+    st.stop()
+
     df.columns = df.columns.str.strip()
     df = df.sort_values("Nome").reset_index(drop=True)
     
