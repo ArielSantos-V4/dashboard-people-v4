@@ -1447,25 +1447,30 @@ with aba_benefícios:
         # AÇÃO — GERAR TERMO DE SUBESTIPULANTE
         # ==============================
         st.markdown("---")
-        if st.button("📝 Gerar Termo de Subestipulante", use_container_width=True):
-            st.session_state["abrir_termo"] = True
+        if st.button("📄 Gerar Termo de Subestipulante", use_container_width=True):
+            st.session_state["abrir_termo_subestipulante"] = not st.session_state.get(
+                "abrir_termo_subestipulante", False
+            )
         
-        if st.session_state.get("abrir_termo", False):
-        
-            st.markdown("## 📝 Gerar Termo de Subestipulante")
+        if st.session_state.get("abrir_termo_subestipulante", False):
+
+            st.markdown("---")
+            st.markdown("## 📄 Gerar Termo de Subestipulante")
         
             nomes = sorted(df["Nome"].dropna().unique())
             nome_escolhido = st.selectbox(
                 "Selecione o investidor",
                 nomes,
-                key="termo_nome"
+                key="nome_termo"
             )
-        
-            st.markdown("<br>", unsafe_allow_html=True)
         
             col1, col2, col3 = st.columns([1, 2, 1])
             with col2:
-                gerar_termo = st.button("✅ Gerar Termo", use_container_width=True)
+                gerar_termo = st.button(
+                    "✅ Gerar Termo",
+                    use_container_width=True,
+                    key="btn_gerar_termo"
+                )
         
             if gerar_termo:
         
@@ -1530,5 +1535,3 @@ with aba_benefícios:
                     )
         
                 st.success("Termo de Subestipulante gerado com sucesso ✅")
-        
-                st.session_state["abrir_termo"] = False
