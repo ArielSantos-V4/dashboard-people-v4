@@ -133,34 +133,7 @@ with aba_dashboard:
     </style>
     """, unsafe_allow_html=True)
     
-    # --------------------------------------------------
-    # LOGIN
-    # --------------------------------------------------
-    def check_password(username, password):
-        users = st.secrets["users"]
-        if username not in users:
-            return False, None
-        return password == users[username]["password"], users[username]["name"]
-    
-    if "authenticated" not in st.session_state:
-        st.session_state.authenticated = False
-    
-    if not st.session_state.authenticated:
-        st.title("🔐 Login — Dashboard People V4")
-    
-        username = st.text_input("Usuário")
-        password = st.text_input("Senha", type="password")
-    
-        if st.button("Entrar"):
-            valid, name = check_password(username, password)
-            if valid:
-                st.session_state.authenticated = True
-                st.session_state.user_name = name
-                st.rerun()
-            else:
-                st.error("Usuário ou senha inválidos")
-    
-        st.stop()
+
     
     # --------------------------------------------------
     # GOOGLE SHEETS
@@ -168,7 +141,6 @@ with aba_dashboard:
     @st.cache_data(ttl=600)
     def load_google_sheet():
         sheet_id = "13EPwhiXgh8BkbhyrEy2aCy3cv1O8npxJ_hA-HmLZ-pY"
-        gid = "2056973316"
         url = f"https://docs.google.com/spreadsheets/d/{sheet_id}/gviz/tq?gid={gid}&tqx=out:csv"
         return pd.read_csv(url)
     
