@@ -619,7 +619,7 @@ with aba_relatorios:
 
             # 🔔 LISTAR PESSOAS COM DATA INVÁLIDA
             if not df_invalidos.empty:
-                col_warn, col_link = st.columns([6, 1])
+                col_warn, col_link = st.columns([5, 2])
             
                 with col_warn:
                     st.warning(f"⚠️ {len(df_invalidos)} pessoas com data de nascimento inválida")
