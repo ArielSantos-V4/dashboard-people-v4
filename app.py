@@ -1078,42 +1078,38 @@ with aba_benefícios:
     # COLUNA 1 — GRÁFICO SITUAÇÃO NO PLANO
     # ---------------------------------
     with col_grafico:
-
+    
         st.markdown("### 📊 Situação no plano")
-
+    
         if "Situação no plano" in df.columns:
-
+    
             df_plano = (
                 df["Situação no plano"]
                 .fillna("Não informado")
                 .value_counts()
                 .reset_index()
             )
-
+    
             df_plano.columns = ["Situação", "Quantidade"]
-
+    
             total = df_plano["Quantidade"].sum()
             df_plano["Percentual"] = (df_plano["Quantidade"] / total) * 100
-
+    
             grafico_plano = (
                 alt.Chart(df_plano)
-                .mark_arc(
-                    innerRadius=60,
-                    stroke="white",
-                    strokeWidth=2
-                )
+                .mark_arc(innerRadius=60)  # 🔥 sem borda branca
                 .encode(
-                    theta=alt.Theta("Quantidade:Q"),
+                    theta="Quantidade:Q",
                     color=alt.Color(
                         "Situação:N",
                         scale=alt.Scale(
                             range=[
-                                "#E30613",  # vermelho V4
-                                "#B0000A",  # vermelho escuro
-                                "#FF6B6B",  # vermelho claro
-                                "#6B0000",  # vinho
-                                "#A40000",  # vermelho médio
-                                "#4A4A4A",  # cinza escuro
+                                "#2E8B57",  # verde
+                                "#FFA500",  # laranja
+                                "#8A2BE2",  # roxo
+                                "#DC143C",  # vermelho
+                                "#8B4513",  # marrom
+                                "#808080",  # cinza
                             ]
                         ),
                         legend=alt.Legend(
@@ -1129,11 +1125,12 @@ with aba_benefícios:
                 )
                 .properties(height=260)
             )
-
+    
             st.altair_chart(grafico_plano, use_container_width=True)
-
+    
         else:
             st.warning("Coluna 'Situação no plano' não encontrada.")
+
 
     # ---------------------------------
     # COLUNA 2 — CONSULTA CARTEIRINHAS
