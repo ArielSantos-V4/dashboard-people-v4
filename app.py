@@ -802,7 +802,7 @@ with aba_relatorios:
         
             # 🔹 garante coluna datetime (NUNCA usar a original para .dt)
             df["Térm previsto_dt"] = pd.to_datetime(
-                df["Término previsto"],
+                df["Térm previsto"],
                 dayfirst=True,
                 errors="coerce"
             )
@@ -824,7 +824,7 @@ with aba_relatorios:
                 st.info("Nenhum contrato vencendo no período selecionado ⏳")
             else:
                 # 🔹 formata data apenas para exibição
-                df_vencimento["Término previsto"] = (
+                df_vencimento["Térm previsto"] = (
                     df_vencimento["Térm previsto_dt"]
                     .dt.strftime("%d/%m/%Y")
                     .fillna("")
@@ -854,7 +854,7 @@ with aba_relatorios:
                             width="large"
                         ),
                         "Término previsto": st.column_config.TextColumn(
-                            "Término previsto",
+                            "Térm previsto",
                             width="small"
                         ),
                     }
