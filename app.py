@@ -858,8 +858,9 @@ with aba_relatorios:
             with col_btn_centro:
                 if st.button("✅ Gerar título", use_container_width=True):
 
-                if not titulo_doc or not nome_selecionado:
-                    st.warning("Preencha o título e selecione uma pessoa")
+            if not titulo_doc or not nome_selecionado:
+                st.warning("Preencha o título e selecione uma pessoa")
+                
                 else:
                     dados = df[df["Nome"] == nome_selecionado].iloc[0]
         
