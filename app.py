@@ -866,6 +866,7 @@ with aba_relatorios:
         
         def limpar_titulo():
             st.session_state["titulo_doc"] = ""
+            st.session_state.pop("titulo_gerado", None)
 
         @st.dialog("📝 Gerador de título para automação")
         def modal_titulo_doc():
