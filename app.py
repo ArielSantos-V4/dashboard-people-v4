@@ -1326,7 +1326,21 @@ with aba_benefícios:
                 if alterou:
                     p.clear()
                     p.add_run(texto)
+
+        def formatar_cnpj(cnpj):
+            cnpj_numeros = re.sub(r"\D", "", str(cnpj))
         
+            if len(cnpj_numeros) != 14:
+                return cnpj  # retorna como veio se estiver inválido
+        
+            return (
+                f"{cnpj_numeros[0:2]}."
+                f"{cnpj_numeros[2:5]}."
+                f"{cnpj_numeros[5:8]}/"
+                f"{cnpj_numeros[8:12]}-"
+                f"{cnpj_numeros[12:14]}"
+            )
+
         # -------- BOTÃO PRINCIPAL --------
         st.markdown("### ⚙️ Ações")
         
@@ -1358,7 +1372,7 @@ with aba_benefícios:
                 dados = df[df["Nome"] == nome_escolhido].iloc[0]
         
                 razao_social = str(dados["Razão social"])
-                cnpj = str(dados["CNPJ"])
+                cnpj = formatar_cnpj(dados["CNPJ"])
                 cpf = str(dados["CPF"])
                 email_pessoal = str(dados["E-mail pessoal"])
                 modelo_contrato = str(dados["Modelo de contrato"])
