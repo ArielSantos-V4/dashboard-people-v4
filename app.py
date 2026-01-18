@@ -1252,25 +1252,33 @@ with aba_benefícios:
             dias_passados = max(0, min((hoje - inicio).days + 1, dias_totais))
             dias_restantes = max(0, (fim - hoje).days)
             
-            # -------- GRID DE CARDS (VERTICAL) --------
-
+            # -------- CARDS DE STATUS (VERTICAL) --------
+            
             st.markdown(f"""
             <div style="
                 background:#1f1f1f;
                 padding:16px;
                 border-radius:14px;
-                text-align:center;
                 color:#ddd;
                 margin-bottom:12px;">
-                <div style="font-size:28px;">{emoji} Status atual</div>
-
+                
                 <div style="
-                    margin-top:8px;
-                    padding:8px;
+                    display:flex;
+                    align-items:center;
+                    gap:8px;
+                    font-weight:bold;
+                    margin-bottom:8px;">
+                    <span style="font-size:22px;">{emoji}</span>
+                    <span>Status atual</span>
+                </div>
+            
+                <div style="
+                    padding:10px;
                     background:{cor_status};
                     border-radius:8px;
                     color:black;
-                    font-weight:bold;">
+                    font-weight:bold;
+                    text-align:center;">
                     {status}
                 </div>
             </div>
@@ -1281,39 +1289,23 @@ with aba_benefícios:
                 background:#1f1f1f;
                 padding:16px;
                 border-radius:14px;
-                text-align:center;
-                color:#ddd;
-                margin-bottom:12px;">
-                <div style="font-size:28px;">📅</div>
-                <div style="margin-top:6px;font-weight:bold;">
-                    Dias do período
-                </div>
-                <div style="
-                    margin-top:10px;
-                    font-size:22px;
-                    font-weight:bold;
-                    color:#aaa;">
-                    {dias_totais}
-                </div>
-            </div>
-            """, unsafe_allow_html=True)
-            
-            st.markdown(f"""
-            <div style="
-                background:#1f1f1f;
-                padding:16px;
-                border-radius:14px;
-                text-align:center;
                 color:#ddd;">
-                <div style="font-size:28px;">⏱️</div>
-                <div style="margin-top:6px;font-weight:bold;">
-                    Dias restantes
-                </div>
+                
                 <div style="
-                    margin-top:10px;
-                    font-size:22px;
+                    display:flex;
+                    align-items:center;
+                    gap:8px;
                     font-weight:bold;
-                    color:#aaa;">
+                    margin-bottom:8px;">
+                    <span style="font-size:22px;">⏱️</span>
+                    <span>Dias restantes</span>
+                </div>
+            
+                <div style="
+                    font-size:24px;
+                    font-weight:bold;
+                    color:#aaa;
+                    text-align:center;">
                     {dias_restantes}
                 </div>
             </div>
