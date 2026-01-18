@@ -1072,7 +1072,7 @@ with aba_benefícios:
     # --------------------------------------------------
     # LAYOUT — BENEFÍCIOS
     # --------------------------------------------------
-    col_grafico, col_consulta, col_lembrete = st.columns([3, 4, 3])
+    col_grafico, col_consulta = st.columns([4, 6])
 
     # ---------------------------------
     # COLUNA 1 — GRÁFICO SITUAÇÃO NO PLANO
@@ -1218,93 +1218,3 @@ with aba_benefícios:
                     disabled=True
                 )
 
-
-        # ==============================
-        # BLOCO 3 — ACOMPANHAMENTO (CARDS)
-        # ==============================
-        
-        import streamlit as st
-        from datetime import date
-        
-        st.markdown("## 🧭 Acompanhamento do Período")
-        
-        # -------- CONFIGURAÇÕES DO PERÍODO --------
-        inicio = date(2026, 1, 16)
-        fim = date(2026, 1, 31)
-        hoje = date.today()
-        
-        # -------- LÓGICA DE STATUS --------
-        if hoje < inicio:
-            status = "Período ainda não iniciado"
-            cor_status = "#555555"
-            emoji_status = "⏳"
-        elif inicio <= hoje <= fim:
-            status = "Período de acompanhamento ativo"
-            cor_status = "#2E8B57"
-            emoji_status = "📌"
-        else:
-            status = "Período encerrado"
-            cor_status = "#8B0000"
-            emoji_status = "🔒"
-        
-        # -------- CÁLCULOS --------
-        dias_restantes = max((fim - hoje).days, 0)
-        
-        # -------- CARD 1 — STATUS ATUAL --------
-        st.markdown(f"""
-        <div style="
-            background:#1f1f1f;
-            padding:16px;
-            border-radius:14px;
-            margin-bottom:12px;
-            color:#ddd;">
-        
-            <div style="
-                display:flex;
-                align-items:center;
-                gap:8px;
-                font-weight:bold;
-                margin-bottom:8px;">
-                <span style="font-size:22px;">{emoji_status}</span>
-                <span>Status atual</span>
-            </div>
-        
-            <div style="
-                padding:10px;
-                background:{cor_status};
-                border-radius:8px;
-                color:black;
-                font-weight:bold;
-                text-align:center;">
-                {status}
-            </div>
-        </div>
-        """, unsafe_allow_html=True)
-        
-        # -------- CARD 2 — DIAS RESTANTES --------
-        st.markdown(f"""
-        <div style="
-            background:#1f1f1f;
-            padding:16px;
-            border-radius:14px;
-            color:#ddd;">
-        
-            <div style="
-                display:flex;
-                align-items:center;
-                gap:8px;
-                font-weight:bold;
-                margin-bottom:8px;">
-                <span style="font-size:22px;">⏱️</span>
-                <span>Dias restantes</span>
-            </div>
-        
-            <div style="
-                font-size:24px;
-                font-weight:bold;
-                text-align:center;
-                color:#aaa;">
-                {dias_restantes}
-            </div>
-        </div>
-        """, unsafe_allow_html=True)
