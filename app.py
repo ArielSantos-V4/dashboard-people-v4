@@ -868,42 +868,42 @@ with aba_relatorios:
         # -------------------------------
         with st.expander("💼 Investidores MEI", expanded=False):
     
-        # Garante que a coluna existe
-        if "Modalidade PJ" not in df.columns:
-            st.warning("Coluna 'Modalidade PJ' não encontrada.")
-        else:
-            # Filtra apenas investidores MEI
-            df_mei = df[
-                df["Modalidade PJ"]
-                .astype(str)
-                .str.upper()
-                .str.contains("MEI", na=False)
-            ]
-    
-            if df_mei.empty:
-                st.info("Nenhum investidor MEI encontrado.")
+            # Garante que a coluna existe
+            if "Modalidade PJ" not in df.columns:
+                st.warning("Coluna 'Modalidade PJ' não encontrada.")
             else:
-                # Seleciona apenas as colunas desejadas
-                df_mei_final = df_mei[
-                    [
-                        "Nome",
-                        "Email Corporativo",
-                        "Data Início",
-                        "Modalidade PJ",
-                    ]
-                ].copy()
-    
-                # Formata data do contrato (opcional, mas recomendado)
-                df_mei_final["Data Início"] = pd.to_datetime(
-                    df_mei_final["Data Início"],
-                    errors="coerce"
-                ).dt.strftime("%d/%m/%Y")
-    
-                st.dataframe(
-                    df_mei_final,
-                    use_container_width=True,
-                    hide_index=True
-                )
+                # Filtra apenas investidores MEI
+                df_mei = df[
+                    df["Modalidade PJ"]
+                    .astype(str)
+                    .str.upper()
+                    .str.contains("MEI", na=False)
+                ]
+        
+                if df_mei.empty:
+                    st.info("Nenhum investidor MEI encontrado.")
+                else:
+                    # Seleciona apenas as colunas desejadas
+                    df_mei_final = df_mei[
+                        [
+                            "Nome",
+                            "Email Corporativo",
+                            "Data Início",
+                            "Modalidade PJ",
+                        ]
+                    ].copy()
+        
+                    # Formata data do contrato (opcional, mas recomendado)
+                    df_mei_final["Data Início"] = pd.to_datetime(
+                        df_mei_final["Data Início"],
+                        errors="coerce"
+                    ).dt.strftime("%d/%m/%Y")
+        
+                    st.dataframe(
+                        df_mei_final,
+                        use_container_width=True,
+                        hide_index=True
+                    )
 
     # --------------------------------------------------
     # COLUNA DIREITA — AÇÕES
