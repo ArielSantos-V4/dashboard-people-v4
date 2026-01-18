@@ -22,6 +22,21 @@ def formatar_cnpj(valor):
         return ""
     return f"{v[:2]}.{v[2:5]}.{v[5:8]}/{v[8:12]}-{v[12:]}"
 
+def render_table(df, *, dataframe=True, **kwargs):
+    """
+    Renderiza tabelas no Streamlit sem mostrar NaN / NaT / None,
+    preservando os tipos originais do dataframe.
+    """
+    df_view = df.copy()
+
+    # Substitui apenas para exibição
+    df_view = df_view.where(pd.notna(df_view), "")
+
+    if dataframe:
+        st.dataframe(df_view, **kwargs)
+    else:
+        st.table(df_view)
+
 
 # --------------------------------------------------
 # CONFIGURAÇÃO DA PÁGINA
@@ -722,7 +737,7 @@ with aba_relatorios:
                 df_final = df_final.reset_index(drop=True)
                 df_final.index = [""] * len(df_final)
         
-                st.dataframe(
+                render_table(
                     df_final.drop(columns=["Dia"]),
                     use_container_width=True,
                     hide_index=True,
@@ -855,7 +870,7 @@ with aba_relatorios:
                 df_final = df_final.reset_index(drop=True)
                 df_final.index = [""] * len(df_final)
         
-                st.dataframe(
+                render_table(
                     df_final,
                     use_container_width=True,
                     hide_index=True,
