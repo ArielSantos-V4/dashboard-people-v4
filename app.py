@@ -1262,10 +1262,8 @@ with aba_benefícios:
                 text-align:center;
                 color:#ddd;
                 margin-bottom:12px;">
-                <div style="font-size:28px;">{emoji}</div>
-                <div style="margin-top:6px;font-weight:bold;">
-                    Status atual
-                </div>
+                <div style="font-size:28px;">{emoji} Status atual"</div>
+
                 <div style="
                     margin-top:8px;
                     padding:8px;
