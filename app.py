@@ -780,111 +780,63 @@ with aba_relatorios:
 
 
         # -------------------------------
-        # VENCIMENTO DE CONTRATOS
+        # VENCIMENTO / TÉRMINO PREVISTO
         # -------------------------------
         
-        with st.expander("⏳ Vencimento de contratos", expanded=False):
+        with st.expander("⏰ Contratos a vencer", expanded=False):
         
-            # -------------------------------
-            # FILTRO DE PERÍODO
-            # -------------------------------
-            col_d1, col_d2 = st.columns(2)
+            col1, col2 = st.columns(2)
         
-            hoje = datetime.today().date()
-        
-            with col_d1:
+            with col1:
                 data_inicio = st.date_input(
-                    "De:",
-                    value=hoje,
-                    format="DD/MM/YYYY"
+                    "Data inicial",
+                    value=datetime.today().date()
                 )
         
-            with col_d2:
+            with col2:
                 data_fim = st.date_input(
-                    "Até:",
-                    value=hoje + timedelta(days=30),
-                    format="DD/MM/YYYY"
+                    "Data final",
+                    value=datetime.today().date() + relativedelta(months=3)
                 )
         
-            # -------------------------------
-            # BASE
-            # -------------------------------
-            df_vencimento = df.copy()
-        
-            # -------------------------------
-            # LIMPEZA FORTE DA DATA
-            # -------------------------------
-            df_vencimento["Térm previsto_raw"] = df_vencimento["Térm previsto"]
-        
-            df_vencimento["Térm previsto"] = (
-                df_vencimento["Térm previsto"]
-                .astype(str)
-                .str.strip()
-                .replace("", pd.NA)
-                .replace("Indeterminado", pd.NA)
+            # 🔹 garante coluna datetime (NUNCA usar a original para .dt)
+            df["Térm previsto_dt"] = pd.to_datetime(
+                df["Término previsto"],
+                dayfirst=True,
+                errors="coerce"
             )
         
-            df_vencimento = df_vencimento[
-                df_vencimento["Térm previsto_dt"].notna() &
-                (df_vencimento["Térm previsto_dt"].dt.date >= data_inicio) &
-                (df_vencimento["Térm previsto_dt"].dt.date <= data_fim)
-            ]
-        
-            # -------------------------------
-            # DATAS INVÁLIDAS (PADRÃO IGUAL)
-            # -------------------------------
-            df_invalidos = df_vencimento[
-                df_vencimento["Térm previsto"].isna() &
-                df_vencimento["Térm previsto_raw"].notna() &
-                (df_vencimento["Térm previsto_raw"] != "Indeterminado")
-            ][["Nome", "Térm previsto_raw"]]
-        
-            if not df_invalidos.empty:
-                col_warn, col_link = st.columns([5, 2])
-        
-                with col_warn:
-                    st.warning(
-                        f"⚠️ {len(df_invalidos)} pessoas com data de término inválida"
-                    )
-        
-                with col_link:
-                    with st.popover("👀 Ver aqui"):
-                        df_invalidos_view = (
-                            df_invalidos
-                            .rename(columns={"Térm previsto_raw": "Data informada"})
-                            .reset_index(drop=True)
-                        )
-        
-                        st.table(df_invalidos_view)
-        
-            # -------------------------------
-            # FILTRO POR PERÍODO
-            # -------------------------------
-            df_vencimento = df_vencimento[
-                df_vencimento["Térm previsto"].notna() &
+            # 🔹 filtra período
+            df_vencimento = df[
+                df["Térm previsto_dt"].notna() &
                 (df["Térm previsto_dt"].dt.date >= data_inicio) &
                 (df["Térm previsto_dt"].dt.date <= data_fim)
             ]
         
+            # 🔹 ordena ANTES de cortar colunas
+            df_vencimento = df_vencimento.sort_values(
+                "Térm previsto_dt",
+                na_position="last"
+            )
+        
             if df_vencimento.empty:
-                st.info("Nenhum contrato vencendo no período selecionado")
+                st.info("Nenhum contrato vencendo no período selecionado ⏳")
             else:
-                df_vencimento["Término previsto_dt"] = (
+                # 🔹 formata data apenas para exibição
+                df_vencimento["Término previsto"] = (
                     df_vencimento["Térm previsto_dt"]
                     .dt.strftime("%d/%m/%Y")
+                    .fillna("")
                 )
         
                 df_final = df_vencimento[
                     [
                         "Nome",
                         "E-mail corporativo",
-                        "Término previsto",
-                        "Modelo de contrato",
-                        "Modalidade PJ"
+                        "Término previsto"
                     ]
-                ].sort_values("Térm previsto_dt", na_position="last")
+                ].reset_index(drop=True)
         
-                df_final = df_final.reset_index(drop=True)
                 df_final.index = [""] * len(df_final)
         
                 render_table(
@@ -892,18 +844,6 @@ with aba_relatorios:
                     use_container_width=True,
                     hide_index=True,
                     column_config={
-                        "Término previsto": st.column_config.TextColumn(
-                            "Término previsto",
-                            width="small"
-                        ),
-                        "Modelo de contrato": st.column_config.TextColumn(
-                            "Modelo de contrato",
-                            width="small"
-                        ),
-                        "Modalidade PJ": st.column_config.TextColumn(
-                            "Modalidade PJ",
-                            width="medium"
-                        ),
                         "Nome": st.column_config.TextColumn(
                             "Nome",
                             width="large"
@@ -912,10 +852,12 @@ with aba_relatorios:
                             "E-mail corporativo",
                             width="large"
                         ),
+                        "Término previsto": st.column_config.TextColumn(
+                            "Término previsto",
+                            width="small"
+                        ),
                     }
                 )
-
-
 
     # --------------------------------------------------
     # COLUNA DIREITA — AÇÕES
