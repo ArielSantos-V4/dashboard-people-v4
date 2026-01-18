@@ -189,6 +189,10 @@ with aba_dashboard:
     df["Data do contrato"] = parse_data_br(df["Data do contrato"])
     df["Térm previsto"] = parse_data_br(df["Térm previsto"])
 
+    st.write(
+        df.loc[df["Nome"] == "Ariel Santos", ["Data Início"]]
+    )
+
     
     # --------------------------------------------------
     # DATAS
