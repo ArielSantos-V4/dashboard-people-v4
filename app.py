@@ -158,6 +158,30 @@ with aba_dashboard:
     df["Data Início_exibicao"] = df["Data Início"].dt.strftime("%d/%m/%Y").fillna("")
 
     # --------------------------------------------------
+    # SIDEBAR
+    # --------------------------------------------------
+    st.sidebar.success(f"Bem-vindo(a), {st.session_state.user_name}")
+    
+    if st.sidebar.button("🔄 Atualizar dados"):
+        st.cache_data.clear()
+        st.rerun()
+    
+    if st.sidebar.button("Logout"):
+        st.session_state.authenticated = False
+        st.rerun()
+    
+    # --------------------------------------------------
+    # TOPO
+    # --------------------------------------------------
+    col_logo, col_title = st.columns([1, 6])
+    with col_logo:
+        st.image("LOGO VERMELHO.png", width=120)
+    with col_title:
+        st.markdown("<h1>Dashboard People</h1><h3 style='color:#ccc;'>V4 Company</h3>", unsafe_allow_html=True)
+    
+    st.markdown("---")
+    
+    # --------------------------------------------------
     # CONSULTA INDIVIDUAL
     # --------------------------------------------------
     st.markdown("---")
@@ -425,29 +449,6 @@ with aba_dashboard:
         df_adm.groupby(df_adm["Data Início"].dt.to_period("M")).size().mean()
     )
     
-    # --------------------------------------------------
-    # SIDEBAR
-    # --------------------------------------------------
-    st.sidebar.success(f"Bem-vindo(a), {st.session_state.user_name}")
-    
-    if st.sidebar.button("🔄 Atualizar dados"):
-        st.cache_data.clear()
-        st.rerun()
-    
-    if st.sidebar.button("Logout"):
-        st.session_state.authenticated = False
-        st.rerun()
-    
-    # --------------------------------------------------
-    # TOPO
-    # --------------------------------------------------
-    col_logo, col_title = st.columns([1, 6])
-    with col_logo:
-        st.image("LOGO VERMELHO.png", width=120)
-    with col_title:
-        st.markdown("<h1>Dashboard People</h1><h3 style='color:#ccc;'>V4 Company</h3>", unsafe_allow_html=True)
-    
-    st.markdown("---")
     
     # --------------------------------------------------
     # KPIs VISUAIS
