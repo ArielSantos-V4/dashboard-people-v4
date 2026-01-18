@@ -1146,7 +1146,7 @@ with aba_benefícios:
             placeholder="Digite ou selecione um nome"
         )
     
-        consultar = st.button("🔍 Consultar carteirinhas", use_container_width=True)
+        consultar = st.button("Consultar carteirinhas", use_container_width=True)
     
         if nome_beneficio and consultar:
     
