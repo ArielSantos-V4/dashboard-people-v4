@@ -826,8 +826,8 @@ with aba_relatorios:
         
             df_vencimento = df[
                 df["Térm previsto"].notna() &
-                (df["Térm previsto"].dt.date >= data_inicio) &
-                (df["Térm previsto"].dt.date <= data_fim)
+                (df["Térm previsto_dt"].dt.date >= data_inicio) &
+                (df["Térm previsto_dt"].dt.date <= data_fim)
             ]
         
             # -------------------------------
