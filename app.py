@@ -156,118 +156,7 @@ with aba_dashboard:
     
     df["Térm previsto_exibicao"] = df["Térm previsto"].dt.strftime("%d/%m/%Y").fillna("")
     df["Data Início_exibicao"] = df["Data Início"].dt.strftime("%d/%m/%Y").fillna("")
-    
-    # --------------------------------------------------
-    # KPIs
-    # --------------------------------------------------
-    hoje = datetime.today()
-    prox_30_dias = hoje + timedelta(days=30)
-    
-    headcount = len(df)
-    contratos_vencer = df[(df["Térm previsto"].notna()) & (df["Térm previsto"] <= prox_30_dias)]
-    contratos_vencidos = df[(df["Térm previsto"].notna()) & (df["Térm previsto"] < hoje)]
-    
-    pj = len(df[df["Modelo de contrato"] == "PJ"])
-    clt = len(df[df["Modelo de contrato"] == "CLT"])
-    estagio = len(df[df["Modelo de contrato"] == "Estágio"])
-    
-    df_adm = df[df["Data Início"].notna()]
-    media_admissoes = (
-        df_adm.groupby(df_adm["Data Início"].dt.to_period("M")).size().mean()
-    )
-    
-    # --------------------------------------------------
-    # SIDEBAR
-    # --------------------------------------------------
-    st.sidebar.success(f"Bem-vindo(a), {st.session_state.user_name}")
-    
-    if st.sidebar.button("🔄 Atualizar dados"):
-        st.cache_data.clear()
-        st.rerun()
-    
-    if st.sidebar.button("Logout"):
-        st.session_state.authenticated = False
-        st.rerun()
-    
-    # --------------------------------------------------
-    # TOPO
-    # --------------------------------------------------
-    col_logo, col_title = st.columns([1, 6])
-    with col_logo:
-        st.image("LOGO VERMELHO.png", width=120)
-    with col_title:
-        st.markdown("<h1>Dashboard People</h1><h3 style='color:#ccc;'>V4 Company</h3>", unsafe_allow_html=True)
-    
-    st.markdown("---")
-    
-    # --------------------------------------------------
-    # KPIs VISUAIS
-    # --------------------------------------------------
-    c1, c2, c3, c4, c5 = st.columns(5)
-    c1.metric("Headcount", headcount)
-    c2.metric("Contratos vencendo (30 dias)", len(contratos_vencer))
-    c3.metric("Contratos vencidos", len(contratos_vencidos))
-    c4.metric("PJ / CLT / Estágio", f"{pj} / {clt} / {estagio}")
-    c5.metric("Média admissões / mês", f"{media_admissoes:.1f}")
-    
-    st.markdown("---")
-    
-    # --------------------------------------------------
-    # GRÁFICOS
-    # --------------------------------------------------
-    g1, g2 = st.columns(2)
-    
-    with g1:
-        st.subheader("📃 Modelo de contrato")
-        contrato_df = df["Modelo de contrato"].value_counts().reset_index()
-        contrato_df.columns = ["Modelo", "Quantidade"]
-    
-        st.altair_chart(
-            alt.Chart(contrato_df)
-            .mark_arc(innerRadius=60)
-            .encode(
-                theta="Quantidade:Q",
-                color=alt.Color("Modelo:N", scale=alt.Scale(range=["#E30613", "#B0000A", "#FF4C4C"])),
-                tooltip=["Modelo", "Quantidade"]
-            ),
-            use_container_width=True
-        )
-    
-    with g2:
-        st.subheader("📍 Local de atuação")
-        local_df = df["Unidade/Atuação"].value_counts().reset_index()
-        local_df.columns = ["Local", "Quantidade"]
-    
-        st.altair_chart(
-            alt.Chart(local_df)
-            .mark_bar(color="#E30613")
-            .encode(
-                x=alt.X("Local:N", sort="-y", axis=alt.Axis(labelAngle=-30)),
-                y="Quantidade:Q",
-                tooltip=["Local", "Quantidade"]
-            ),
-            use_container_width=True
-        )
-    
-    # --------------------------------------------------
-    # ADMISSÕES
-    # --------------------------------------------------
-    st.subheader("📈 Admissões por mês")
-    
-    adm_mes = (
-        df_adm.assign(Mes=df_adm["Data Início"].dt.strftime("%b/%Y"))
-        .groupby("Mes")
-        .size()
-        .reset_index(name="Quantidade")
-    )
-    
-    st.altair_chart(
-        alt.Chart(adm_mes)
-        .mark_line(color="#E30613", point=True)
-        .encode(x="Mes:N", y="Quantidade:Q", tooltip=["Mes", "Quantidade"]),
-        use_container_width=True
-    )
-    
+
     # --------------------------------------------------
     # CONSULTA INDIVIDUAL
     # --------------------------------------------------
@@ -516,7 +405,119 @@ with aba_dashboard:
         use_container_width=True,
         hide_index=True
     )
+        
+    # --------------------------------------------------
+    # KPIs
+    # --------------------------------------------------
+    hoje = datetime.today()
+    prox_30_dias = hoje + timedelta(days=30)
     
+    headcount = len(df)
+    contratos_vencer = df[(df["Térm previsto"].notna()) & (df["Térm previsto"] <= prox_30_dias)]
+    contratos_vencidos = df[(df["Térm previsto"].notna()) & (df["Térm previsto"] < hoje)]
+    
+    pj = len(df[df["Modelo de contrato"] == "PJ"])
+    clt = len(df[df["Modelo de contrato"] == "CLT"])
+    estagio = len(df[df["Modelo de contrato"] == "Estágio"])
+    
+    df_adm = df[df["Data Início"].notna()]
+    media_admissoes = (
+        df_adm.groupby(df_adm["Data Início"].dt.to_period("M")).size().mean()
+    )
+    
+    # --------------------------------------------------
+    # SIDEBAR
+    # --------------------------------------------------
+    st.sidebar.success(f"Bem-vindo(a), {st.session_state.user_name}")
+    
+    if st.sidebar.button("🔄 Atualizar dados"):
+        st.cache_data.clear()
+        st.rerun()
+    
+    if st.sidebar.button("Logout"):
+        st.session_state.authenticated = False
+        st.rerun()
+    
+    # --------------------------------------------------
+    # TOPO
+    # --------------------------------------------------
+    col_logo, col_title = st.columns([1, 6])
+    with col_logo:
+        st.image("LOGO VERMELHO.png", width=120)
+    with col_title:
+        st.markdown("<h1>Dashboard People</h1><h3 style='color:#ccc;'>V4 Company</h3>", unsafe_allow_html=True)
+    
+    st.markdown("---")
+    
+    # --------------------------------------------------
+    # KPIs VISUAIS
+    # --------------------------------------------------
+    c1, c2, c3, c4, c5 = st.columns(5)
+    c1.metric("Headcount", headcount)
+    c2.metric("Contratos vencendo (30 dias)", len(contratos_vencer))
+    c3.metric("Contratos vencidos", len(contratos_vencidos))
+    c4.metric("PJ / CLT / Estágio", f"{pj} / {clt} / {estagio}")
+    c5.metric("Média admissões / mês", f"{media_admissoes:.1f}")
+    
+    st.markdown("---")
+    
+    # --------------------------------------------------
+    # GRÁFICOS
+    # --------------------------------------------------
+    g1, g2 = st.columns(2)
+    
+    with g1:
+        st.subheader("📃 Modelo de contrato")
+        contrato_df = df["Modelo de contrato"].value_counts().reset_index()
+        contrato_df.columns = ["Modelo", "Quantidade"]
+    
+        st.altair_chart(
+            alt.Chart(contrato_df)
+            .mark_arc(innerRadius=60)
+            .encode(
+                theta="Quantidade:Q",
+                color=alt.Color("Modelo:N", scale=alt.Scale(range=["#E30613", "#B0000A", "#FF4C4C"])),
+                tooltip=["Modelo", "Quantidade"]
+            ),
+            use_container_width=True
+        )
+    
+    with g2:
+        st.subheader("📍 Local de atuação")
+        local_df = df["Unidade/Atuação"].value_counts().reset_index()
+        local_df.columns = ["Local", "Quantidade"]
+    
+        st.altair_chart(
+            alt.Chart(local_df)
+            .mark_bar(color="#E30613")
+            .encode(
+                x=alt.X("Local:N", sort="-y", axis=alt.Axis(labelAngle=-30)),
+                y="Quantidade:Q",
+                tooltip=["Local", "Quantidade"]
+            ),
+            use_container_width=True
+        )
+    
+    # --------------------------------------------------
+    # ADMISSÕES
+    # --------------------------------------------------
+    st.subheader("📈 Admissões por mês")
+    
+    adm_mes = (
+        df_adm.assign(Mes=df_adm["Data Início"].dt.strftime("%b/%Y"))
+        .groupby("Mes")
+        .size()
+        .reset_index(name="Quantidade")
+    )
+    
+    st.altair_chart(
+        alt.Chart(adm_mes)
+        .mark_line(color="#E30613", point=True)
+        .encode(x="Mes:N", y="Quantidade:Q", tooltip=["Mes", "Quantidade"]),
+        use_container_width=True
+    )
+    
+
 # --------------------------------------------------
 # ABA RELATÓRIOS
 # --------------------------------------------------
