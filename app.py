@@ -989,7 +989,7 @@ with aba_relatorios:
             # ---------- BOTÃO CENTRALIZADO ----------
         
             with col_centro:
-                if st.button("✅ Gerar título", use_container_width=True):
+                if st.button("✅ Gerar documento", use_container_width=True):
         
                     titulo_doc = st.session_state.get("titulo_doc", "")
                     nome_selecionado = st.session_state.get("nome_selecionado", "")
