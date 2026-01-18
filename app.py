@@ -702,20 +702,20 @@ with aba_relatorios:
             df_aniversario = df.copy()
         
             df_aniversario = df[
-                df["Data de nascimento"].dt.month == mes_selecionado
+                df["Data de nascimento_dt"].dt.month == mes_selecionado
             ]
 
             df_check = df.copy()
 
             df_check["Data de nascimento_raw"] = df_check["Data de nascimento"]
             
-            df_check["Data de nascimento"] = pd.to_datetime(
-                df_check["Data de nascimento"],
+            df_check["Data de nascimento_dt"] = pd.to_datetime(
+                df_check["Data de nascimento_raw"],
                 dayfirst=True,
                 errors="coerce"
             )
             
-            df_invalidos = df_check[df_check["Data de nascimento"].isna()]
+            df_invalidos = df_check[df_check["Data de nascimento_dt"].isna()]
 
 
             # 🔔 LISTAR PESSOAS COM DATA INVÁLIDA
@@ -732,24 +732,19 @@ with aba_relatorios:
                         ].reset_index(drop=True)
             
                         st.table(df_invalidos_view)
-                    
-            # 🔥 filtro por mês
-            df_aniversario = df_aniversario[
-                df_aniversario["Data de nascimento"].dt.month == mes_selecionado
-            ]
         
             if df_aniversario.empty:
                 st.info("Nenhum aniversariante neste mês 🎈")
             else:
                 ano_atual = datetime.today().year
         
-                df_aniversario["Nascimento"] = df_aniversario["Data de nascimento"].dt.strftime("%d/%m/%Y")
+                df_aniversario["Nascimento"] = df_aniversario["Data de nascimento_dt"].dt.strftime("%d/%m/%Y")
         
                 df_aniversario["Idade que completa"] = (
-                    ano_atual - df_aniversario["Data de nascimento"].dt.year
+                    ano_atual - df_aniversario["Data de nascimento_dt"].dt.year
                 ).astype(int).astype(str) + " anos"
         
-                df_aniversario["Dia"] = df_aniversario["Data de nascimento"].dt.day
+                df_aniversario["Dia"] = df_aniversario["Data de nascimento_dt"].dt.day
         
                 df_final = df_aniversario[
                     ["Nome", "E-mail corporativo", "Nascimento", "Idade que completa", "Dia"]
