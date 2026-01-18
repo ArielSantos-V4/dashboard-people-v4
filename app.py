@@ -867,23 +867,36 @@ with aba_relatorios:
         @st.dialog("📝 Gerador de título para automação")
         def modal_titulo_doc():
         
-            titulo_doc = st.text_input(
-                "Título do arquivo",
-                placeholder="Cole aqui o título do arquivo"
-            )
+            # ---------- CAMPO TÍTULO + BOTÃO LIMPAR ----------
+            col_input, col_clear = st.columns([6, 1])
         
+            with col_input:
+                titulo_doc = st.text_input(
+                    "Título do arquivo",
+                    placeholder="Cole aqui o título do arquivo",
+                    key="titulo_doc"
+                )
+        
+            with col_clear:
+                st.markdown("<div style='height:28px'></div>", unsafe_allow_html=True)
+                if st.button("❌", help="Limpar título"):
+                    st.session_state["titulo_doc"] = ""
+        
+            # ---------- SELECT DE NOMES (ALFABÉTICO E VAZIO) ----------
             lista_nomes = sorted(df["Nome"].dropna().unique())
         
             nome_selecionado = st.selectbox(
                 "Selecione o investidor",
                 options=[""] + lista_nomes,
                 index=0,
+                key="nome_selecionado",
                 placeholder="Digite ou selecione um nome"
             )
         
-            col_btn_esq, col_btn_centro, col_btn_dir = st.columns([1, 2, 1])
+            # ---------- BOTÃO CENTRALIZADO ----------
+            col_esq, col_centro, col_dir = st.columns([1, 2, 1])
         
-            with col_btn_centro:
+            with col_centro:
                 if st.button("✅ Gerar título", use_container_width=True):
         
                     if not nome_selecionado or not titulo_doc:
@@ -914,13 +927,19 @@ with aba_relatorios:
                         f"{titulo_doc}"
                     )
         
-            # 🔽 FORA DAS COLUNAS → largura normal
+            # ---------- EXIBIÇÃO DO TÍTULO (TAMANHO NORMAL) ----------
             if "titulo_gerado" in st.session_state:
-                st.markdown("#### Título gerado")
+                st.markdown("#### 📄 Título gerado")
                 st.code(st.session_state["titulo_gerado"])
         
         
+        # ---------- BOTÃO QUE ABRE O MODAL (LIMPA TUDO ANTES) ----------
         if st.button("📝 Título de doc para automação"):
+        
+            st.session_state.pop("titulo_gerado", None)
+            st.session_state.pop("titulo_doc", None)
+            st.session_state.pop("nome_selecionado", None)
+        
             modal_titulo_doc()
 
 
