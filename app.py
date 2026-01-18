@@ -174,11 +174,6 @@ with aba_dashboard:
         df = pd.read_csv(url)
     
         return df
-
-    st.write(
-        df.loc[df["Nome"] == "Ariel Santos", ["Data Início"]]
-    )
-
     
     def parse_data_br(coluna):
         return pd.to_datetime(
@@ -191,6 +186,10 @@ with aba_dashboard:
     df = df.sort_values("Nome", ascending=True).reset_index(drop=True)
     df.columns = df.columns.str.strip()
     df = df.fillna("")
+    
+    st.write(
+        df.loc[df["Nome"] == "Ariel Santos", ["Data Início"]]
+    )
     
     # -------- PADRONIZAÇÃO DE DATAS (FORMATO BR) --------
     df["Data de nascimento"] = parse_data_br(df["Data de nascimento"])
