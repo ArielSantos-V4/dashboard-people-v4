@@ -986,10 +986,11 @@ with aba_relatorios:
                 placeholder="Digite ou selecione um nome"
             )
         
-            # ---------- BOTÃO CENTRALIZADO ----------
-        
-            with col_centro:
+            botao_container = st.container()
+            
+            with botao_container:
                 if st.button("✅ Gerar documento", use_container_width=True):
+                    gerar_documento = True
         
                     titulo_doc = st.session_state.get("titulo_doc", "")
                     nome_selecionado = st.session_state.get("nome_selecionado", "")
