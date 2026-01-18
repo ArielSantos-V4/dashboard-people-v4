@@ -867,7 +867,8 @@ with aba_relatorios:
         def limpar_titulo():
             st.session_state["titulo_doc"] = ""
             st.session_state.pop("titulo_gerado", None)
-
+        
+        
         @st.dialog("📝 Gerador de título para automação")
         def modal_titulo_doc():
         
@@ -892,7 +893,7 @@ with aba_relatorios:
             # ---------- SELECT DE NOMES (ALFABÉTICO / EM BRANCO) ----------
             lista_nomes = sorted(df["Nome"].dropna().unique())
         
-            nome_selecionado = st.selectbox(
+            st.selectbox(
                 "Selecione o investidor",
                 options=[""] + lista_nomes,
                 index=0,
@@ -907,6 +908,7 @@ with aba_relatorios:
                 if st.button("✅ Gerar título", use_container_width=True):
         
                     titulo_doc = st.session_state.get("titulo_doc", "")
+                    nome_selecionado = st.session_state.get("nome_selecionado", "")
         
                     if not nome_selecionado or not titulo_doc:
                         st.warning("Selecione um nome e informe o título do arquivo.")
@@ -936,18 +938,23 @@ with aba_relatorios:
                         f"{titulo_doc}"
                     )
         
-            # ---------- TÍTULO GERADO (TAMANHO NORMAL) ----------
+            # ---------- TÍTULO GERADO ----------
             if "titulo_gerado" in st.session_state:
                 st.markdown("#### 📄 Título gerado")
                 st.code(st.session_state["titulo_gerado"])
         
         
         # ---------- BOTÃO QUE ABRE O MODAL (RESET TOTAL) ----------
-        if st.button("📝 Título de doc para automação"):
+        def abrir_modal_titulo():
+            st.session_state["titulo_doc"] = ""
+            st.session_state["nome_selecionado"] = ""
             st.session_state.pop("titulo_gerado", None)
-            st.session_state.pop("titulo_doc", None)
-            st.session_state.pop("nome_selecionado", None)
             modal_titulo_doc()
+        
+        
+        if st.button("📝 Título de doc para automação"):
+            abrir_modal_titulo()
+
 
 # --------------------------------------------------
 # ABA BENEFICIOS
