@@ -1449,7 +1449,7 @@ with aba_benefícios:
         # ==============================
         # AÇÃO — GERAR TERMO DE SUBESTIPULANTE
         # ==============================
-        
+        st.markdown("---")
         if st.button("📝 Gerar Termo de Subestipulante", use_container_width=True):
             st.session_state["abrir_termo"] = True
         
