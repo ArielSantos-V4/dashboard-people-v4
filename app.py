@@ -621,7 +621,18 @@ with aba_relatorios:
             invalidas = df_aniversario["Data de nascimento"].isna().sum()
             st.caption(f"⚠️ Datas inválidas: {invalidas} de {total}")
 
-        
+            # 🔔 LISTAR PESSOAS COM DATA INVÁLIDA
+            if not df_invalidos.empty:
+                st.warning(f"⚠️ {len(df_invalidos)} pessoas com data de nascimento inválida")
+            
+                with st.expander("🔎 Ver pessoas com data inválida"):
+                    df_invalidos_view = df_invalidos[
+                        ["Nome", "Data de nascimento_raw"]
+                    ].reset_index(drop=True)
+            
+                    st.table(df_invalidos_view)
+            
+                    
             # 🔥 filtro por mês
             df_aniversario = df_aniversario[
                 df_aniversario["Data de nascimento"].dt.month == mes_selecionado
