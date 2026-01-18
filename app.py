@@ -865,9 +865,8 @@ with aba_relatorios:
         # ---------------------------------
         
         def limpar_titulo():
-            st.session_state.pop("titulo_doc", None)
-            st.session_state.pop("titulo_gerado", None)
-        
+            st.session_state["titulo_doc"] = ""
+
         @st.dialog("📝 Gerador de título para automação")
         def modal_titulo_doc():
         
@@ -882,7 +881,7 @@ with aba_relatorios:
                 )
         
             with col_clear:
-                st.markdown("<div style='height:20px'></div>", unsafe_allow_html=True)
+                st.markdown("<div style='height:23px'></div>", unsafe_allow_html=True)
                 st.button(
                     "❌",
                     help="Limpar título",
