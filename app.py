@@ -1253,9 +1253,6 @@ with aba_benefícios:
             dias_restantes = max(0, (fim - hoje).days)
             
             # -------- GRID DE CARDS --------
-            col1, col2, col3 = st.columns(3)
-            
-            with col1:
                 st.markdown(f"""
                 <div style="
                     background:#1f1f1f;
