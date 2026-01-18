@@ -171,6 +171,13 @@ with aba_dashboard:
         url = f"https://docs.google.com/spreadsheets/d/{sheet_id}/gviz/tq?gid={gid}&tqx=out:csv"
         return pd.read_csv(url)
     
+    def parse_data_br(coluna):
+    return pd.to_datetime(
+        coluna.astype(str).str.strip().replace("", pd.NA),
+        dayfirst=True,
+        errors="coerce"
+    )
+
     df = load_google_sheet()
     df = df.sort_values("Nome", ascending=True).reset_index(drop=True)
     df.columns = df.columns.str.strip()
