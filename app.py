@@ -1261,7 +1261,7 @@ with aba_benefícios:
             # CALENDÁRIO
             # -------------------------------
             dias_html = ""
-    
+            
             # cabeçalho dias da semana
             for d in ["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"]:
                 dias_html += f"""
@@ -1276,7 +1276,7 @@ with aba_benefícios:
             for _ in range(primeiro_dia_semana):
                 dias_html += "<div></div>"
             
-            # dias do mês
+            # dias do mês (APENAS UMA VEZ)
             for dia in range(1, ultimo_dia + 1):
                 if dias_inicio <= dia <= dias_fim:
                     dias_html += f"""
@@ -1299,33 +1299,7 @@ with aba_benefícios:
                         text-align:center;
                     ">{dia}</div>
                     """
-    
             
-            from calendar import monthrange
-    
-            for dia in range(1, ultimo_dia + 1):
-                if dias_inicio <= dia <= dias_fim:
-                    dias_html += f"""
-                    <div style="
-                        background:{cor};
-                        color:black;
-                        padding:6px;
-                        border-radius:6px;
-                        text-align:center;
-                        font-weight:bold;
-                    ">{dia}</div>
-                    """
-                else:
-                    dias_html += f"""
-                    <div style="
-                        background:#1f1f1f;
-                        color:#aaa;
-                        padding:6px;
-                        border-radius:6px;
-                        text-align:center;
-                    ">{dia}</div>
-                    """
-        
             st.markdown(
                 f"""
                 <div style="
