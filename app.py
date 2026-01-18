@@ -1080,56 +1080,58 @@ with aba_benefícios:
     with col_grafico:
 
         st.markdown("### 📊 Status no plano")
-    
-        # 🔹 espaço para evitar corte do título
         st.markdown("<div style='height:20px'></div>", unsafe_allow_html=True)
     
-        grafico_plano = (
-            alt.Chart(df_plano)
-            .mark_arc(
-                innerRadius=80,
-                outerRadius=130,
-                stroke=None
-            )
-            .encode(
-                theta=alt.Theta("Quantidade:Q", stack=True),
-                color=alt.Color(
-                    "Situação:N",
-                    scale=alt.Scale(
-                        range=[
-                            "#2E8B57",
-                            "#FFA500",
-                            "#8A2BE2",
-                            "#DC143C",
-                            "#8B4513",
-                            "#808080",
-                        ]
-                    ),
-                    legend=alt.Legend(
-                        title="Situação",
-                        orient="bottom",
-                        columns=2,
-                        offset=20
-                    )
-                ),
-                tooltip=[
-                    alt.Tooltip("Situação:N", title="Situação"),
-                    alt.Tooltip("Quantidade:Q", title="Qtd"),
-                    alt.Tooltip("Percentual:Q", title="%", format=".1f"),
-                ],
-            )
-            .properties(
-                width=320,
-                height=380
-            )
-        )
+        if "Situação no plano" in df.columns:
     
-        st.altair_chart(grafico_plano, use_container_width=True)
-
+            df_plano = (
+                df["Situação no plano"]
+                .fillna("Não informado")
+                .value_counts()
+                .reset_index()
+            )
+    
+            df_plano.columns = ["Situação", "Quantidade"]
+            total = df_plano["Quantidade"].sum()
+            df_plano["Percentual"] = (df_plano["Quantidade"] / total) * 100
+    
+            grafico_plano = (
+                alt.Chart(df_plano)
+                .mark_arc(innerRadius=80, outerRadius=130, stroke=None)
+                .encode(
+                    theta="Quantidade:Q",
+                    color=alt.Color(
+                        "Situação:N",
+                        scale=alt.Scale(
+                            range=[
+                                "#2E8B57",
+                                "#FFA500",
+                                "#8A2BE2",
+                                "#DC143C",
+                                "#8B4513",
+                                "#808080",
+                            ]
+                        ),
+                        legend=alt.Legend(
+                            title="Situação",
+                            orient="bottom",
+                            columns=2,
+                            offset=20
+                        )
+                    ),
+                    tooltip=[
+                        alt.Tooltip("Situação:N", title="Situação"),
+                        alt.Tooltip("Quantidade:Q", title="Qtd"),
+                        alt.Tooltip("Percentual:Q", title="%", format=".1f"),
+                    ],
+                )
+                .properties(width=320, height=380)
+            )
+    
+            st.altair_chart(grafico_plano, use_container_width=True)
     
         else:
             st.warning("Coluna 'Situação no plano' não encontrada.")
-
 
     # ---------------------------------
     # COLUNA 2 — CONSULTA CARTEIRINHAS
