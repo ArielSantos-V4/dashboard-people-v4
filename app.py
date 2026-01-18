@@ -472,6 +472,10 @@ with aba_dashboard:
     
     df_tabela = df.copy()
 
+    df_tabela["Data de nascimento"] = df_tabela["Data de nascimento_exibicao"]
+    df_tabela["Data do contrato"] = df_tabela["Data do contrato_exibicao"]
+    df_tabela["Data Início"] = df_tabela["Data Início_exibicao"]
+
     # Datas exibidas
     df_tabela["Término do contrato"] = df_tabela["Térm previsto_exibicao"]
     df_tabela["Data de início"] = df_tabela["Data Início_exibicao"]
@@ -495,16 +499,26 @@ with aba_dashboard:
             df_tabela.astype(str)
             .apply(lambda x: x.str.contains(busca, case=False).any(), axis=1)
         ]
-        
+
     st.dataframe(
         df_tabela.drop(
-            columns=["Térm previsto", "Térm previsto_exibicao", "Data Início", "Data Início_exibicao"],
+            columns=[
+                "Data de nascimento_exibicao",
+                "Data do contrato_exibicao",
+                "Data Início_exibicao",
+                "Térm previsto_exibicao",
+                "Data de nascimento",
+                "Data do contrato",
+                "Data Início",
+                "Térm previsto"
+            ],
             errors="ignore"
         ),
         use_container_width=True,
         hide_index=True
     )
-        
+
+     
     # --------------------------------------------------
     # KPIs
     # --------------------------------------------------
