@@ -184,7 +184,7 @@ with aba_dashboard:
     # --------------------------------------------------
     # CONSULTA INDIVIDUAL
     # --------------------------------------------------
-    st.markdown("---")
+
     st.subheader("🔎 Consulta individual do investidor")
     
     df_consulta = df.fillna("")
@@ -433,6 +433,7 @@ with aba_dashboard:
     # --------------------------------------------------
     # KPIs
     # --------------------------------------------------
+    st.markdown("---")
     hoje = datetime.today()
     prox_30_dias = hoje + timedelta(days=30)
     
