@@ -1300,7 +1300,8 @@ with aba_benefícios:
                 hide_index=True
             )
 
-    
+    st.write(df.columns.tolist())
+
     # ==============================
     # COLUNA DIREITA — AÇÕES
     # ==============================
