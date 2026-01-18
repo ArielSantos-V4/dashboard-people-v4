@@ -604,7 +604,18 @@ with aba_relatorios:
                 dayfirst=True,
                 errors="coerce"
             )
+            df_check = df.copy()
+
+            df_check["Data de nascimento_raw"] = df_check["Data de nascimento"]
             
+            df_check["Data de nascimento"] = pd.to_datetime(
+                df_check["Data de nascimento"],
+                dayfirst=True,
+                errors="coerce"
+            )
+            
+            df_invalidos = df_check[df_check["Data de nascimento"].isna()]
+
             # 🔍 DEBUG VISUAL (opcional, pode remover depois)
             total = len(df_aniversario)
             invalidas = df_aniversario["Data de nascimento"].isna().sum()
