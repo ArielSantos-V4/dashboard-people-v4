@@ -619,14 +619,20 @@ with aba_relatorios:
 
             # 🔔 LISTAR PESSOAS COM DATA INVÁLIDA
             if not df_invalidos.empty:
+
+            col_warn, col_link = st.columns([6, 1])
+        
+            with col_warn:
                 st.warning(f"⚠️ {len(df_invalidos)} pessoas com data de nascimento inválida")
-            
-                with st.expander("🔎 Ver pessoas com data inválida"):
+        
+            with col_link:
+                with st.popover("👀 Ver aqui"):
                     df_invalidos_view = df_invalidos[
                         ["Nome", "Data de nascimento_raw"]
                     ].reset_index(drop=True)
-            
+        
                     st.table(df_invalidos_view)
+
             
                     
             # 🔥 filtro por mês
