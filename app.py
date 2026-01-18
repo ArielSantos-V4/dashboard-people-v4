@@ -989,7 +989,7 @@ with aba_relatorios:
             botao_container = st.container()
             
             with botao_container:
-                if st.button("✅ Gerar documento", use_container_width=True):
+                if st.button("✅ Gerar subfatura", use_container_width=True):
                     gerar_documento = True
         
                     titulo_doc = st.session_state.get("titulo_doc", "")
