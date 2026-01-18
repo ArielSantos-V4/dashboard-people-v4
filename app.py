@@ -1078,66 +1078,54 @@ with aba_benefícios:
     # COLUNA 1 — GRÁFICO SITUAÇÃO NO PLANO
     # ---------------------------------
     with col_grafico:
-    
+
         st.markdown("### 📊 Status no plano")
     
-        if "Situação no plano" in df.columns:
+        # 🔹 espaço para evitar corte do título
+        st.markdown("<div style='height:20px'></div>", unsafe_allow_html=True)
     
-            df_plano = (
-                df["Situação no plano"]
-                .fillna("Não informado")
-                .value_counts()
-                .reset_index()
+        grafico_plano = (
+            alt.Chart(df_plano)
+            .mark_arc(
+                innerRadius=80,
+                outerRadius=130,
+                stroke=None
             )
-    
-            df_plano.columns = ["Situação", "Quantidade"]
-    
-            total = df_plano["Quantidade"].sum()
-            df_plano["Percentual"] = (df_plano["Quantidade"] / total) * 100
-    
-            grafico_plano = (
-                alt.Chart(df_plano)
-                .mark_arc(
-                    innerRadius=80,
-                    outerRadius=130,   # 🔻 um pouco menor para caber melhor
-                    stroke=None
-                )
-                .encode(
-                    theta=alt.Theta("Quantidade:Q", stack=True),
-                    color=alt.Color(
-                        "Situação:N",
-                        scale=alt.Scale(
-                            range=[
-                                "#2E8B57",  # verde
-                                "#FFA500",  # laranja
-                                "#8A2BE2",  # roxo
-                                "#DC143C",  # vermelho
-                                "#8B4513",  # marrom
-                                "#808080",  # cinza
-                            ]
-                        ),
-                        legend=alt.Legend(
-                            title="Situação",
-                            orient="bottom",
-                            columns=2,
-                            labelLimit=200,
-                            symbolSize=120,
-                            offset=20        # 👈 empurra legenda para baixo
-                        ),
+            .encode(
+                theta=alt.Theta("Quantidade:Q", stack=True),
+                color=alt.Color(
+                    "Situação:N",
+                    scale=alt.Scale(
+                        range=[
+                            "#2E8B57",
+                            "#FFA500",
+                            "#8A2BE2",
+                            "#DC143C",
+                            "#8B4513",
+                            "#808080",
+                        ]
                     ),
-                    tooltip=[
-                        alt.Tooltip("Situação:N", title="Situação"),
-                        alt.Tooltip("Quantidade:Q", title="Qtd"),
-                        alt.Tooltip("Percentual:Q", title="%", format=".1f"),
-                    ],
-                )
-                .properties(
-                    width=320,
-                    height=380      # 👈 MAIS ALTURA = não corta legenda
-                )
+                    legend=alt.Legend(
+                        title="Situação",
+                        orient="bottom",
+                        columns=2,
+                        offset=20
+                    )
+                ),
+                tooltip=[
+                    alt.Tooltip("Situação:N", title="Situação"),
+                    alt.Tooltip("Quantidade:Q", title="Qtd"),
+                    alt.Tooltip("Percentual:Q", title="%", format=".1f"),
+                ],
             )
+            .properties(
+                width=320,
+                height=380
+            )
+        )
     
-            st.altair_chart(grafico_plano, use_container_width=True)
+        st.altair_chart(grafico_plano, use_container_width=True)
+
     
         else:
             st.warning("Coluna 'Situação no plano' não encontrada.")
