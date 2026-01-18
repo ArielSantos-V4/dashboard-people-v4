@@ -1350,7 +1350,7 @@ with aba_benefícios:
         st.markdown("### ⚙️ Ações")
         
         if st.button("📄 Gerar Subfatura", use_container_width=True):
-            st.session_state["abrir_subfatura"] = True
+            st.session_state["abrir_subfatura"] = not st.session_state.get("abrir_subfatura", False)
         
         # -------- BLOCO SIMULANDO MODAL --------
         if st.session_state.get("abrir_subfatura", False):
@@ -1442,8 +1442,9 @@ with aba_benefícios:
 
         
                 st.success("Subfatura gerada com sucesso ✅")
-        
-                st.session_state["abrir_subfatura"] = False
+                
+        if st.button("❌ Fechar"):
+            st.session_state["abrir_subfatura"] = False
 
         # ==============================
         # AÇÃO — GERAR TERMO DE SUBESTIPULANTE
