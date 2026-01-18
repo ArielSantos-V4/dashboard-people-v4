@@ -565,7 +565,10 @@ with aba_relatorios:
 
         st.markdown("## 📊 Relatórios Principais")
 
-        # Lista de meses
+        # -------------------------------
+        # ANIVERSARIANTES DO MÊS
+        # -------------------------------
+        
         meses = {
             1: "Janeiro", 2: "Fevereiro", 3: "Março", 4: "Abril",
             5: "Maio", 6: "Junho", 7: "Julho", 8: "Agosto",
@@ -581,37 +584,42 @@ with aba_relatorios:
             index=mes_atual - 1
         )
         
-        df_aniversario = df.copy()
-        df_aniversario["Data de nascimento"] = pd.to_datetime(
-            df_aniversario["Data de nascimento"],
+        df_aux = df.copy()
+        
+        df_aux["Data de nascimento"] = pd.to_datetime(
+            df_aux["Data de nascimento"],
             errors="coerce"
         )
         
-        df_aniversario = df_aniversario[
-            df_aniversario["Data de nascimento"].dt.month == mes_selecionado
+        df_aux = df_aux[
+            df_aux["Data de nascimento"].dt.month == mes_selecionado
         ]
         
-        if df_aniversario.empty:
+        if df_aux.empty:
             st.info("Nenhum aniversariante neste mês 🎈")
         else:
             ano_atual = datetime.today().year
         
-            df_aniversario["Nascimento"] = df_aniversario["Data de nascimento"].dt.strftime("%d/%m/%Y")
-            df_aniversario["Idade que completa"] = (
-                ano_atual - df_aniversario["Data de nascimento"].dt.year
+            df_final = pd.DataFrame({
+                "Nome": df_aux["Nome"],
+                "E-mail corporativo": df_aux["E-mail corporativo"],
+                "Nascimento": df_aux["Data de nascimento"].dt.strftime("%d/%m/%Y"),
+                "Idade que completa": ano_atual - df_aux["Data de nascimento"].dt.year,
+                "Dia": df_aux["Data de nascimento"].dt.day
+            })
+        
+            df_final = (
+                df_final
+                .sort_values("Dia")
+                .reset_index(drop=True)
             )
         
-            df_aniversario["Dia"] = df_aniversario["Data de nascimento"].dt.day
-        
-            df_final = df_aniversario.sort_values("Dia")
-
             st.dataframe(
-                df_final[
-                    ["Nome", "E-mail corporativo", "Nascimento", "Idade que completa"]
-                ],
+                df_final.drop(columns=["Dia"]),
                 use_container_width=True,
                 hide_index=True
             )
+
 
     # --------------------------------------------------
     # COLUNA DIREITA — AÇÕES
