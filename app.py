@@ -1222,7 +1222,7 @@ with aba_benefícios:
         # ==============================
         # BLOCO 3 — ACOMPANHAMENTO (CARDS DE STATUS)
         # ==============================
-            with col_lembrete:
+        with col_lembrete:
             import streamlit as st
             from datetime import date
             
