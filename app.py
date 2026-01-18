@@ -209,7 +209,7 @@ with aba_dashboard:
     # --------------------------------------------------
     # BACKUP RAW (ANTES DE CONVERTER)
     # --------------------------------------------------
-    df["Data Início_raw"] = df["Data Início"]
+    df["Início na V4_raw"] = df["Início na V4"]
     df["Data de nascimento_raw"] = df["Data de nascimento"]
     df["Data do contrato_raw"] = df["Data do contrato"]
     df["Térm previsto_raw"] = df["Térm previsto"]
@@ -219,18 +219,43 @@ with aba_dashboard:
     # CONVERSÃO CORRETA (DAYFIRST)
     # --------------------------------------------------
     df["Data de nascimento"] = parse_data_br(df["Data de nascimento"])
-    df["Data Início"] = parse_data_br(df["Data Início"])
+    df["Início na V4"] = parse_data_br(df["Início na V4"])
     df["Data do contrato"] = parse_data_br(df["Data do contrato"])
     df["Térm previsto"] = parse_data_br(df["Térm previsto"])
 
     # --------------------------------------------------
-    # DATAS — APENAS EXIBIÇÃO
+    # DATAS — FORMATAÇÃO FINAL (SEM COLUNAS NOVAS)
     # --------------------------------------------------
-    df["Térm previsto_exibicao"] = df["Térm previsto"].dt.strftime("%d/%m/%Y")
-    df["Data Início_exibicao"] = df["Data Início"].dt.strftime("%d/%m/%Y")
-    df["Data de nascimento_exibicao"] = df["Data de nascimento"].dt.strftime("%d/%m/%Y")
-    df["Data do contrato_exibicao"] = df["Data do contrato"].dt.strftime("%d/%m/%Y")
+    
+    df["Data de nascimento"] = (
+        df["Data de nascimento"]
+        .dt.strftime("%d/%m/%Y")
+        .fillna("")
+    )
+    
+    df["Início na V4"] = (
+        df["Início na V4"]
+        .dt.strftime("%d/%m/%Y")
+        .fillna("")
+    )
+    
+    df["Data do contrato"] = (
+        df["Data do contrato"]
+        .dt.strftime("%d/%m/%Y")
+        .fillna("")
+    )
+    
+    df["Início na V4_dt"] = pd.to_datetime(
+        df["Início na V4"],
+        dayfirst=True,
+        errors="coerce"
+    )
 
+    # Térm previsto: data vira dd/mm/yyyy | texto continua texto
+    df["Térm previsto"] = df["Térm previsto"].apply(
+        lambda x: x.strftime("%d/%m/%Y") if isinstance(x, pd.Timestamp) else x
+    ).fillna("")
+    
     # --------------------------------------------------
     # SIDEBAR
     # --------------------------------------------------
@@ -317,12 +342,12 @@ with aba_dashboard:
             a3.text_input("Situação", linha["Situação"], disabled=True)
     
             a4, a5, a6 = st.columns(3)
-            a4.text_input("Data início", linha["Data Início_exibicao"], disabled=True)
-            a5.text_input("Término previsto", linha["Térm previsto_exibicao"], disabled=True)
+            a4.text_input("Data do contrato", linha["Data do contrato"], disabled=True)
+            a5.text_input("Término previsto", linha["Térm previsto"], disabled=True)
             a6.text_input("Modelo contrato", linha["Modelo de contrato"], disabled=True)
         
             tempo_casa = ""
-            if linha["Data Início"] != "":
+            if linha["Início na V4"] != "":
                 delta = datetime.today() - pd.to_datetime(linha["Data Início"])
                 anos = delta.days // 365
                 meses = (delta.days % 365) // 30
@@ -330,7 +355,7 @@ with aba_dashboard:
                 tempo_casa = f"{anos} anos, {meses} meses e {dias} dias"
         
             a7, a8 = st.columns([1, 2])
-            a7.text_input("Início na V4", linha["Data Início_exibicao"], disabled=True)
+            a7.text_input("Início na V4", linha["Início na V4"], disabled=True)
             a8.text_input("Tempo de casa", tempo_casa, disabled=True)
     
             a9, a10 = st.columns([3, 1])
@@ -383,7 +408,7 @@ with aba_dashboard:
             b5, b6, b7 = st.columns(3)
             cpf = formatar_cpf(linha["CPF"])
             b5.text_input("CPF", cpf, disabled=True)
-            b6.text_input("Nascimento", linha["Data de nascimento_exibicao"], disabled=True)
+            b6.text_input("Nascimento", linha["Data de nascimento"], disabled=True)
   
             idade = ""
             if linha["Data de nascimento"] != "":
@@ -472,13 +497,13 @@ with aba_dashboard:
     
     df_tabela = df.copy()
 
-    df_tabela["Data de nascimento"] = df_tabela["Data de nascimento_exibicao"]
-    df_tabela["Data do contrato"] = df_tabela["Data do contrato_exibicao"]
-    df_tabela["Data Início"] = df_tabela["Data Início_exibicao"]
+    df_tabela["Data de nascimento"] = df_tabela["Data de nascimento"]
+    df_tabela["Data do contrato"] = df_tabela["Data do contrato"]
+    df_tabela["Data Início"] = df_tabela["Data Início"]
 
     # Datas exibidas
-    df_tabela["Término do contrato"] = df_tabela["Térm previsto_exibicao"]
-    df_tabela["Data de início"] = df_tabela["Data Início_exibicao"]
+    df_tabela["Término do contrato"] = df_tabela["Térm previsto"]
+    df_tabela["Data de início"] = df_tabela["Data Início"]
     
     # Limpeza de campos com .0
     df_tabela["BP"] = df_tabela["BP"].apply(limpar_numero)
@@ -503,10 +528,10 @@ with aba_dashboard:
     st.dataframe(
         df_tabela.drop(
             columns=[
-                "Data de nascimento_exibicao",
-                "Data do contrato_exibicao",
-                "Data Início_exibicao",
-                "Térm previsto_exibicao",
+                "Data de nascimento",
+                "Data do contrato",
+                "Data Início",
+                "Térm previsto",
                 "Data de nascimento",
                 "Data do contrato",
                 "Data Início",
@@ -534,9 +559,9 @@ with aba_dashboard:
     clt = len(df[df["Modelo de contrato"] == "CLT"])
     estagio = len(df[df["Modelo de contrato"] == "Estágio"])
     
-    df_adm = df[df["Data Início"].notna()]
+    df_adm = df[df["Início na V4_dt"].notna()]
     media_admissoes = (
-        df_adm.groupby(df_adm["Data Início"].dt.to_period("M")).size().mean()
+        df_adm.groupby(df_adm["Início na V4_dt"].dt.to_period("M"))
     )
     
     
