@@ -1228,15 +1228,16 @@ with aba_benefícios:
         
         st.markdown("## 🧭 Acompanhamento do Período")
         
-        # -------- CONFIGURAÇÕES DO PERÍODO --------
-        inicio = date(2026, 1, 16)
-        fim = date(2026, 1, 31)
+        # -------- CONFIGURAÇÃO DO PERÍODO --------
+        inicio = date(date.today().year, date.today().month, 16)
+        fim = date(date.today().year, date.today().month, 28)
+        
         hoje = date.today()
         
-        # -------- LÓGICA DE STATUS --------
+        # -------- STATUS DO PERÍODO --------
         if hoje < inicio:
             status = "Período ainda não iniciado"
-            cor_status = "#555"
+            cor_status = "#555555"
         elif inicio <= hoje <= fim:
             status = "Período de acompanhamento ativo"
             cor_status = "#2E8B57"
@@ -1245,14 +1246,17 @@ with aba_benefícios:
             cor_status = "#8B0000"
         
         # -------- CÁLCULOS --------
-        total_dias = (fim - inicio).days
+        total_dias = max((fim - inicio).days, 1)
         dia_atual = max(0, min((hoje - inicio).days, total_dias))
-        percentual = dia_atual / total_dias if total_dias > 0 else 1
-        dias_restantes = (fim - hoje).days
+        percentual = dia_atual / total_dias
+        largura_barra = max(6, percentual * 100)
+        dias_restantes = max((fim - hoje).days, 0)
         
         # -------- TIMELINE VISUAL --------
+        st.markdown("### 🕒 Linha do tempo")
+        
         st.markdown(f"""
-        <div style="margin-top:10px;">
+        <div style="margin-top:12px;">
           <div style="display:flex; justify-content:space-between;
                       font-size:13px; color:#aaa;">
             <span>{inicio.strftime('%d/%m')}</span>
@@ -1264,7 +1268,6 @@ with aba_benefícios:
                       border-radius:10px;
                       margin-top:6px;">
         
-            <!-- Barra de progresso -->
             <div style="
               width:{largura_barra}%;
               height:100%;
@@ -1272,14 +1275,13 @@ with aba_benefícios:
               border-radius:10px;">
             </div>
         
-            <!-- Indicador do dia atual -->
             <div style="
               position:absolute;
               left:calc({largura_barra}% - 9px);
               top:-6px;
               width:18px;
               height:18px;
-              background:#fff;
+              background:#ffffff;
               border-radius:50%;
               border:3px solid #2E8B57;">
             </div>
@@ -1288,7 +1290,7 @@ with aba_benefícios:
         </div>
         """, unsafe_allow_html=True)
         
-        # -------- MENSAGEM DE STATUS --------
+        # -------- STATUS ATUAL --------
         st.markdown(f"""
         <div style="margin-top:14px;
                     padding:12px;
