@@ -168,8 +168,17 @@ with aba_dashboard:
     @st.cache_data(ttl=600)
     def load_google_sheet():
         sheet_id = "13EPwhiXgh8BkbhyrEy2aCy3cv1O8npxJ_hA-HmLZ-pY"
+        gid = 2056973316  # <-- AQUI
+    
         url = f"https://docs.google.com/spreadsheets/d/{sheet_id}/gviz/tq?gid={gid}&tqx=out:csv"
-        return pd.read_csv(url)
+        df = pd.read_csv(url)
+    
+        return df
+
+    st.write(
+        df.loc[df["Nome"] == "Ariel Santos", ["Data Início"]]
+    )
+
     
     def parse_data_br(coluna):
     return pd.to_datetime(
