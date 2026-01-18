@@ -1307,102 +1307,95 @@ with aba_benefícios:
     with col_acoes:
         st.markdown("### ⚙️ Ações")
     
+        from docx import Document
+        from reportlab.lib.pagesizes import A4
+        from reportlab.pdfgen import canvas
+        import re
+        import tempfile
+        from datetime import datetime
+        
         # ==============================
         # AÇÃO — GERAR SUBFATURA
         # ==============================
         
-        from docx import Document
-        from datetime import date
-        import io
-        
-        st.markdown("### ⚙️ Ações")
-        
         if st.button("📄 Gerar Subfatura", use_container_width=True):
-            st.session_state["abrir_subfatura"] = True
+            st.session_state.abrir_modal_subfatura = True
         
-        # ---------- MODAL ----------
-        if st.session_state.get("abrir_subfatura", False):
+        if st.session_state.get("abrir_modal_subfatura", False):
         
-            # FUNDO ESCURECIDO
-            st.markdown("""
-            <div style="
-                position:fixed;
-                top:0; left:0;
-                width:100vw; height:100vh;
-                background:rgba(0,0,0,0.6);
-                z-index:999;">
-            </div>
-            """, unsafe_allow_html=True)
+            with st.modal("📄 Gerar Subfatura"):
         
-            # CAIXA FLUTUANTE
-            st.markdown("""
-            <div style="
-                position:fixed;
-                top:50%; left:50%;
-                transform:translate(-50%, -50%);
-                background:#1f1f1f;
-                padding:24px;
-                border-radius:16px;
-                width:420px;
-                z-index:1000;">
-            """, unsafe_allow_html=True)
+                # Lista de nomes disponíveis (com base na tabela carregada)
+                nomes = df["Nome"].dropna().unique().tolist()
+                nome_sel = st.selectbox("👤 Investidor", nomes)
         
-            st.markdown("## 📄 Gerar Subfatura")
+                data_vigencia = st.date_input("📅 Data de início da vigência")
         
-            # LISTA DE INVESTIDORES (USANDO DF PRINCIPAL)
-            nomes = df["Nome"].dropna().unique().tolist()
-            nome_escolhido = st.selectbox("Prestador de serviços", nomes)
+                investidor = df[df["Nome"] == nome_sel].iloc[0]
         
-            data_vigencia = st.date_input("Data de início da vigência")
+                modelo_contrato = investidor["Modelo de contrato"]
         
-            linha = df[df["Nome"] == nome_escolhido].iloc[0]
-        
-            modelo_contrato = str(linha["Modelo de contrato"])
-            razao_social = str(linha["Razão social"])
-            cnpj = str(linha["CNPJ"])
-        
-            # CONFIRMAÇÃO PJ
-            if "PJ" not in modelo_contrato.upper():
-                st.warning("⚠️ Este investidor **não é PJ**. Deseja continuar mesmo assim?")
-                continuar = st.checkbox("Sim, gerar mesmo assim")
-            else:
                 continuar = True
         
-            if continuar:
-                if st.button("✅ Gerar documento"):
-                    # ABRE O DOCX
+                # Validação PJ
+                if modelo_contrato != "PJ":
+                    st.warning("⚠️ Este investidor não é PJ. Deseja continuar?")
+                    continuar = st.checkbox("Sim, continuar mesmo assim")
+        
+                if continuar and st.button("✅ Gerar documento"):
+        
+                    # -------- DADOS --------
+                    razao_social = str(investidor["O"])
+                    cnpj = str(investidor["N"])
+        
+                    cpf = re.sub(r"\D", "", str(investidor["CPF"]))
+                    email_pessoal = str(investidor["Email pessoal"])
+        
+                    data_vigencia_fmt = data_vigencia.strftime("%d/%m/%Y")
+                    data_assinatura = datetime.now().strftime("%d de %B de %Y")
+        
+                    # -------- ABRIR DOCX --------
                     doc = Document("INCLUSÃO SUBFATURA V4.docx")
         
-                    hoje = date.today()
-                    data_assinatura = hoje.strftime("%d de %B de %Y")
-                    data_vigencia_fmt = data_vigencia.strftime("%d/%m/%Y")
-        
-                    # SUBSTITUI TEXTOS
                     for p in doc.paragraphs:
-                        if "RAZÃO SOCIAL" in p.text:
-                            p.text = p.text.replace("RAZÃO SOCIAL", razao_social)
+                        p.text = (
+                            p.text
+                            .replace("RAZÃO SOCIAL", razao_social)
+                            .replace("XX.XXX.XXX/XXXX-XX", cnpj)
+                            .replace("XX/XX/XXXX", data_vigencia_fmt)
+                            .replace("XX de xxxxxx de XXXX", data_assinatura)
+                        )
         
-                        if "XX.XXX.XXX/XXXX-XX" in p.text:
-                            p.text = p.text.replace("XX.XXX.XXX/XXXX-XX", cnpj)
+                    # -------- SALVAR DOCX TEMP --------
+                    with tempfile.NamedTemporaryFile(delete=False, suffix=".docx") as tmp_docx:
+                        doc.save(tmp_docx.name)
+                        docx_path = tmp_docx.name
         
-                        if "XX/XX/XXXX" in p.text:
-                            p.text = p.text.replace("XX/XX/XXXX", data_vigencia_fmt)
+                    # -------- GERAR PDF --------
+                    pdf_nome = f"{nome_sel} __ {cpf} __ {email_pessoal} __ Subfatura.pdf"
+                    pdf_path = tempfile.NamedTemporaryFile(delete=False, suffix=".pdf").name
         
-                        if "XX de xxxxxx de XXXX" in p.text:
-                            p.text = p.text.replace("XX de xxxxxx de XXXX", data_assinatura)
+                    c = canvas.Canvas(pdf_path, pagesize=A4)
+                    width, height = A4
         
-                    # SALVA EM MEMÓRIA
-                    buffer = io.BytesIO()
-                    doc.save(buffer)
-                    buffer.seek(0)
+                    y = height - 40
+                    for p in Document(docx_path).paragraphs:
+                        c.drawString(40, y, p.text)
+                        y -= 16
+                        if y < 40:
+                            c.showPage()
+                            y = height - 40
         
-                    st.download_button(
-                        label="⬇️ Baixar subfatura",
-                        data=buffer,
-                        file_name=f"Subfatura_{nome_escolhido}.docx",
-                        mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-                    )
+                    c.save()
         
-                    st.session_state["abrir_subfatura"] = False
+                    # -------- DOWNLOAD --------
+                    with open(pdf_path, "rb") as f:
+                        st.download_button(
+                            label="⬇️ Baixar Subfatura em PDF",
+                            data=f,
+                            file_name=pdf_nome,
+                            mime="application/pdf"
+                        )
         
-            st.markdown("</div>", unsafe_allow_html=True)
+                    st.success("Documento gerado com sucesso ✅")
+                    st.session_state.abrir_modal_subfatura = False
