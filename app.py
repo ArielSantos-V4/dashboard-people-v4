@@ -1220,93 +1220,91 @@ with aba_benefícios:
 
 
         # ==============================
-        # BLOCO 3 — ACOMPANHAMENTO (CARDS DE STATUS)
+        # BLOCO 3 — ACOMPANHAMENTO (CARDS)
         # ==============================
-        with col_lembrete:
-            import streamlit as st
-            from datetime import date
-            
-            st.markdown("## 🧭 Acompanhamento do Período")
-            
-            # -------- CONFIGURAÇÃO DO PERÍODO --------
-            inicio = date(2026, 1, 16)
-            fim = date(2026, 1, 31)
-            hoje = date.today()
-            
-            # -------- LÓGICA DE STATUS --------
-            if hoje < inicio:
-                status = "Período ainda não iniciado"
-                cor_status = "#444"
-                emoji = "⏳"
-            elif inicio <= hoje <= fim:
-                status = "Período de acompanhamento ativo"
-                cor_status = "#2E8B57"
-                emoji = "📌"
-            else:
-                status = "Período encerrado"
-                cor_status = "#8B0000"
-                emoji = "✅"
-            
-            # -------- CÁLCULOS --------
-            dias_totais = (fim - inicio).days + 1
-            dias_passados = max(0, min((hoje - inicio).days + 1, dias_totais))
-            dias_restantes = max(0, (fim - hoje).days)
-            
-            # -------- CARDS DE STATUS (VERTICAL) --------
-            
-            st.markdown(f"""
+        
+        import streamlit as st
+        from datetime import date
+        
+        st.markdown("## 🧭 Acompanhamento do Período")
+        
+        # -------- CONFIGURAÇÕES DO PERÍODO --------
+        inicio = date(2026, 1, 16)
+        fim = date(2026, 1, 31)
+        hoje = date.today()
+        
+        # -------- LÓGICA DE STATUS --------
+        if hoje < inicio:
+            status = "Período ainda não iniciado"
+            cor_status = "#555555"
+            emoji_status = "⏳"
+        elif inicio <= hoje <= fim:
+            status = "Período de acompanhamento ativo"
+            cor_status = "#2E8B57"
+            emoji_status = "📌"
+        else:
+            status = "Período encerrado"
+            cor_status = "#8B0000"
+            emoji_status = "🔒"
+        
+        # -------- CÁLCULOS --------
+        dias_restantes = max((fim - hoje).days, 0)
+        
+        # -------- CARD 1 — STATUS ATUAL --------
+        st.markdown(f"""
+        <div style="
+            background:#1f1f1f;
+            padding:16px;
+            border-radius:14px;
+            margin-bottom:12px;
+            color:#ddd;">
+        
             <div style="
-                background:#1f1f1f;
-                padding:16px;
-                border-radius:14px;
-                color:#ddd;
-                margin-bottom:12px;">
-                
-                <div style="
-                    display:flex;
-                    align-items:center;
-                    gap:8px;
-                    font-weight:bold;
-                    margin-bottom:8px;">
-                    <span style="font-size:22px;">{emoji}</span>
-                    <span>Status atual</span>
-                </div>
-            
-                <div style="
-                    padding:10px;
-                    background:{cor_status};
-                    border-radius:8px;
-                    color:black;
-                    font-weight:bold;
-                    text-align:center;">
-                    {status}
-                </div>
+                display:flex;
+                align-items:center;
+                gap:8px;
+                font-weight:bold;
+                margin-bottom:8px;">
+                <span style="font-size:22px;">{emoji_status}</span>
+                <span>Status atual</span>
             </div>
-            """, unsafe_allow_html=True)
-            
-            st.markdown(f"""
+        
             <div style="
-                background:#1f1f1f;
-                padding:16px;
-                border-radius:14px;
-                color:#ddd;">
-                
-                <div style="
-                    display:flex;
-                    align-items:center;
-                    gap:8px;
-                    font-weight:bold;
-                    margin-bottom:8px;">
-                    <span style="font-size:22px;">⏱️</span>
-                    <span>Dias restantes</span>
-                </div>
-            
-                <div style="
-                    font-size:24px;
-                    font-weight:bold;
-                    color:#aaa;
-                    text-align:center;">
-                    {dias_restantes}
-                </div>
+                padding:10px;
+                background:{cor_status};
+                border-radius:8px;
+                color:black;
+                font-weight:bold;
+                text-align:center;">
+                {status}
             </div>
-            """, unsafe_allow_html=True)
+        </div>
+        """, unsafe_allow_html=True)
+        
+        # -------- CARD 2 — DIAS RESTANTES --------
+        st.markdown(f"""
+        <div style="
+            background:#1f1f1f;
+            padding:16px;
+            border-radius:14px;
+            color:#ddd;">
+        
+            <div style="
+                display:flex;
+                align-items:center;
+                gap:8px;
+                font-weight:bold;
+                margin-bottom:8px;">
+                <span style="font-size:22px;">⏱️</span>
+                <span>Dias restantes</span>
+            </div>
+        
+            <div style="
+                font-size:24px;
+                font-weight:bold;
+                text-align:center;
+                color:#aaa;">
+                {dias_restantes}
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
