@@ -604,12 +604,13 @@ with aba_relatorios:
             df_aniversario["Dia"] = df_aniversario["Data de nascimento"].dt.day
         
             st.dataframe(
-                df_aniversario[
-                    ["Nome", "E-mail corporativo", "Nascimento", "Idade que completa"]
-                ].sort_values("Dia"),
-                use_container_width=True,
-                hide_index=True
-            )
+            df_aniversario[
+                ["Nome", "E-mail corporativo", "Nascimento", "Idade que completa", "Dia"]
+            ].sort_values("Dia"),
+            use_container_width=True,
+            hide_index=True
+        )
+
 
 
     # --------------------------------------------------
