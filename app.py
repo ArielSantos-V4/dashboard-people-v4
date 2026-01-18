@@ -200,9 +200,7 @@ with aba_dashboard:
     # LOAD + ORGANIZAÇÃO
     # --------------------------------------------------
     df = load_google_sheet()
-
-    st.write(df.columns.tolist())
-    st.stop()
+    df = df.rename(columns={"Data Início": "Início na V4"})
 
     df.columns = df.columns.str.strip()
     df = df.sort_values("Nome").reset_index(drop=True)
@@ -503,11 +501,11 @@ with aba_dashboard:
 
     df_tabela["Data de nascimento"] = df_tabela["Data de nascimento"]
     df_tabela["Data do contrato"] = df_tabela["Data do contrato"]
-    df_tabela["Data Início"] = df_tabela["Data Início"]
+    df_tabela["Início na V4"] = df_tabela["Início na V4"]
 
     # Datas exibidas
     df_tabela["Término do contrato"] = df_tabela["Térm previsto"]
-    df_tabela["Data de início"] = df_tabela["Data Início"]
+    df_tabela["Data de início"] = df_tabela["Início na V4"]
     
     # Limpeza de campos com .0
     df_tabela["BP"] = df_tabela["BP"].apply(limpar_numero)
@@ -534,11 +532,11 @@ with aba_dashboard:
             columns=[
                 "Data de nascimento",
                 "Data do contrato",
-                "Data Início",
+                "Início na V4",
                 "Térm previsto",
                 "Data de nascimento",
                 "Data do contrato",
-                "Data Início",
+                "Início na V4",
                 "Térm previsto"
             ],
             errors="ignore"
@@ -624,7 +622,7 @@ with aba_dashboard:
     st.subheader("📈 Admissões por mês")
     
     adm_mes = (
-        df_adm.assign(Mes=df_adm["Data Início"].dt.strftime("%b/%Y"))
+        df_adm.assign(Mes=df_adm["Início na V4_dt"].dt.strftime("%b/%Y"))
         .groupby("Mes")
         .size()
         .reset_index(name="Quantidade")
