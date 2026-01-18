@@ -1328,10 +1328,14 @@ with aba_benefícios:
                     p.add_run(texto)
 
         def formatar_cnpj(cnpj):
-            cnpj_numeros = re.sub(r"\D", "", str(cnpj))
+            # Converte para string e remove .0 se vier como float
+            cnpj_str = str(cnpj).replace(".0", "")
+            
+            # Remove tudo que não for número
+            cnpj_numeros = re.sub(r"\D", "", cnpj_str)
         
-            if len(cnpj_numeros) != 14:
-                return cnpj  # retorna como veio se estiver inválido
+            # Garante 14 dígitos (com zeros à esquerda se necessário)
+            cnpj_numeros = cnpj_numeros.zfill(14)
         
             return (
                 f"{cnpj_numeros[0:2]}."
@@ -1340,6 +1344,7 @@ with aba_benefícios:
                 f"{cnpj_numeros[8:12]}-"
                 f"{cnpj_numeros[12:14]}"
             )
+
 
         # -------- BOTÃO PRINCIPAL --------
         st.markdown("### ⚙️ Ações")
