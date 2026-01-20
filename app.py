@@ -1,5 +1,6 @@
 import streamlit as st
 import pandas as pd
+import bcrypt
 import altair as alt
 from datetime import datetime, timedelta
 from dateutil.relativedelta import relativedelta
@@ -48,34 +49,38 @@ st.set_page_config(
     layout="wide",
     page_icon="LOGO VERMELHO.png"
 )
-# --------------------------------------------------
-# LOGIN
-# --------------------------------------------------
-def check_password(username, password):
-    users = st.secrets["users"]
-    if username not in users:
-        return False, None
-    return password == users[username]["password"], users[username]["name"]
-    
-if "authenticated" not in st.session_state:
-    st.session_state.authenticated = False
-    
-if not st.session_state.authenticated:
-    st.title("🔐 Login — Dashboard People V4")
-    
-    username = st.text_input("Usuário")
-    password = st.text_input("Senha", type="password")
-    
-    if st.button("Entrar"):
-        valid, name = check_password(username, password)
-        if valid:
-            st.session_state.authenticated = True
-            st.session_state.user_name = name
-            st.rerun()
-        else:
-            st.error("Usuário ou senha inválidos")
-    
+
+# ==============================
+# LOGIN SIMPLES COM SENHA SEGURA
+# ==============================
+
+def verificar_senha(senha_digitada, senha_hash):
+    return bcrypt.checkpw(
+        senha_digitada.encode("utf-8"),
+        senha_hash.encode("utf-8")
+    )
+
+st.title("🔐 Login")
+
+usuario = st.text_input("Usuário")
+senha = st.text_input("Senha", type="password")
+
+users = st.secrets["users"]
+
+if usuario not in users:
+    st.error("Usuário ou senha inválidos")
     st.stop()
+
+senha_hash = users[usuario]["password"]
+
+if not verificar_senha(senha, senha_hash):
+    st.error("Usuário ou senha inválidos")
+    st.stop()
+
+st.success(f"Bem-vindo, {users[usuario]['name']} 👋")
+
+st.markdown("---")
+
         
 # --------------------------------------------------
 # ABAS
