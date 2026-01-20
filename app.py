@@ -1588,11 +1588,11 @@ with aba_benefícios:
                 data_assinatura = f"{hoje.day} de {MESES_PT[hoje.month]} de {hoje.year}"
         
                 mapa = {
-                    "RAZÃO SOCIAL": razao_social,
-                    "00.000.000/0000-00": cnpj,
-                    "XX de xxxxx de XXXX": data_assinatura
+                    "{RAZAO_SOCIAL}": razao_social,
+                    "{CNPJ}": cnpj,
+                    "{DATA}": data_assinatura
                 }
-        
+
                 doc = Document("Termo de não adesão - Plano de Saúde e Dental.docx")
         
                 # Corpo
