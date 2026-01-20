@@ -171,7 +171,7 @@ with aba_dashboard:
     
         client = gspread.authorize(creds)
     
-        sheet = client.open("13EPwhiXgh8BkbhyrEy2aCy3cv1O8npxJ_hA-HmLZ-pY")
+        sheet = client.open_by_key("13EPwhiXgh8BkbhyrEy2aCy3cv1O8npxJ_hA-HmLZ-pY")
         worksheet = sheet.get_worksheet(0)
     
         data = worksheet.get_all_records()
