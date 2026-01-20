@@ -1231,7 +1231,8 @@ with aba_benefícios:
         st.markdown("### 📊 Relatórios")
     
         abas = st.tabs([
-            "📂 Solicitar docs",
+            "⏰ Pendentes",
+            "📂 Aguardando docs",
             "📩 Enviar para DBL",
             "🆗 Aguardando ativação"
         ])
@@ -1256,12 +1257,31 @@ with aba_benefícios:
                 hide_index=True
             )
 
-    
         with abas[1]:
+            st.markdown("#### Aguardando envio da documentação")
+        
+            # --- FILTRO: somente pendentes ---
+            df_pendentes = df[df["Situação no plano"] == "Aguardando docs"]
+        
+            # --- SELEÇÃO DAS COLUNAS ---
+            tabela_docs = df_pendentes[[
+                "Nome",
+                "E-mail corporativo",
+                "Modelo de contrato",
+                "Enviar no EB"
+            ]]
+        
+            st.dataframe(
+                tabela_docs,
+                use_container_width=True,
+                hide_index=True
+            )
+            
+        with abas[2]:
             st.markdown("#### Investidores para envio à DBL")
         
             # --- FILTRO: aguardando documentação ---
-            df_dbl = df[df["Situação no plano"] == "Aguardando docs"]
+            df_dbl = df[df["Situação no plano"] == "Enviar à DBL"]
         
             # --- SELEÇÃO DAS COLUNAS ---
             tabela_dbl = df_dbl[[
@@ -1278,7 +1298,7 @@ with aba_benefícios:
             )
 
     
-        with abas[2]:
+        with abas[3]:
             st.markdown("#### Investidores aguardando retorno da DBL")
         
             # --- FILTRO: aguardando DBL ---
