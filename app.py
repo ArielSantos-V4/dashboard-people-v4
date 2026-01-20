@@ -1553,3 +1553,56 @@ with aba_benefícios:
                     )
         
                 st.success("Termo de Subestipulante gerado com sucesso ✅")
+
+        # ==============================
+        # AÇÃO — GERAR TERMO DE NÃO ADESÃO
+        # ==============================
+
+        st.markdown("---")
+        from docx import Document
+        import streamlit as st
+        
+        if st.button("📄 Gerar termo de não adesão"):
+            investidor = st.selectbox(
+                "Selecione o investidor",
+                df_investidores["Nome completo"]
+            )
+        
+            if investidor:
+                dados = df_investidores[
+                    df_investidores["Nome completo"] == investidor
+                ].iloc[0]
+        
+                razao_social = dados["Razão social"]
+                cnpj = dados["CNPJ formatado"]
+        
+                mapa = {
+                    "RAZÃO SOCIAL": razao_social,
+                    "00.000.000/0000-00": cnpj,
+                    "XX de xxxxx de XXXX": data_por_extenso()
+                }
+        
+                doc = Document("Termo de não adesão - Plano de Saúde e Dental.docx")
+        
+                # Corpo do documento
+                substituir_texto(doc.paragraphs, mapa)
+        
+                # Header
+                for section in doc.sections:
+                    substituir_texto(section.header.paragraphs, mapa)
+        
+                # Footer (se houver)
+                for section in doc.sections:
+                    substituir_texto(section.footer.paragraphs, mapa)
+        
+                nome_arquivo = f"Termo de não adesão ao plano - {nome_escolhido}.docx"
+        
+                doc.save(nome_arquivo)
+        
+                with open(nome_arquivo, "rb") as f:
+                    st.download_button(
+                        "⬇️ Download do termo",
+                        data=f,
+                        file_name=nome_arquivo,
+                        mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                    )
