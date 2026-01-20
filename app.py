@@ -50,6 +50,22 @@ st.set_page_config(
     page_icon="LOGO VERMELHO.png"
 )
 
+import bcrypt
+import streamlit as st
+
+st.write("GERADOR DE HASH DE SENHA")
+
+senha = st.text_input("Digite a senha forte que você quer gerar", type="password")
+
+if senha:
+    hash_senha = bcrypt.hashpw(
+        senha.encode("utf-8"),
+        bcrypt.gensalt()
+    )
+
+    st.code(hash_senha.decode("utf-8"))
+    st.stop()
+    
 # ==============================
 # LOGIN SIMPLES COM SENHA SEGURA
 # ==============================
