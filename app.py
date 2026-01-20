@@ -1335,27 +1335,10 @@ with aba_benefícios:
         
         def substituir_texto(paragraphs, mapa):
             for p in paragraphs:
-        
-                texto_completo = "".join(run.text for run in p.runs)
-        
-                substituiu = False
-        
-                for chave, valor in mapa.items():
-                    if chave in texto_completo:
-                        texto_completo = texto_completo.replace(chave, str(valor))
-                        substituiu = True
-        
-                if substituiu:
-                    p.clear()
-                    novo_run = p.add_run(texto_completo)
-        
-                    # mantém estilo básico do primeiro run
-                    if p.runs:
-                        novo_run.font.name = p.runs[0].font.name
-                        novo_run.font.size = p.runs[0].font.size
-                        novo_run.bold = p.runs[0].bold
-                        novo_run.italic = p.runs[0].italic
-
+                for run in p.runs:
+                    for chave, valor in mapa.items():
+                        if chave in run.text:
+                            run.text = run.text.replace(chave, str(valor))
 
         def formatar_cnpj(cnpj):
             # Converte para string e remove .0 se vier como float
