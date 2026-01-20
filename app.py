@@ -1436,7 +1436,7 @@ with aba_benefícios:
                 cpf_limpo = re.sub(r"\D", "", cpf)
         
                 nome_arquivo = (
-                    f"{nome_escolhido}__{cpf_limpo}__{email_pessoal}__Subfatura.docx"
+                    f"{nome_escolhido} __ {cpf_limpo} __ {email_pessoal} __ Subfatura.docx"
                 )
         
                 doc.save(nome_arquivo)
@@ -1528,7 +1528,7 @@ with aba_benefícios:
                 cpf_limpo = re.sub(r"\D", "", cpf)
         
                 nome_arquivo = (
-                    f"{nome_escolhido}__{cpf_limpo}__{email_pessoal}__Termo_Subestipulante.docx"
+                    f"{nome_escolhido} __ {cpf_limpo} __ {email_pessoal} __ Termo Subestipulante.docx"
                 )
         
                 doc.save(nome_arquivo)
