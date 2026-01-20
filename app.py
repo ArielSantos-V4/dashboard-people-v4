@@ -1402,7 +1402,7 @@ with aba_benefícios:
                     )
         
                 # -------- ABRE TEMPLATE --------
-                doc = Document("INCLUSÃO SUBFATURA V4.docx")
+                doc = Document("Subfatura.docx")
         
                 vigencia_formatada = data_vigencia.strftime("%d/%m/%Y")
         
@@ -1410,10 +1410,10 @@ with aba_benefícios:
                 data_assinatura = f"{hoje.day} de {MESES_PT[hoje.month]} de {hoje.year}"
         
                 mapa = {
-                    "RAZÃO SOCIAL": razao_social,
-                    "XX.XXX.XXX/XXXX-XX": cnpj,
-                    "XX/XX/XXXX": vigencia_formatada,
-                    "XX de xxxxxx de XXXX": data_assinatura
+                    "{RAZAO_SOCIAL}": razao_social,
+                    "{CNPJ}": cnpj,
+                    "{VIGENCIA}": vigencia_formatada,
+                    "{DATA}": data_assinatura
                 }
         
                 substituir_texto(doc.paragraphs, mapa)
@@ -1455,6 +1455,7 @@ with aba_benefícios:
 
         
                 st.success("Subfatura gerada com sucesso ✅")
+                
         # ==============================
         # AÇÃO — GERAR TERMO DE SUBESTIPULANTE
         # ==============================
@@ -1499,9 +1500,9 @@ with aba_benefícios:
                 data_assinatura = f"{hoje.day} de {MESES_PT[hoje.month]} de {hoje.year}"
         
                 mapa = {
-                    "RAZÃO SOCIAL": razao_social,
-                    "XX.XXX.XXX/XXXX-XX": cnpj,
-                    "XX de xxxxxx de XXXX": data_assinatura
+                    "{RAZAO_SOCIAL}": razao_social,
+                    "{CNPJ}": cnpj,
+                    "{DATA}": data_assinatura
                 }
         
                 # Parágrafos normais
