@@ -55,7 +55,7 @@ import streamlit as st
 
 st.write("GERADOR DE HASH DE SENHA")
 
-senha = st.text_input("Xari620@*el", type="password")
+senha = st.text_input("Digite a senha", type="password")
 
 if senha:
     hash_senha = bcrypt.hashpw(
