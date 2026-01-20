@@ -157,21 +157,24 @@ with aba_dashboard:
     # --------------------------------------------------
     # GOOGLE SHEETS
     # --------------------------------------------------
+    import gspread
+    from google.oauth2.service_account import Credentials
+    
     @st.cache_data(ttl=600)
     def load_google_sheet():
-        sheet_id = "13EPwhiXgh8BkbhyrEy2aCy3cv1O8npxJ_hA-HmLZ-pY"
-        gid = 2056973316
-    
-        url = f"https://docs.google.com/spreadsheets/d/{sheet_id}/gviz/tq?gid={gid}&tqx=out:csv"
-        return pd.read_csv(url)
-    
-    
-    def parse_data_br(coluna):
-        return pd.to_datetime(
-            coluna.astype(str).str.strip().replace("", pd.NA),
-            dayfirst=True,
-            errors="coerce"
+        creds = Credentials.from_service_account_info(
+            st.secrets["gcp_service_account"],
+            scopes=["https://www.googleapis.com/auth/spreadsheets.readonly"]
         )
+    
+        client = gspread.authorize(creds)
+    
+        sheet = client.open_by_key("13EPwhiXgh8BkbhyrEy2aCy3cv1O8npxJ_hA-HmLZ-pY")
+        worksheet = sheet.get_worksheet(0)
+    
+        data = worksheet.get_all_records()
+        return pd.DataFrame(data)
+
     
     # --------------------------------------------------
     # LOAD + ORGANIZAÇÃO
