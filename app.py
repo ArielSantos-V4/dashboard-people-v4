@@ -1565,7 +1565,7 @@ with aba_benefícios:
         if st.button("📄 Gerar termo de não adesão"):
             investidor = st.selectbox(
                 "Selecione o investidor",
-                df_investidores["Nome completo"]
+                df_investidores["Nome"]
             )
         
             if investidor:
