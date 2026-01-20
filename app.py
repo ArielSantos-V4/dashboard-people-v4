@@ -187,7 +187,7 @@ with aba_dashboard:
     df.columns = df.columns.str.strip().str.replace("\u00a0", "", regex=False)
 
     df.columns = df.columns.str.strip()
-    df = df.sort_values("Nome").reset_index(drop=True)
+    df = df.sort_values(df.columns[0]).reset_index(drop=True)
     
     # 👇 AQUI É O LUGAR CERTO
     df = df.fillna("")
