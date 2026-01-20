@@ -1335,17 +1335,11 @@ with aba_benefícios:
         
         def substituir_texto(paragraphs, mapa):
             for p in paragraphs:
-                texto = p.text
-                alterou = False
-        
-                for chave, valor in mapa.items():
-                    if chave in texto:
-                        texto = texto.replace(chave, str(valor))
-                        alterou = True
-        
-                if alterou:
-                    p.clear()
-                    p.add_run(texto)
+                for run in p.runs:
+                    for chave, valor in mapa.items():
+                        if chave in run.text:
+                            run.text = run.text.replace(chave, str(valor))
+
 
         def formatar_cnpj(cnpj):
             # Converte para string e remove .0 se vier como float
