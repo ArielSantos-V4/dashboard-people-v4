@@ -1557,52 +1557,86 @@ with aba_benefícios:
         # ==============================
         # AÇÃO — GERAR TERMO DE NÃO ADESÃO
         # ==============================
-
-        st.markdown("---")
-        from docx import Document
-        import streamlit as st
         
-        if st.button("📄 Gerar termo de não adesão"):
-            investidor = st.selectbox(
-                "Selecione o investidor",
-                df_investidores["Nome"]
+        st.markdown("---")
+        
+        if st.button("📄 Gerar Termo de Não Adesão", use_container_width=True):
+            st.session_state["abrir_termo_nao_adesao"] = not st.session_state.get(
+                "abrir_termo_nao_adesao", False
             )
         
-            if investidor:
-                dados = df_investidores[
-                    df_investidores["Nome completo"] == investidor
-                ].iloc[0]
+        if st.session_state.get("abrir_termo_nao_adesao", False):
         
-                razao_social = dados["Razão social"]
-                cnpj = dados["CNPJ formatado"]
+            st.markdown("## 📄 Gerar Termo de Não Adesão")
+        
+            nomes = sorted(df["Nome"].dropna().unique())
+            nome_escolhido = st.selectbox(
+                "Selecione o investidor",
+                nomes,
+                key="nome_nao_adesao"
+            )
+        
+            col1, col2, col3 = st.columns([1, 2, 1])
+            with col2:
+                gerar_nao_adesao = st.button(
+                    "✅ Gerar Termo",
+                    use_container_width=True,
+                    key="btn_gerar_nao_adesao"
+                )
+        
+            if gerar_nao_adesao:
+        
+                dados = df[df["Nome"] == nome_escolhido].iloc[0]
+        
+                razao_social = str(dados["Razão social"])
+                cnpj = formatar_cnpj(dados["CNPJ"])
+        
+                hoje = date.today()
+                data_assinatura = f"{hoje.day} de {MESES_PT[hoje.month]} de {hoje.year}"
         
                 mapa = {
                     "RAZÃO SOCIAL": razao_social,
                     "00.000.000/0000-00": cnpj,
-                    "XX de xxxxx de XXXX": data_por_extenso()
+                    "XX de xxxxx de XXXX": data_assinatura
                 }
         
                 doc = Document("Termo de não adesão - Plano de Saúde e Dental.docx")
         
-                # Corpo do documento
+                # Corpo
                 substituir_texto(doc.paragraphs, mapa)
         
-                # Header
+                # Tabelas (segurança extra)
+                for table in doc.tables:
+                    for row in table.rows:
+                        for cell in row.cells:
+                            substituir_texto(cell.paragraphs, mapa)
+        
+                # Cabeçalho e rodapé
                 for section in doc.sections:
                     substituir_texto(section.header.paragraphs, mapa)
-        
-                # Footer (se houver)
-                for section in doc.sections:
                     substituir_texto(section.footer.paragraphs, mapa)
         
                 nome_arquivo = f"Termo de não adesão ao plano - {nome_escolhido}.docx"
         
                 doc.save(nome_arquivo)
         
-                with open(nome_arquivo, "rb") as f:
-                    st.download_button(
-                        "⬇️ Download do termo",
-                        data=f,
-                        file_name=nome_arquivo,
-                        mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                col_btn1, col_btn2 = st.columns(2)
+        
+                with col_btn1:
+                    with open(nome_arquivo, "rb") as f:
+                        st.download_button(
+                            "⬇️ Download",
+                            data=f,
+                            file_name=nome_arquivo,
+                            mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                            use_container_width=True
+                        )
+        
+                with col_btn2:
+                    st.link_button(
+                        "🔁 Converter PDF",
+                        "https://www.ilovepdf.com/pt/word_para_pdf",
+                        use_container_width=True
                     )
+        
+                st.success("Termo de Não Adesão gerado com sucesso ✅")
