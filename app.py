@@ -153,6 +153,8 @@ with aba_dashboard:
     
     </style>
     """, unsafe_allow_html=True)
+    
+    st.cache_data.clear()
        
     # --------------------------------------------------
     # GOOGLE SHEETS
