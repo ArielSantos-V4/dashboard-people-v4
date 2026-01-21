@@ -970,66 +970,65 @@ with aba_relatorios:
         # ==============================
         # RELATÓRIO — TEMPO DE CASA
         # ==============================
-        
-        st.subheader("📊 Relatório — Tempo de Casa")
-        
-        from dateutil.relativedelta import relativedelta
-        
-        def calcular_tempo_casa(data_inicio):
-            if pd.isna(data_inicio):
-                return ""
-            hoje = pd.Timestamp.today().normalize()
-            diff = relativedelta(hoje, data_inicio)
-            return f"{diff.years} anos, {diff.months} meses e {diff.days} dias"
-        
-        
-        df_relatorio_tempo = df.copy()
-        
-        # 🔹 MAPEAMENTO SEGURO DA DATA DE INÍCIO
-        col_inicio = None
-        for col in df_relatorio_tempo.columns:
-            c = col.lower().strip()
-            if "início" in c or "inicio" in c or "admiss" in c or "contrato" in c:
-                col_inicio = col
-                break
-        
-        if col_inicio is None:
-            st.error("Coluna de início não encontrada.")
-        else:
-            df_relatorio_tempo["Inicio_dt"] = pd.to_datetime(
-                df_relatorio_tempo[col_inicio],
-                dayfirst=True,
-                errors="coerce"
-            )
-        
-            df_relatorio_tempo["Tempo de casa"] = df_relatorio_tempo["Inicio_dt"].apply(
-                calcular_tempo_casa
-            )
-        
-            # 🔎 FILTRO
-            min_anos = st.selectbox(
-                "Tempo mínimo de casa (anos)",
-                [0, 1, 2, 3, 4, 5],
-                index=0
-            )
-        
-            if min_anos > 0:
+        with st.expander("⏳ Tempo de Casa", expanded=False):
+            
+            from dateutil.relativedelta import relativedelta
+            
+            def calcular_tempo_casa(data_inicio):
+                if pd.isna(data_inicio):
+                    return ""
                 hoje = pd.Timestamp.today().normalize()
-                df_relatorio_tempo = df_relatorio_tempo[
-                    (hoje - df_relatorio_tempo["Inicio_dt"]).dt.days >= min_anos * 365
-                ]
-        
-            df_final = df_relatorio_tempo[
-                [
-                    "Nome",
-                    "E-mail corporativo",
-                    col_inicio,
-                    "Remuneração",
-                    "Tempo de casa"
-                ]
-            ].rename(columns={col_inicio: "Início na V4"})
-        
-            st.dataframe(df_final, use_container_width=True, hide_index=True)
+                diff = relativedelta(hoje, data_inicio)
+                return f"{diff.years} anos, {diff.months} meses e {diff.days} dias"
+            
+            
+            df_relatorio_tempo = df.copy()
+            
+            # 🔹 MAPEAMENTO SEGURO DA DATA DE INÍCIO
+            col_inicio = None
+            for col in df_relatorio_tempo.columns:
+                c = col.lower().strip()
+                if "início" in c or "inicio" in c or "admiss" in c or "contrato" in c:
+                    col_inicio = col
+                    break
+            
+            if col_inicio is None:
+                st.error("Coluna de início não encontrada.")
+            else:
+                df_relatorio_tempo["Inicio_dt"] = pd.to_datetime(
+                    df_relatorio_tempo[col_inicio],
+                    dayfirst=True,
+                    errors="coerce"
+                )
+            
+                df_relatorio_tempo["Tempo de casa"] = df_relatorio_tempo["Inicio_dt"].apply(
+                    calcular_tempo_casa
+                )
+            
+                # 🔎 FILTRO
+                min_anos = st.selectbox(
+                    "Tempo mínimo de casa (anos)",
+                    [0, 1, 2, 3, 4, 5],
+                    index=0
+                )
+            
+                if min_anos > 0:
+                    hoje = pd.Timestamp.today().normalize()
+                    df_relatorio_tempo = df_relatorio_tempo[
+                        (hoje - df_relatorio_tempo["Inicio_dt"]).dt.days >= min_anos * 365
+                    ]
+            
+                df_final = df_relatorio_tempo[
+                    [
+                        "Nome",
+                        "E-mail corporativo",
+                        col_inicio,
+                        "Remuneração",
+                        "Tempo de casa"
+                    ]
+                ].rename(columns={col_inicio: "Início na V4"})
+            
+                st.dataframe(df_final, use_container_width=True, hide_index=True)
 
 
     # --------------------------------------------------
