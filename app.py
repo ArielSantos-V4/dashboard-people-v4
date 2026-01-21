@@ -809,18 +809,22 @@ with aba_relatorios:
                 )
 
         
-            # 🔹 garante coluna datetime (NUNCA usar a original para .dt)
+            # Garante datetime
             df["Térm previsto_dt"] = pd.to_datetime(
                 df["Térm previsto"],
                 dayfirst=True,
                 errors="coerce"
             )
-        
-            # 🔹 filtra período
+            
+            # Converte datas do Streamlit para Timestamp
+            data_inicio_ts = pd.Timestamp(data_inicio)
+            data_fim_ts = pd.Timestamp(data_fim)
+            
+            # Filtro correto
             df_vencimento = df[
                 df["Térm previsto_dt"].notna() &
-                (df["Térm previsto_dt"].dt.date >= data_inicio) &
-                (df["Térm previsto_dt"].dt.date <= data_fim)
+                (df["Térm previsto_dt"] >= data_inicio_ts) &
+                (df["Térm previsto_dt"] <= data_fim_ts)
             ]
         
             # 🔹 ordena ANTES de cortar colunas
