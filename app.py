@@ -5,6 +5,9 @@ import altair as alt
 from datetime import datetime, timedelta
 from dateutil.relativedelta import relativedelta
 
+if "authenticated" not in st.session_state:
+    st.session_state.authenticated = False
+
 if "investidor_selecionado" not in st.session_state:
     st.session_state.investidor_selecionado = ""
 
@@ -62,24 +65,35 @@ def verificar_senha(senha_digitada, senha_hash):
         senha_hash.encode("utf-8")
     )
 
-st.title("🔐 Login")
+if not st.session_state.authenticated:
 
-usuario = st.text_input("Usuário")
-senha = st.text_input("Senha", type="password")
+    st.title("🔐 Login")
 
-users = st.secrets["users"]
+    usuario = st.text_input("Usuário")
+    senha = st.text_input("Senha", type="password")
 
-if usuario not in users:
-    st.error("Usuário ou senha inválidos")
-    st.stop()
+    if st.button("Entrar"):
 
-senha_hash = users[usuario]["password"]
+        users = st.secrets["users"]
 
-if not verificar_senha(senha, senha_hash):
-    st.error("Usuário ou senha inválidos")
-    st.stop()
+        if usuario not in users:
+            st.error("Usuário ou senha inválidos")
+            st.stop()
 
-st.success(f"Bem-vindo, {users[usuario]['name']} 👋")
+        senha_hash = users[usuario]["password"]
+
+        if not verificar_senha(senha, senha_hash):
+            st.error("Usuário ou senha inválidos")
+            st.stop()
+
+        # ✅ LOGIN OK
+        st.session_state.authenticated = True
+        st.session_state.user_name = users[usuario]["name"]
+
+        st.rerun()
+
+    st.stop()  # 🔥 IMPEDE O RESTO DA PÁGINA DE RENDERIZAR
+
 
 st.session_state.user_name = users[usuario]["name"]
 st.session_state.authenticated = True
