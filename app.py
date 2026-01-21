@@ -93,8 +93,6 @@ if not st.session_state.authenticated:
         st.rerun()
 
     st.stop()  # 🔥 IMPEDE O RESTO DA PÁGINA DE RENDERIZAR
-
-st.markdown("---")
         
 # --------------------------------------------------
 # ABAS
