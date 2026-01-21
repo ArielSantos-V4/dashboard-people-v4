@@ -187,10 +187,14 @@ with aba_dashboard:
     # LOAD + ORGANIZAÇÃO
     # --------------------------------------------------
     df = load_google_sheet()
-    st.write(df.columns.tolist())
-    st.stop()
 
-    df = df.rename(columns={"Data Início": "Início na V4"})
+    # Padronização de colunas
+    df = df.rename(columns={
+        "Nome completo": "Nome",
+        "Data Início": "Início na V4",
+        "Término contrato previsto": "Térm previsto",
+        "Ativo no plano": "Situação no plano"
+    })
 
     df.columns = (
         df.columns
