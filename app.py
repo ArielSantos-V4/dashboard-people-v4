@@ -81,6 +81,9 @@ if not verificar_senha(senha, senha_hash):
 
 st.success(f"Bem-vindo, {users[usuario]['name']} 👋")
 
+st.session_state.user_name = users[usuario]["name"]
+st.session_state.authenticated = True
+
 st.markdown("---")
 
         
@@ -232,7 +235,9 @@ with aba_dashboard:
     # --------------------------------------------------
     # SIDEBAR
     # --------------------------------------------------
-    st.sidebar.success(f"Bem-vindo(a), {st.session_state.user_name}")
+    st.sidebar.success(
+        f"Bem-vindo(a), {st.session_state.get('user_name', 'Usuário')}"
+    )
     
     if st.sidebar.button("🔄 Atualizar dados"):
         st.cache_data.clear()
