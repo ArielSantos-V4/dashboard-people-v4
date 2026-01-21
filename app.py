@@ -502,8 +502,9 @@ with aba_dashboard:
     # Limpeza de campos com .0
     df_tabela["BP"] = df_tabela["BP"].apply(limpar_numero)
     df_tabela["Código CC"] = df_tabela["Código CC"].apply(limpar_numero)
-    df_tabela["Carteirinha médico"] = df_tabela["Carteirinha médico"].apply(limpar_numero)
-    df_tabela["Carteirinha odonto"] = df_tabela["Carteirinha odonto"].apply(limpar_numero)
+    for col in ["Carteirinha médico", "Carteirinha odonto"]:
+        if col in df_tabela.columns:
+            df_tabela[col] = df_tabela[col].apply(limpar_numero)
     
     # Matrícula com 6 dígitos
     df_tabela["Matrícula"] = df_tabela["Matrícula"].apply(formatar_matricula)
