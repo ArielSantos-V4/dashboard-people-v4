@@ -1156,7 +1156,7 @@ with aba_relatorios:
             with col1:
                 nome_selecionado = st.selectbox(
                     "Nome do colaborador",
-                    sorted(df["Nome completo"].dropna().unique())
+                    sorted(df["Nome"].dropna().unique())
                 )
         
             with col2:
@@ -1166,7 +1166,7 @@ with aba_relatorios:
                 )
         
             # BUSCA DADOS DA PESSOA
-            dados_pessoa = df[df["Nome completo"] == nome_selecionado].iloc[0]
+            dados_pessoa = df[df["Nome"] == nome_selecionado].iloc[0]
         
             cargo = dados_pessoa["Cargo"]
         
