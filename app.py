@@ -199,6 +199,11 @@ with aba_dashboard:
         .str.strip()
     )
 
+    if "Nome" not in df.columns:
+        st.error("❌ A coluna 'Nome' não foi encontrada na planilha.")
+        st.write("Colunas disponíveis:", df.columns.tolist())
+        st.stop()
+
     df = df.sort_values(df.columns[0]).reset_index(drop=True)
     
     # 👇 AQUI É O LUGAR CERTO
