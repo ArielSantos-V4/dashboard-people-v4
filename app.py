@@ -4,6 +4,8 @@ import bcrypt
 import altair as alt
 from datetime import datetime, timedelta
 from dateutil.relativedelta import relativedelta
+from docx import Document
+from datetime import date
 
 if "authenticated" not in st.session_state:
     st.session_state.authenticated = False
@@ -1135,104 +1137,123 @@ with aba_relatorios:
         # ==============================
         
         # Botão que abre o modal
+        st.markdown("---")
+        
         if st.button("📄 Demissão por comum acordo", use_container_width=True):
-            st.session_state["abrir_demissao_comum_acordo"] = True
-        
-        
+            st.session_state["abrir_demissao_comum"] = True
+                     
         # ------------------------------
         # MODAL (CAIXA SUSPENSA CENTRAL)
         # ------------------------------
-        if st.session_state.get("abrir_demissao_comum_acordo", False):
+        if st.session_state.get("abrir_demissao_comum", False):
+
+            # 🔥 FUNDO ESCURECIDO
+            st.markdown(
+                """
+                <style>
+                .modal-bg {
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    background: rgba(0,0,0,0.65);
+                    z-index: 999;
+                }
+                .modal-box {
+                    position: fixed;
+                    top: 50%;
+                    left: 50%;
+                    transform: translate(-50%, -50%);
+                    background: #111;
+                    padding: 28px;
+                    border-radius: 16px;
+                    width: 440px;
+                    z-index: 1000;
+                    box-shadow: 0 0 40px rgba(0,0,0,0.6);
+                }
+                </style>
+                <div class="modal-bg"></div>
+                """,
+                unsafe_allow_html=True
+            )
         
-            with st.dialog("📄 Demissão por comum acordo"):
+            st.markdown('<div class="modal-box">', unsafe_allow_html=True)
         
-                # Seleção do colaborador
-                nomes = sorted(df["Nome"].dropna().unique())
+            st.markdown("## 📄 Demissão por comum acordo")
         
-                nome_escolhido = st.selectbox(
-                    "Selecione o colaborador",
-                    nomes,
-                    key="demissao_nome_modal"
-                )
+            # ---------- CAMPOS ----------
+            nomes = sorted(df["Nome"].dropna().unique())
         
-                # Data do desligamento
-                data_desligamento = st.date_input(
-                    "Data do desligamento",
-                    format="DD/MM/YYYY",
-                    key="demissao_data_modal"
-                )
+            nome_escolhido = st.selectbox(
+                "Colaborador",
+                nomes,
+                key="demissao_nome"
+            )
         
-                st.markdown("<br>", unsafe_allow_html=True)
+            data_desligamento = st.date_input(
+                "Data do desligamento",
+                format="DD/MM/YYYY",
+                key="demissao_data"
+            )
         
-                col1, col2 = st.columns(2)
+            st.markdown("<br>", unsafe_allow_html=True)
         
-                with col1:
-                    cancelar = st.button(
-                        "❌ Cancelar",
-                        use_container_width=True
-                    )
+            col1, col2 = st.columns(2)
         
-                with col2:
-                    gerar = st.button(
-                        "✅ Gerar documento",
-                        use_container_width=True
-                    )
-        
-                # Cancelar
-                if cancelar:
-                    st.session_state["abrir_demissao_comum_acordo"] = False
+            # ---------- CANCELAR ----------
+            with col1:
+                if st.button("❌ Cancelar", use_container_width=True):
+                    st.session_state["abrir_demissao_comum"] = False
                     st.rerun()
         
-                # Gerar documento
-                if gerar:
+            # ---------- GERAR ----------
+            with col2:
+                gerar = st.button("✅ Gerar", use_container_width=True)
         
-                    dados = df[df["Nome"] == nome_escolhido].iloc[0]
+            if gerar:
+                dados = df[df["Nome"] == nome_escolhido].iloc[0]
         
-                    nome_completo = str(dados["Nome"])
-                    cargo = str(dados["Cargo"])
-                    data_formatada = data_desligamento.strftime("%d/%m/%Y")
+                mapa = {
+                    "{nome_completo}": dados["Nome"],
+                    "{cargo}": dados["Cargo"],
+                    "{data}": data_desligamento.strftime("%d/%m/%Y")
+                }
         
-                    mapa = {
-                        "{nome_completo}": nome_completo,
-                        "{cargo}": cargo,
-                        "{data}": data_formatada
-                    }
+                # 🔹 ABRE TEMPLATE
+                doc = Document("Demissão por comum acordo.docx")
         
-                    # Abre o template
-                    doc = Document("Demissão por comum acordo.docx")
+                # 🔹 SUBSTITUI TEXTO
+                substituir_texto(doc.paragraphs, mapa)
         
-                    # Corpo
-                    substituir_texto(doc.paragraphs, mapa)
+                for table in doc.tables:
+                    for row in table.rows:
+                        for cell in row.cells:
+                            substituir_texto(cell.paragraphs, mapa)
         
-                    # Tabelas
-                    for table in doc.tables:
-                        for row in table.rows:
-                            for cell in row.cells:
-                                substituir_texto(cell.paragraphs, mapa)
+                for section in doc.sections:
+                    substituir_texto(section.header.paragraphs, mapa)
+                    substituir_texto(section.footer.paragraphs, mapa)
         
-                    # Cabeçalho e rodapé
-                    for section in doc.sections:
-                        substituir_texto(section.header.paragraphs, mapa)
-                        substituir_texto(section.footer.paragraphs, mapa)
+                # 🔹 SALVA
+                nome_arquivo = f"Demissão por comum acordo - {dados['Nome']}.docx"
+                doc.save(nome_arquivo)
         
-                    # Nome do arquivo final
-                    nome_arquivo = f"Demissão por comum acordo - {nome_completo}.docx"
+                st.success("Documento gerado com sucesso ✅")
         
-                    doc.save(nome_arquivo)
+                with open(nome_arquivo, "rb") as f:
+                    st.download_button(
+                        "⬇️ Download",
+                        data=f,
+                        file_name=nome_arquivo,
+                        mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                        use_container_width=True
+                    )
         
-                    st.success("Documento gerado com sucesso ✅")
+                st.session_state["abrir_demissao_comum"] = False
         
-                    with open(nome_arquivo, "rb") as f:
-                        st.download_button(
-                            "⬇️ Download",
-                            data=f,
-                            file_name=nome_arquivo,
-                            mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-                            use_container_width=True
-                        )
-        
-                    # Fecha modal após gerar
-                    st.session_state["abrir_demissao_comum_acordo"] = False
+            st.markdown("</div>", unsafe_allow_html=True)
+
 
 
 # --------------------------------------------------
