@@ -39,6 +39,8 @@ def render_table(df, *, dataframe=True, **kwargs):
     else:
         st.table(df_view)
 
+def parse_data_br(coluna):
+    return pd.to_datetime(coluna, dayfirst=True, errors="coerce")
 
 # --------------------------------------------------
 # CONFIGURAÇÃO DA PÁGINA
