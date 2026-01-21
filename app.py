@@ -1150,20 +1150,16 @@ with aba_relatorios:
         if st.session_state.gerar_demissao_comum:
         
             st.markdown("#### Preencha os dados abaixo")
-        
-            col1, col2 = st.columns(2)
-        
-            with col1:
-                nome_selecionado = st.selectbox(
-                    "Nome do colaborador",
-                    sorted(df["Nome"].dropna().unique())
-                )
-        
-            with col2:
-                data_desligamento = st.date_input(
-                    "Data do desligamento",
-                    format="DD/MM/YYYY"
-                )
+
+            nome_selecionado = st.selectbox(
+                "Nome do colaborador",
+                sorted(df["Nome"].dropna().unique())
+            )
+     
+            data_desligamento = st.date_input(
+                "Data do desligamento",
+                format="DD/MM/YYYY"
+            )
         
             # BUSCA DADOS DA PESSOA
             dados_pessoa = df[df["Nome"] == nome_selecionado].iloc[0]
