@@ -1170,7 +1170,7 @@ with aba_relatorios:
             col_gerar, col_cancelar = st.columns(2)
         
             with col_gerar:
-                if st.button("✅ Gerar documento Word"):
+                if st.button("✅ Gerar doc"):
         
                     from docx import Document
                     from io import BytesIO
