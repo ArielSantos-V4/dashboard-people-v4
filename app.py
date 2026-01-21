@@ -1130,78 +1130,110 @@ with aba_relatorios:
         if st.button("📝 Título de doc para automação"):
             abrir_modal_titulo()
 
-        # -------------------------------
-        # DEMISSÃO POR COMUM ACORDO
-        # -------------------------------
+        # ==============================
+        # BOTÃO — DEMISSÃO POR COMUM ACORDO (MODAL)
+        # ==============================
         
-        with st.expander("📄 Demissão por comum acordo", expanded=False):
+        # Botão que abre o modal
+        if st.button("📄 Demissão por comum acordo", use_container_width=True):
+            st.session_state["abrir_demissao_comum_acordo"] = True
         
-            nomes = sorted(df["Nome"].dropna().unique())
         
-            nome_escolhido = st.selectbox(
-                "Selecione o colaborador",
-                nomes,
-                key="demissao_nome"
-            )
+        # ------------------------------
+        # MODAL (CAIXA SUSPENSA CENTRAL)
+        # ------------------------------
+        if st.session_state.get("abrir_demissao_comum_acordo", False):
         
-            data_desligamento = st.date_input(
-                "Data do desligamento",
-                format="DD/MM/YYYY",
-                key="demissao_data"
-            )
+            with st.dialog("📄 Demissão por comum acordo"):
         
-            col1, col2, col3 = st.columns([1, 2, 1])
-            with col2:
-                gerar_demissao = st.button(
-                    "✅ Gerar documento",
-                    use_container_width=True,
-                    key="btn_gerar_demissao"
+                # Seleção do colaborador
+                nomes = sorted(df["Nome"].dropna().unique())
+        
+                nome_escolhido = st.selectbox(
+                    "Selecione o colaborador",
+                    nomes,
+                    key="demissao_nome_modal"
                 )
         
-            if gerar_demissao:
+                # Data do desligamento
+                data_desligamento = st.date_input(
+                    "Data do desligamento",
+                    format="DD/MM/YYYY",
+                    key="demissao_data_modal"
+                )
         
-                dados = df[df["Nome"] == nome_escolhido].iloc[0]
+                st.markdown("<br>", unsafe_allow_html=True)
         
-                nome_completo = str(dados["Nome"])
-                cargo = str(dados["Cargo"])
-                data_formatada = data_desligamento.strftime("%d/%m/%Y")
+                col1, col2 = st.columns(2)
         
-                mapa = {
-                    "{nome_completo}": nome_completo,
-                    "{cargo}": cargo,
-                    "{data}": data_formatada
-                }
-        
-                doc = Document("Demissão por comum acordo.docx")
-        
-                # Corpo
-                substituir_texto(doc.paragraphs, mapa)
-        
-                # Tabelas
-                for table in doc.tables:
-                    for row in table.rows:
-                        for cell in row.cells:
-                            substituir_texto(cell.paragraphs, mapa)
-        
-                # Cabeçalho e rodapé
-                for section in doc.sections:
-                    substituir_texto(section.header.paragraphs, mapa)
-                    substituir_texto(section.footer.paragraphs, mapa)
-        
-                nome_arquivo = f"Demissão por comum acordo - {nome_completo}.docx"
-        
-                doc.save(nome_arquivo)
-        
-                with open(nome_arquivo, "rb") as f:
-                    st.download_button(
-                        "⬇️ Download",
-                        data=f,
-                        file_name=nome_arquivo,
-                        mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                with col1:
+                    cancelar = st.button(
+                        "❌ Cancelar",
                         use_container_width=True
                     )
         
-                st.success("Documento gerado com sucesso ✅")
+                with col2:
+                    gerar = st.button(
+                        "✅ Gerar documento",
+                        use_container_width=True
+                    )
+        
+                # Cancelar
+                if cancelar:
+                    st.session_state["abrir_demissao_comum_acordo"] = False
+                    st.rerun()
+        
+                # Gerar documento
+                if gerar:
+        
+                    dados = df[df["Nome"] == nome_escolhido].iloc[0]
+        
+                    nome_completo = str(dados["Nome"])
+                    cargo = str(dados["Cargo"])
+                    data_formatada = data_desligamento.strftime("%d/%m/%Y")
+        
+                    mapa = {
+                        "{nome_completo}": nome_completo,
+                        "{cargo}": cargo,
+                        "{data}": data_formatada
+                    }
+        
+                    # Abre o template
+                    doc = Document("Demissão por comum acordo.docx")
+        
+                    # Corpo
+                    substituir_texto(doc.paragraphs, mapa)
+        
+                    # Tabelas
+                    for table in doc.tables:
+                        for row in table.rows:
+                            for cell in row.cells:
+                                substituir_texto(cell.paragraphs, mapa)
+        
+                    # Cabeçalho e rodapé
+                    for section in doc.sections:
+                        substituir_texto(section.header.paragraphs, mapa)
+                        substituir_texto(section.footer.paragraphs, mapa)
+        
+                    # Nome do arquivo final
+                    nome_arquivo = f"Demissão por comum acordo - {nome_completo}.docx"
+        
+                    doc.save(nome_arquivo)
+        
+                    st.success("Documento gerado com sucesso ✅")
+        
+                    with open(nome_arquivo, "rb") as f:
+                        st.download_button(
+                            "⬇️ Download",
+                            data=f,
+                            file_name=nome_arquivo,
+                            mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                            use_container_width=True
+                        )
+        
+                    # Fecha modal após gerar
+                    st.session_state["abrir_demissao_comum_acordo"] = False
+
 
 # --------------------------------------------------
 # ABA BENEFICIOS
