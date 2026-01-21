@@ -1133,7 +1133,13 @@ with aba_relatorios:
         # ==============================
         # AÇÃO — DEMISSÃO POR COMUM ACORDO
         # ==============================
-        
+        def substituir_texto(paragraphs, mapa):
+            for p in paragraphs:
+                for run in p.runs:
+                    for chave, valor in mapa.items():
+                        if chave in run.text:
+                            run.text = run.text.replace(chave, str(valor))
+
         st.markdown("---")
         
         if st.button("📄 Demissão por Comum Acordo", use_container_width=True):
