@@ -1130,56 +1130,40 @@ with aba_relatorios:
         if st.button("📝 Título de doc para automação"):
             abrir_modal_titulo()
 
-        # ==============================
-        # AÇÃO — DEMISSÃO POR COMUM ACORDO
-        # ==============================
-        def substituir_texto(paragraphs, mapa):
-            for p in paragraphs:
-                for run in p.runs:
-                    for chave, valor in mapa.items():
-                        if chave in run.text:
-                            run.text = run.text.replace(chave, str(valor))
-
-        st.markdown("---")
+        # -------------------------------
+        # DEMISSÃO POR COMUM ACORDO
+        # -------------------------------
         
-        if st.button("📄 Demissão por Comum Acordo", use_container_width=True):
-            st.session_state["abrir_demissao_acordo"] = not st.session_state.get(
-                "abrir_demissao_acordo", False
-            )
-        
-        if st.session_state.get("abrir_demissao_acordo", False):
-        
-            st.markdown("## 📄 Demissão por Comum Acordo")
+        with st.expander("📄 Demissão por comum acordo", expanded=False):
         
             nomes = sorted(df["Nome"].dropna().unique())
         
             nome_escolhido = st.selectbox(
                 "Selecione o colaborador",
                 nomes,
-                key="nome_demissao_acordo"
+                key="demissao_nome"
             )
         
             data_desligamento = st.date_input(
                 "Data do desligamento",
                 format="DD/MM/YYYY",
-                key="data_demissao_acordo"
+                key="demissao_data"
             )
         
             col1, col2, col3 = st.columns([1, 2, 1])
             with col2:
-                gerar_doc = st.button(
-                    "✅ Gerar Documento",
+                gerar_demissao = st.button(
+                    "✅ Gerar documento",
                     use_container_width=True,
-                    key="btn_gerar_demissao_acordo"
+                    key="btn_gerar_demissao"
                 )
         
-            if gerar_doc:
+            if gerar_demissao:
         
                 dados = df[df["Nome"] == nome_escolhido].iloc[0]
         
                 nome_completo = str(dados["Nome"])
                 cargo = str(dados["Cargo"])
-        
                 data_formatada = data_desligamento.strftime("%d/%m/%Y")
         
                 mapa = {
@@ -1188,13 +1172,12 @@ with aba_relatorios:
                     "{data}": data_formatada
                 }
         
-                from docx import Document
                 doc = Document("Demissão por comum acordo.docx")
         
                 # Corpo
                 substituir_texto(doc.paragraphs, mapa)
         
-                # Tabelas (segurança)
+                # Tabelas
                 for table in doc.tables:
                     for row in table.rows:
                         for cell in row.cells:
@@ -1206,18 +1189,19 @@ with aba_relatorios:
                     substituir_texto(section.footer.paragraphs, mapa)
         
                 nome_arquivo = f"Demissão por comum acordo - {nome_completo}.docx"
+        
                 doc.save(nome_arquivo)
         
                 with open(nome_arquivo, "rb") as f:
                     st.download_button(
-                        "⬇️ Download do documento",
+                        "⬇️ Download",
                         data=f,
                         file_name=nome_arquivo,
                         mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
                         use_container_width=True
                     )
         
-                st.success("Documento de demissão gerado com sucesso ✅")
+                st.success("Documento gerado com sucesso ✅")
 
 # --------------------------------------------------
 # ABA BENEFICIOS
