@@ -192,9 +192,13 @@ with aba_dashboard:
 
     df = df.rename(columns={"Data Início": "Início na V4"})
 
-    df.columns = df.columns.str.strip().str.replace("\u00a0", "", regex=False)
+    df.columns = (
+        df.columns
+        .astype(str)
+        .str.replace("\u00a0", " ", regex=False)
+        .str.strip()
+    )
 
-    df.columns = df.columns.str.strip()
     df = df.sort_values(df.columns[0]).reset_index(drop=True)
     
     # 👇 AQUI É O LUGAR CERTO
