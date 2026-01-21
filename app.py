@@ -1167,48 +1167,44 @@ with aba_relatorios:
             cargo = dados_pessoa["Cargo"]
         
             # BOTÕES DE AÇÃO
-            col_gerar, col_cancelar = st.columns(2)
+            if st.button("✅ Gerar doc"):
         
-            with col_gerar:
-                if st.button("✅ Gerar doc"):
+                from docx import Document
+                from io import BytesIO
         
-                    from docx import Document
-                    from io import BytesIO
+                # Abre modelo
+                doc = Document("Demissão por comum acordo.docx")
         
-                    # Abre modelo
-                    doc = Document("Demissão por comum acordo.docx")
+                mapa_substituicao = {
+                    "{nome_completo}": nome_selecionado,
+                    "{cargo}": cargo,
+                    "{data}": data_desligamento.strftime("%d/%m/%Y")
+                }
         
-                    mapa_substituicao = {
-                        "{nome_completo}": nome_selecionado,
-                        "{cargo}": cargo,
-                        "{data}": data_desligamento.strftime("%d/%m/%Y")
-                    }
+                # SUBSTITUI TEXTO
+                for p in doc.paragraphs:
+                    for chave, valor in mapa_substituicao.items():
+                        if chave in p.text:
+                            for run in p.runs:
+                                run.text = run.text.replace(chave, valor)
         
-                    # SUBSTITUI TEXTO
-                    for p in doc.paragraphs:
-                        for chave, valor in mapa_substituicao.items():
-                            if chave in p.text:
-                                for run in p.runs:
-                                    run.text = run.text.replace(chave, valor)
+                # SALVA EM MEMÓRIA
+                buffer = BytesIO()
+                doc.save(buffer)
+                buffer.seek(0)
         
-                    # SALVA EM MEMÓRIA
-                    buffer = BytesIO()
-                    doc.save(buffer)
-                    buffer.seek(0)
+                st.success("Documento gerado com sucesso ✅")
+       
+                st.download_button(
+                    label="⬇️ Baixar documento",
+                    data=buffer,
+                    file_name=f"Demissão - {nome_selecionado}.docx",
+                    mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                )
         
-                    st.success("Documento gerado com sucesso ✅")
-        
-                    st.download_button(
-                        label="⬇️ Baixar documento",
-                        data=buffer,
-                        file_name=f"Demissão - {nome_selecionado}.docx",
-                        mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-                    )
-        
-            with col_cancelar:
-                if st.button("❌ Cancelar"):
-                    st.session_state.gerar_demissao_comum = False
-                    st.rerun()
+            if st.button("❌ Cancelar"):
+                st.session_state.gerar_demissao_comum = False
+                st.rerun()
 
 # --------------------------------------------------
 # ABA BENEFICIOS
