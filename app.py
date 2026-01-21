@@ -1135,11 +1135,9 @@ with aba_relatorios:
         # --------------------------------------------------
         # AUTOMAÇÃO — DEMISSÃO POR COMUM ACORDO
         # --------------------------------------------------
-        
-        st.markdown("### 📄 Automação de Documentos")
-        
+                
         # BOTÃO PRINCIPAL
-        if st.button("📄 Gerar documento — Demissão por comum acordo"):
+        if st.button("📄 Demissão por comum acordo"):
         
             st.session_state.gerar_demissao_comum = True
         
