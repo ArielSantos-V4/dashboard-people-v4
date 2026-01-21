@@ -198,8 +198,7 @@ with aba_dashboard:
     df["Início na V4_raw"] = df["Início na V4"]
     df["Data de nascimento_raw"] = df["Data de nascimento"]
     df["Data do contrato_raw"] = df.iloc[:, 12]
-    df["Térm previsto_raw"] = df["Térm previsto"]
-    
+    df["Térm previsto_raw"] = df.iloc[:, 6]
     
     # --------------------------------------------------
     # CONVERSÃO CORRETA (DAYFIRST)
