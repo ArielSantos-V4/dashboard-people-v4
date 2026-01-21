@@ -1111,7 +1111,7 @@ with aba_relatorios:
                 st.session_state["titulo_gerado"] = (
                     f"{nome_selecionado} __ "
                     f"{cpf_limpo} __ "
-                    f"{e-mail_pessoal} __ "
+                    f"{email_pessoal} __ "
                     f"{titulo_doc}"
                 )
         
