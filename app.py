@@ -1130,6 +1130,88 @@ with aba_relatorios:
         if st.button("📝 Título de doc para automação"):
             abrir_modal_titulo()
 
+        # ==============================
+        # AÇÃO — DEMISSÃO POR COMUM ACORDO
+        # ==============================
+        
+        st.markdown("---")
+        
+        if st.button("📄 Demissão por Comum Acordo", use_container_width=True):
+            st.session_state["abrir_demissao_acordo"] = not st.session_state.get(
+                "abrir_demissao_acordo", False
+            )
+        
+        if st.session_state.get("abrir_demissao_acordo", False):
+        
+            st.markdown("## 📄 Demissão por Comum Acordo")
+        
+            nomes = sorted(df["Nome"].dropna().unique())
+        
+            nome_escolhido = st.selectbox(
+                "Selecione o colaborador",
+                nomes,
+                key="nome_demissao_acordo"
+            )
+        
+            data_desligamento = st.date_input(
+                "Data do desligamento",
+                format="DD/MM/YYYY",
+                key="data_demissao_acordo"
+            )
+        
+            col1, col2, col3 = st.columns([1, 2, 1])
+            with col2:
+                gerar_doc = st.button(
+                    "✅ Gerar Documento",
+                    use_container_width=True,
+                    key="btn_gerar_demissao_acordo"
+                )
+        
+            if gerar_doc:
+        
+                dados = df[df["Nome"] == nome_escolhido].iloc[0]
+        
+                nome_completo = str(dados["Nome"])
+                cargo = str(dados["Cargo"])
+        
+                data_formatada = data_desligamento.strftime("%d/%m/%Y")
+        
+                mapa = {
+                    "{nome_completo}": nome_completo,
+                    "{cargo}": cargo,
+                    "{data}": data_formatada
+                }
+        
+                from docx import Document
+                doc = Document("Demissão por comum acordo.docx")
+        
+                # Corpo
+                substituir_texto(doc.paragraphs, mapa)
+        
+                # Tabelas (segurança)
+                for table in doc.tables:
+                    for row in table.rows:
+                        for cell in row.cells:
+                            substituir_texto(cell.paragraphs, mapa)
+        
+                # Cabeçalho e rodapé
+                for section in doc.sections:
+                    substituir_texto(section.header.paragraphs, mapa)
+                    substituir_texto(section.footer.paragraphs, mapa)
+        
+                nome_arquivo = f"Demissão por comum acordo - {nome_completo}.docx"
+                doc.save(nome_arquivo)
+        
+                with open(nome_arquivo, "rb") as f:
+                    st.download_button(
+                        "⬇️ Download do documento",
+                        data=f,
+                        file_name=nome_arquivo,
+                        mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                        use_container_width=True
+                    )
+        
+                st.success("Documento de demissão gerado com sucesso ✅")
 
 # --------------------------------------------------
 # ABA BENEFICIOS
