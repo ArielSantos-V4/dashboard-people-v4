@@ -59,6 +59,16 @@ def calcular_tempo_casa(data_inicio):
 
     return f"{diff.years} anos, {diff.months} meses e {diff.days} dias"
 
+def email_para_nome_arquivo(email):
+    return (
+        email
+        .strip()
+        .lower()
+        .replace("@", "_at_")
+        .replace(".", "_")
+        .replace(" ", "")
+    )
+
 # --------------------------------------------------
 # CONFIGURAÇÃO DA PÁGINA
 # --------------------------------------------------
@@ -1567,6 +1577,7 @@ with aba_benefícios:
                 cnpj = formatar_cnpj(dados["CNPJ"])
                 cpf = str(dados["CPF"])
                 email_pessoal = str(dados["E-mail pessoal"])
+                email_arquivo = email_para_nome_arquivo(email_pessoal)
                 modelo_contrato = str(dados["Modelo de contrato"])
         
                 # -------- VALIDAÇÃO PJ --------
@@ -1604,7 +1615,7 @@ with aba_benefícios:
                 cpf_limpo = re.sub(r"\D", "", cpf)
         
                 nome_arquivo = (
-                    f"{nome_escolhido} __ {cpf_limpo} __ {email_pessoal} __ Subfatura.docx"
+                    f"{nome_escolhido} __ {cpf_limpo} __ {email_arquivo} __ Subfatura.docx"
                 )
         
                 doc.save(nome_arquivo)
@@ -1667,6 +1678,7 @@ with aba_benefícios:
                 cnpj = formatar_cnpj(dados["CNPJ"])
                 cpf = str(dados["CPF"])
                 email_pessoal = str(dados["E-mail pessoal"])
+                email_arquivo = email_para_nome_arquivo(email_pessoal)
         
                 # -------- ABRE TEMPLATE --------
                 doc = Document("Termo de integração de subestipulante.docx")
@@ -1697,7 +1709,7 @@ with aba_benefícios:
                 cpf_limpo = re.sub(r"\D", "", cpf)
         
                 nome_arquivo = (
-                    f"{nome_escolhido} __ {cpf_limpo} __ {email_pessoal} __ Termo Subestipulante.docx"
+                    f"{nome_escolhido} __ {cpf_limpo} __ {email_arquivo} __ Termo Subestipulante.docx"
                 )
         
                 doc.save(nome_arquivo)
