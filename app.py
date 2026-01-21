@@ -207,8 +207,8 @@ with aba_dashboard:
     # BACKUP TEXTO ORIGINAL
     df["Início na V4_raw"] = df["Início na V4"]
     df["Data de nascimento_raw"] = df["Data de nascimento"]
-    df["Data do contrato_raw"] = df["Data do contrato"]
-    df["Térm previsto_raw"] = df["Térm previsto"]
+    df["Data do contrato_raw"] = df.iloc[:, 12]
+    df["Térm previsto_raw"] = df.iloc[:, 6]
     
     # DATETIME (PARA CÁLCULOS)
     df["Início na V4_dt"] = parse_data_br(df["Início na V4_raw"])
