@@ -1135,6 +1135,17 @@ with aba_relatorios:
         # --------------------------------------------------
         # AUTOMAÇÃO — DEMISSÃO POR COMUM ACORDO
         # --------------------------------------------------
+        def substituir_texto_docx(doc, mapa):
+            for p in doc.paragraphs:
+                texto_completo = "".join(run.text for run in p.runs)
+        
+                for chave, valor in mapa.items():
+                    texto_completo = texto_completo.replace(chave, valor)
+        
+                if p.runs:
+                    p.runs[0].text = texto_completo
+                    for run in p.runs[1:]:
+                        run.text = ""
                 
         # BOTÃO PRINCIPAL
         if st.button("📄 Demissão por comum acordo"):
@@ -1180,13 +1191,9 @@ with aba_relatorios:
                     "{cargo}": cargo,
                     "{data}": data_desligamento.strftime("%d/%m/%Y")
                 }
-        
-                # SUBSTITUI TEXTO
-                for p in doc.paragraphs:
-                    for chave, valor in mapa_substituicao.items():
-                        if chave in p.text:
-                            for run in p.runs:
-                                run.text = run.text.replace(chave, valor)
+
+                # ✅ SUBSTITUI TEXTO (CORRETO)
+                substituir_texto_docx(doc, mapa_substituicao)
         
                 # SALVA EM MEMÓRIA
                 buffer = BytesIO()
