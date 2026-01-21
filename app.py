@@ -94,12 +94,7 @@ if not st.session_state.authenticated:
 
     st.stop()  # 🔥 IMPEDE O RESTO DA PÁGINA DE RENDERIZAR
 
-
-st.session_state.user_name = users[usuario]["name"]
-st.session_state.authenticated = True
-
 st.markdown("---")
-
         
 # --------------------------------------------------
 # ABAS
