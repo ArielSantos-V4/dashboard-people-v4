@@ -187,6 +187,9 @@ with aba_dashboard:
     # LOAD + ORGANIZAÇÃO
     # --------------------------------------------------
     df = load_google_sheet()
+    st.write(df.columns.tolist())
+    st.stop()
+
     df = df.rename(columns={"Data Início": "Início na V4"})
 
     df.columns = df.columns.str.strip().str.replace("\u00a0", "", regex=False)
