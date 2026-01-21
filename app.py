@@ -45,6 +45,18 @@ def render_table(df, *, dataframe=True, **kwargs):
 def parse_data_br(coluna):
     return pd.to_datetime(coluna, dayfirst=True, errors="coerce")
 
+from dateutil.relativedelta import relativedelta
+import pandas as pd
+
+def calcular_tempo_casa(data_inicio):
+    if pd.isna(data_inicio):
+        return ""
+
+    hoje = pd.Timestamp.today().normalize()
+    diff = relativedelta(hoje, data_inicio)
+
+    return f"{diff.years} anos, {diff.months} meses e {diff.days} dias"
+
 # --------------------------------------------------
 # CONFIGURAÇÃO DA PÁGINA
 # --------------------------------------------------
@@ -954,6 +966,62 @@ with aba_relatorios:
                         use_container_width=True,
                         hide_index=True
                     )
+
+        # ==============================
+        # RELATÓRIO — TEMPO DE CASA
+        # ==============================
+        
+        st.subheader("📊 Relatório — Tempo de Casa")
+        
+        from dateutil.relativedelta import relativedelta
+        import pandas as pd
+        
+        def calcular_tempo_casa(data_inicio):
+            if pd.isna(data_inicio):
+                return ""
+            hoje = pd.Timestamp.today().normalize()
+            diff = relativedelta(hoje, data_inicio)
+            return f"{diff.years} anos, {diff.months} meses e {diff.days} dias"
+        
+        
+        # Base
+        df_relatorio_tempo = df.copy()
+        
+        # Datas
+        df_relatorio_tempo["Data Início_dt"] = pd.to_datetime(
+            df_relatorio_tempo["Data Início"], errors="coerce"
+        )
+        
+        # Tempo de casa
+        df_relatorio_tempo["Tempo de casa"] = df_relatorio_tempo["Data Início_dt"].apply(
+            calcular_tempo_casa
+        )
+        
+        # 🔎 FILTRO
+        min_anos = st.selectbox(
+            "Tempo mínimo de casa (anos)",
+            [0, 1, 2, 3, 4, 5],
+            index=0
+        )
+        
+        if min_anos > 0:
+            hoje = pd.Timestamp.today().normalize()
+            df_relatorio_tempo = df_relatorio_tempo[
+                (hoje - df_relatorio_tempo["Data Início_dt"]).dt.days >= min_anos * 365
+            ]
+        
+        # Tabela final
+        df_relatorio_tempo = df_relatorio_tempo[
+            [
+                "Nome",
+                "E-mail corporativo",
+                "Data Início",
+                "Remuneração",
+                "Tempo de casa"
+            ]
+        ]
+        
+        st.dataframe(df_relatorio_tempo, use_container_width=True)
 
     # --------------------------------------------------
     # COLUNA DIREITA — AÇÕES
