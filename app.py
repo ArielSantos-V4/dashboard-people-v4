@@ -64,8 +64,7 @@ def email_para_nome_arquivo(email):
         email
         .strip()
         .lower()
-        .replace("@", "_at_")
-        .replace(".", "_")
+        .replace("@", "＠")   # ARROBA UNICODE (não é removida)
         .replace(" ", "")
     )
 
