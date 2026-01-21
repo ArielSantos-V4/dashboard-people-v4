@@ -1132,129 +1132,89 @@ with aba_relatorios:
         if st.button("📝 Título de doc para automação"):
             abrir_modal_titulo()
 
-        # ==============================
-        # BOTÃO — DEMISSÃO POR COMUM ACORDO (MODAL)
-        # ==============================
+        # --------------------------------------------------
+        # AUTOMAÇÃO — DEMISSÃO POR COMUM ACORDO
+        # --------------------------------------------------
         
-        # Botão que abre o modal
-        st.markdown("---")
+        st.markdown("### 📄 Automação de Documentos")
         
-        if st.button("📄 Demissão por comum acordo", use_container_width=True):
-            st.session_state["abrir_demissao_comum"] = True
-                     
-        # ------------------------------
-        # MODAL (CAIXA SUSPENSA CENTRAL)
-        # ------------------------------
-        if st.session_state.get("abrir_demissao_comum", False):
-
-            # 🔥 FUNDO ESCURECIDO
-            st.markdown(
-                """
-                <style>
-                .modal-bg {
-                    position: fixed;
-                    top: 0;
-                    left: 0;
-                    width: 100%;
-                    height: 100%;
-                    background: rgba(0,0,0,0.65);
-                    z-index: 999;
-                }
-                .modal-box {
-                    position: fixed;
-                    top: 50%;
-                    left: 50%;
-                    transform: translate(-50%, -50%);
-                    background: #111;
-                    padding: 28px;
-                    border-radius: 16px;
-                    width: 440px;
-                    z-index: 1000;
-                    box-shadow: 0 0 40px rgba(0,0,0,0.6);
-                }
-                </style>
-                <div class="modal-bg"></div>
-                """,
-                unsafe_allow_html=True
-            )
+        # BOTÃO PRINCIPAL
+        if st.button("📄 Gerar documento — Demissão por comum acordo"):
         
-            st.markdown('<div class="modal-box">', unsafe_allow_html=True)
+            st.session_state.gerar_demissao_comum = True
         
-            st.markdown("## 📄 Demissão por comum acordo")
         
-            # ---------- CAMPOS ----------
-            nomes = sorted(df["Nome"].dropna().unique())
+        # CONTROLE DE ESTADO
+        if "gerar_demissao_comum" not in st.session_state:
+            st.session_state.gerar_demissao_comum = False
         
-            nome_escolhido = st.selectbox(
-                "Colaborador",
-                nomes,
-                key="demissao_nome"
-            )
         
-            data_desligamento = st.date_input(
-                "Data do desligamento",
-                format="DD/MM/YYYY",
-                key="demissao_data"
-            )
+        if st.session_state.gerar_demissao_comum:
         
-            st.markdown("<br>", unsafe_allow_html=True)
+            st.markdown("#### Preencha os dados abaixo")
         
             col1, col2 = st.columns(2)
         
-            # ---------- CANCELAR ----------
             with col1:
-                if st.button("❌ Cancelar", use_container_width=True):
-                    st.session_state["abrir_demissao_comum"] = False
-                    st.rerun()
+                nome_selecionado = st.selectbox(
+                    "Nome do colaborador",
+                    sorted(df["Nome completo"].dropna().unique())
+                )
         
-            # ---------- GERAR ----------
             with col2:
-                gerar = st.button("✅ Gerar", use_container_width=True)
+                data_desligamento = st.date_input(
+                    "Data do desligamento",
+                    format="DD/MM/YYYY"
+                )
         
-            if gerar:
-                dados = df[df["Nome"] == nome_escolhido].iloc[0]
+            # BUSCA DADOS DA PESSOA
+            dados_pessoa = df[df["Nome completo"] == nome_selecionado].iloc[0]
         
-                mapa = {
-                    "{nome_completo}": dados["Nome"],
-                    "{cargo}": dados["Cargo"],
-                    "{data}": data_desligamento.strftime("%d/%m/%Y")
-                }
+            cargo = dados_pessoa["Cargo"]
         
-                # 🔹 ABRE TEMPLATE
-                doc = Document("Demissão por comum acordo.docx")
+            # BOTÕES DE AÇÃO
+            col_gerar, col_cancelar = st.columns(2)
         
-                # 🔹 SUBSTITUI TEXTO
-                substituir_texto(doc.paragraphs, mapa)
+            with col_gerar:
+                if st.button("✅ Gerar documento Word"):
         
-                for table in doc.tables:
-                    for row in table.rows:
-                        for cell in row.cells:
-                            substituir_texto(cell.paragraphs, mapa)
+                    from docx import Document
+                    from io import BytesIO
         
-                for section in doc.sections:
-                    substituir_texto(section.header.paragraphs, mapa)
-                    substituir_texto(section.footer.paragraphs, mapa)
+                    # Abre modelo
+                    doc = Document("Demissão por comum acordo.docx")
         
-                # 🔹 SALVA
-                nome_arquivo = f"Demissão por comum acordo - {dados['Nome']}.docx"
-                doc.save(nome_arquivo)
+                    mapa_substituicao = {
+                        "{nome_completo}": nome_selecionado,
+                        "{cargo}": cargo,
+                        "{data}": data_desligamento.strftime("%d/%m/%Y")
+                    }
         
-                st.success("Documento gerado com sucesso ✅")
+                    # SUBSTITUI TEXTO
+                    for p in doc.paragraphs:
+                        for chave, valor in mapa_substituicao.items():
+                            if chave in p.text:
+                                for run in p.runs:
+                                    run.text = run.text.replace(chave, valor)
         
-                with open(nome_arquivo, "rb") as f:
+                    # SALVA EM MEMÓRIA
+                    buffer = BytesIO()
+                    doc.save(buffer)
+                    buffer.seek(0)
+        
+                    st.success("Documento gerado com sucesso ✅")
+        
                     st.download_button(
-                        "⬇️ Download",
-                        data=f,
-                        file_name=nome_arquivo,
-                        mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-                        use_container_width=True
+                        label="⬇️ Baixar documento",
+                        data=buffer,
+                        file_name=f"Demissão - {nome_selecionado}.docx",
+                        mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
                     )
         
-                st.session_state["abrir_demissao_comum"] = False
-        
-            st.markdown("</div>", unsafe_allow_html=True)
-
-
+            with col_cancelar:
+                if st.button("❌ Cancelar"):
+                    st.session_state.gerar_demissao_comum = False
+                    st.rerun()
 
 # --------------------------------------------------
 # ABA BENEFICIOS
