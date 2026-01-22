@@ -74,6 +74,18 @@ def email_para_nome_arquivo(email):
         .replace(" ", "")
     )
 
+import re
+
+def normalizar_cpf(cpf):
+    if not cpf:
+        return ""
+
+    # remove tudo que não for número
+    cpf = re.sub(r"\D", "", str(cpf))
+
+    # garante 11 dígitos com zero à esquerda
+    return cpf.zfill(11)
+
 
 # --------------------------------------------------
 # CONFIGURAÇÃO DA PÁGINA
@@ -1581,7 +1593,7 @@ with aba_benefícios:
         
                 razao_social = str(dados["Razão social"])
                 cnpj = formatar_cnpj(dados["CNPJ"])
-                cpf = str(dados["CPF"])
+                cpf = normalizar_cpf(dados["CPF"])
                 email_pessoal = str(dados["E-mail pessoal"])
                 email_arquivo = email_para_nome_arquivo(email_pessoal)
                 modelo_contrato = str(dados["Modelo de contrato"])
@@ -1682,7 +1694,7 @@ with aba_benefícios:
         
                 razao_social = str(dados["Razão social"])
                 cnpj = formatar_cnpj(dados["CNPJ"])
-                cpf = str(dados["CPF"])
+                cpf = normalizar_cpf(dados["CPF"])
                 email_pessoal = str(dados["E-mail pessoal"])
                 email_arquivo = email_para_nome_arquivo(email_pessoal)
         
