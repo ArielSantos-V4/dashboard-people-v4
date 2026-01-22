@@ -129,6 +129,29 @@ name = st.text_input("Nome")
 senha = st.text_input("Senha", type="password")
 confirmar = st.text_input("Confirmar senha", type="password")
 
+if st.button("Criar usuário"):
+    if not username or not name or not senha:
+        st.error("Preencha todos os campos")
+    elif senha != confirmar:
+        st.error("As senhas não conferem")
+    else:
+        senha_hash = gerar_hash_senha(senha)
+
+        conn = sqlite3.connect("users.db")
+        cursor = conn.cursor()
+
+        try:
+            cursor.execute(
+                "INSERT INTO users (username, name, password_hash, created_at) VALUES (?, ?, ?, ?)",
+                (username, name, senha_hash, datetime.now().isoformat())
+            )
+            conn.commit()
+            st.success("Usuário criado com sucesso")
+        except sqlite3.IntegrityError:
+            st.error("Usuário já existe")
+        finally:
+            conn.close()
+
 # ==============================
 # LOGIN SIMPLES COM SENHA SEGURA
 # ==============================
