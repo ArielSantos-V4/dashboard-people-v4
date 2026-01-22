@@ -59,14 +59,21 @@ def calcular_tempo_casa(data_inicio):
 
     return f"{diff.years} anos, {diff.months} meses e {diff.days} dias"
 
+import unicodedata
+
 def email_para_nome_arquivo(email):
+    if not email:
+        return ""
+
+    email = unicodedata.normalize("NFKC", email)
+
     return (
         email
         .strip()
         .lower()
-        .replace("@", "＠")   # ARROBA UNICODE (não é removida)
         .replace(" ", "")
     )
+
 
 # --------------------------------------------------
 # CONFIGURAÇÃO DA PÁGINA
