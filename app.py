@@ -135,6 +135,17 @@ except:
 conn.commit()
 conn.close()
 
+conn = sqlite3.connect("users.db")
+cursor = conn.cursor()
+
+cursor.execute(
+    "UPDATE users SET role = 'admin' WHERE username = ?",
+    ("ariel",)
+)
+
+conn.commit()
+conn.close()
+
 # --------------------------------------------------
 # CONFIGURAÇÃO DA PÁGINA
 # --------------------------------------------------
