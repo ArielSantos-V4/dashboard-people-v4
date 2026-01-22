@@ -1,13 +1,6 @@
 import streamlit as st
 import pandas as pd
 import bcrypt
-
-def verificar_senha(senha_digitada, senha_hash):
-    return bcrypt.checkpw(
-        senha_digitada.encode("utf-8"),
-        senha_hash.encode("utf-8")
-    )
-
 import altair as alt
 from datetime import datetime, timedelta
 from dateutil.relativedelta import relativedelta
@@ -93,6 +86,18 @@ def normalizar_cpf(cpf):
     # garante 11 dígitos com zero à esquerda
     return cpf.zfill(11)
 
+def gerar_hash_senha(senha):
+    return bcrypt.hashpw(
+        senha.encode("utf-8"),
+        bcrypt.gensalt()
+    ).decode("utf-8")
+
+def verificar_senha(senha_digitada, senha_hash):
+    return bcrypt.checkpw(
+        senha_digitada.encode("utf-8"),
+        senha_hash.encode("utf-8")
+    )
+
 import sqlite3
 
 conn = sqlite3.connect("users.db")
@@ -104,14 +109,12 @@ CREATE TABLE IF NOT EXISTS users (
     username TEXT UNIQUE NOT NULL,
     name TEXT NOT NULL,
     password_hash TEXT NOT NULL,
+    role TEXT NOT NULL DEFAULT 'user',
     created_at TEXT NOT NULL
 )
 """)
 
-conn = sqlite3.connect("users.db")
-cursor = conn.cursor()
-
-senha_hash = gerar_hash_senha("123456")  # senha temporária
+senha_hash = gerar_hash_senha("123456")
 
 cursor.execute("""
 INSERT OR IGNORE INTO users (username, name, password_hash, role, created_at)
@@ -121,47 +124,6 @@ VALUES (?, ?, ?, ?, ?)
 conn.commit()
 conn.close()
 
-import bcrypt
-
-def gerar_hash_senha(senha):
-    return bcrypt.hashpw(
-        senha.encode("utf-8"),
-        bcrypt.gensalt()
-    ).decode("utf-8")
-
-# CRIA / ATUALIZA BANCO
-conn = sqlite3.connect("users.db")
-cursor = conn.cursor()
-
-cursor.execute("""
-CREATE TABLE IF NOT EXISTS users (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    username TEXT UNIQUE NOT NULL,
-    name TEXT NOT NULL,
-    password_hash TEXT NOT NULL,
-    created_at TEXT NOT NULL
-)
-""")
-
-# ADICIONA ROLE (se ainda não existir)
-try:
-    cursor.execute("ALTER TABLE users ADD COLUMN role TEXT DEFAULT 'user'")
-except:
-    pass  # coluna já existe
-
-conn.commit()
-conn.close()
-
-conn = sqlite3.connect("users.db")
-cursor = conn.cursor()
-
-cursor.execute(
-    "UPDATE users SET role = 'admin' WHERE username = ?",
-    ("ariel",)
-)
-
-conn.commit()
-conn.close()
 
 # --------------------------------------------------
 # CONFIGURAÇÃO DA PÁGINA
