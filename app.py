@@ -104,6 +104,14 @@ CREATE TABLE IF NOT EXISTS users (
 conn.commit()
 conn.close()
 
+import bcrypt
+
+def gerar_hash_senha(senha):
+    return bcrypt.hashpw(
+        senha.encode("utf-8"),
+        bcrypt.gensalt()
+    ).decode("utf-8")
+
 # --------------------------------------------------
 # CONFIGURAÇÃO DA PÁGINA
 # --------------------------------------------------
