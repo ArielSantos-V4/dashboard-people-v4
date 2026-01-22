@@ -163,6 +163,18 @@ name = st.text_input("Nome")
 senha = st.text_input("Senha", type="password")
 confirmar = st.text_input("Confirmar senha", type="password")
 
+if st.session_state.get("user_role") == "admin":
+
+    st.subheader("Criar usuário")
+
+    username = st.text_input("Usuário novo")
+    name = st.text_input("Nome")
+    senha = st.text_input("Senha", type="password")
+    confirmar = st.text_input("Confirmar senha", type="password")
+
+    if st.button("Criar usuário"):
+        ...
+
 if st.button("Criar usuário"):
     if not username or not name or not senha:
         st.error("Preencha todos os campos")
@@ -209,11 +221,18 @@ if not st.session_state.authenticated:
         cursor = conn.cursor()
         
         cursor.execute(
-            "SELECT name, password_hash FROM users WHERE username = ?",
+            "SELECT name, password_hash, role FROM users WHERE username = ?",
             (usuario,)
         )
         
         row = cursor.fetchone()
+        nome, senha_hash, role = row
+
+        st.session_state.authenticated = True
+        st.session_state.user_name = nome
+        st.session_state.user_role = role
+        st.rerun()
+
         conn.close()
         
         if not row:
@@ -228,17 +247,6 @@ if not st.session_state.authenticated:
         
         st.session_state.authenticated = True
         st.session_state.user_name = nome
-        st.rerun()
-
-
-        if not verificar_senha(senha, senha_hash):
-            st.error("Usuário ou senha inválidos")
-            st.stop()
-
-        # ✅ LOGIN OK
-        st.session_state.authenticated = True
-        st.session_state.user_name = users[usuario]["name"]
-
         st.rerun()
 
     st.stop()  # 🔥 IMPEDE O RESTO DA PÁGINA DE RENDERIZAR
