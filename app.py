@@ -122,6 +122,13 @@ st.set_page_config(
     page_icon="LOGO VERMELHO.png"
 )
 
+st.subheader("Criar usuário")
+
+username = st.text_input("Usuário novo")
+name = st.text_input("Nome")
+senha = st.text_input("Senha", type="password")
+confirmar = st.text_input("Confirmar senha", type="password")
+
 # ==============================
 # LOGIN SIMPLES COM SENHA SEGURA
 # ==============================
