@@ -171,13 +171,31 @@ if not st.session_state.authenticated:
 
     if st.button("Entrar"):
 
-        users = st.secrets["users"]
-
-        if usuario not in users:
+        conn = sqlite3.connect("users.db")
+        cursor = conn.cursor()
+        
+        cursor.execute(
+            "SELECT name, password_hash FROM users WHERE username = ?",
+            (usuario,)
+        )
+        
+        row = cursor.fetchone()
+        conn.close()
+        
+        if not row:
             st.error("Usuário ou senha inválidos")
             st.stop()
+        
+        nome, senha_hash = row
+        
+        if not verificar_senha(senha, senha_hash):
+            st.error("Usuário ou senha inválidos")
+            st.stop()
+        
+        st.session_state.authenticated = True
+        st.session_state.user_name = nome
+        st.rerun()
 
-        senha_hash = users[usuario]["password"]
 
         if not verificar_senha(senha, senha_hash):
             st.error("Usuário ou senha inválidos")
