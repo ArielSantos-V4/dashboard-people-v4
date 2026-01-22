@@ -232,7 +232,10 @@ if not st.session_state.authenticated:
         st.session_state.user_name = nome
         st.session_state.user_role = role
         st.rerun()
-        
+    
+    if not st.session_state.authenticated:
+        st.stop()
+
 # --------------------------------------------------
 # ABAS
 # --------------------------------------------------
