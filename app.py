@@ -112,6 +112,29 @@ def gerar_hash_senha(senha):
         bcrypt.gensalt()
     ).decode("utf-8")
 
+# CRIA / ATUALIZA BANCO
+conn = sqlite3.connect("users.db")
+cursor = conn.cursor()
+
+cursor.execute("""
+CREATE TABLE IF NOT EXISTS users (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    username TEXT UNIQUE NOT NULL,
+    name TEXT NOT NULL,
+    password_hash TEXT NOT NULL,
+    created_at TEXT NOT NULL
+)
+""")
+
+# ADICIONA ROLE (se ainda não existir)
+try:
+    cursor.execute("ALTER TABLE users ADD COLUMN role TEXT DEFAULT 'user'")
+except:
+    pass  # coluna já existe
+
+conn.commit()
+conn.close()
+
 # --------------------------------------------------
 # CONFIGURAÇÃO DA PÁGINA
 # --------------------------------------------------
