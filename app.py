@@ -108,6 +108,16 @@ CREATE TABLE IF NOT EXISTS users (
 )
 """)
 
+conn = sqlite3.connect("users.db")
+cursor = conn.cursor()
+
+senha_hash = gerar_hash_senha("123456")  # senha temporária
+
+cursor.execute("""
+INSERT OR IGNORE INTO users (username, name, password_hash, role, created_at)
+VALUES (?, ?, ?, ?, ?)
+""", ("ariel", "Ariel", senha_hash, "admin", datetime.now().isoformat()))
+
 conn.commit()
 conn.close()
 
