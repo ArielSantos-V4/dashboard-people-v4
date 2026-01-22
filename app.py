@@ -86,6 +86,23 @@ def normalizar_cpf(cpf):
     # garante 11 dígitos com zero à esquerda
     return cpf.zfill(11)
 
+import sqlite3
+
+conn = sqlite3.connect("users.db")
+cursor = conn.cursor()
+
+cursor.execute("""
+CREATE TABLE IF NOT EXISTS users (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    username TEXT UNIQUE NOT NULL,
+    name TEXT NOT NULL,
+    password_hash TEXT NOT NULL,
+    created_at TEXT NOT NULL
+)
+""")
+
+conn.commit()
+conn.close()
 
 # --------------------------------------------------
 # CONFIGURAÇÃO DA PÁGINA
