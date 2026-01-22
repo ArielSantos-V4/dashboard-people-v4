@@ -1,6 +1,13 @@
 import streamlit as st
 import pandas as pd
 import bcrypt
+
+def verificar_senha(senha_digitada, senha_hash):
+    return bcrypt.checkpw(
+        senha_digitada.encode("utf-8"),
+        senha_hash.encode("utf-8")
+    )
+
 import altair as alt
 from datetime import datetime, timedelta
 from dateutil.relativedelta import relativedelta
@@ -156,47 +163,9 @@ st.set_page_config(
     page_icon="LOGO VERMELHO.png"
 )
 
-if st.session_state.get("user_role") == "admin":
-
-    st.subheader("Criar usuário")
-
-    username = st.text_input("Usuário novo")
-    name = st.text_input("Nome")
-    senha = st.text_input("Senha", type="password")
-    confirmar = st.text_input("Confirmar senha", type="password")
-
-if st.button("Criar usuário"):
-    if not username or not name or not senha:
-        st.error("Preencha todos os campos")
-    elif senha != confirmar:
-        st.error("As senhas não conferem")
-    else:
-        senha_hash = gerar_hash_senha(senha)
-
-        conn = sqlite3.connect("users.db")
-        cursor = conn.cursor()
-
-        try:
-            cursor.execute(
-                "INSERT INTO users (username, name, password_hash, created_at) VALUES (?, ?, ?, ?)",
-                (username, name, senha_hash, datetime.now().isoformat())
-            )
-            conn.commit()
-            st.success("Usuário criado com sucesso")
-        except sqlite3.IntegrityError:
-            st.error("Usuário já existe")
-        finally:
-            conn.close()
-
 # ==============================
-# LOGIN SIMPLES COM SENHA SEGURA
+# LOGIN
 # ==============================
-
-def verificar_senha(senha_digitada, senha_hash):
-    return bcrypt.checkpw(
-        senha_digitada.encode("utf-8"),
-        senha_hash.encode("utf-8")
-    )
 
 if not st.session_state.authenticated:
 
@@ -206,35 +175,70 @@ if not st.session_state.authenticated:
     senha = st.text_input("Senha", type="password")
 
     if st.button("Entrar"):
-    
+
         conn = sqlite3.connect("users.db")
         cursor = conn.cursor()
-    
+
         cursor.execute(
             "SELECT name, password_hash, role FROM users WHERE username = ?",
             (usuario,)
         )
-    
+
         row = cursor.fetchone()
         conn.close()
-    
+
         if not row:
             st.error("Usuário ou senha inválidos")
             st.stop()
-    
+
         nome, senha_hash, role = row
-    
+
         if not verificar_senha(senha, senha_hash):
             st.error("Usuário ou senha inválidos")
             st.stop()
-    
+
         st.session_state.authenticated = True
         st.session_state.user_name = nome
         st.session_state.user_role = role
         st.rerun()
-    
-    if not st.session_state.authenticated:
-        st.stop()
+
+    st.stop()  # ⛔ BLOQUEIA TODO O RESTO
+
+if st.session_state.get("user_role") == "admin":
+
+    st.subheader("Criar usuário")
+
+    username = st.text_input("Usuário novo")
+    name = st.text_input("Nome")
+    senha = st.text_input("Senha", type="password")
+    confirmar = st.text_input("Confirmar senha", type="password")
+
+    if st.button("Criar usuário"):
+        if not username or not name or not senha:
+            st.error("Preencha todos os campos")
+        elif senha != confirmar:
+            st.error("As senhas não conferem")
+        else:
+            senha_hash = gerar_hash_senha(senha)
+
+            conn = sqlite3.connect("users.db")
+            cursor = conn.cursor()
+
+            try:
+                cursor.execute(
+                    "INSERT INTO users (username, name, password_hash, created_at) VALUES (?, ?, ?, ?)",
+                    (username, name, senha_hash, datetime.now().isoformat())
+                )
+                conn.commit()
+                st.success("Usuário criado com sucesso")
+            except sqlite3.IntegrityError:
+                st.error("Usuário já existe")
+            finally:
+                conn.close()
+
+if st.session_state.get("user_role") == "admin":
+    with st.expander("👤 Administração"):
+        ...
 
 # --------------------------------------------------
 # ABAS
