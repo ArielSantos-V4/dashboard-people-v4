@@ -9,16 +9,6 @@ from datetime import date
 
 import bcrypt
 
-def verificar_senha(senha_digitada, senha_guardada):
-    # senha bcrypt
-    if senha_guardada.startswith("$2"):
-        return bcrypt.checkpw(
-            senha_digitada.encode("utf-8"),
-            senha_guardada.encode("utf-8")
-        )
-    # senha simples
-    return senha_digitada == senha_guardada
-
 if "authenticated" not in st.session_state:
     st.session_state.authenticated = False
 
