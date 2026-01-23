@@ -92,38 +92,6 @@ def gerar_hash_senha(senha):
         bcrypt.gensalt()
     ).decode("utf-8")
 
-def verificar_senha(senha_digitada, senha_hash):
-    return bcrypt.checkpw(
-        senha_digitada.encode("utf-8"),
-        senha_hash.encode("utf-8")
-    )
-
-import sqlite3
-
-conn = sqlite3.connect("users.db")
-cursor = conn.cursor()
-
-cursor.execute("""
-CREATE TABLE IF NOT EXISTS users (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    username TEXT UNIQUE NOT NULL,
-    name TEXT NOT NULL,
-    password_hash TEXT NOT NULL,
-    role TEXT NOT NULL DEFAULT 'user',
-    created_at TEXT NOT NULL
-)
-""")
-
-senha_hash = gerar_hash_senha("123456")
-
-cursor.execute("""
-VALUES (?, ?, ?, ?, ?)
-""", ("ariel", "Ariel", senha_hash, "admin", datetime.now().isoformat()))
-
-conn.commit()
-conn.close()
-
-
 # --------------------------------------------------
 # CONFIGURAÇÃO DA PÁGINA
 # --------------------------------------------------
@@ -137,6 +105,11 @@ st.set_page_config(
 # ==============================
 # LOGIN
 # ==============================
+def verificar_senha(senha_digitada, senha_hash):
+    return bcrypt.checkpw(
+        senha_digitada.encode("utf-8"),
+        senha_hash.encode("utf-8")
+    )
 
 if not st.session_state.authenticated:
 
@@ -147,69 +120,23 @@ if not st.session_state.authenticated:
 
     if st.button("Entrar"):
 
-        conn = sqlite3.connect("users.db")
-        cursor = conn.cursor()
+        users = st.secrets["users"]
 
-        cursor.execute(
-            "SELECT name, password_hash, role FROM users WHERE username = ?",
-            (usuario,)
-        )
-
-        row = cursor.fetchone()
-        conn.close()
-
-        if not row:
+        if usuario not in users:
             st.error("Usuário ou senha inválidos")
             st.stop()
 
-        nome, senha_hash, role = row
+        senha_hash = users[usuario]["password"]
 
         if not verificar_senha(senha, senha_hash):
             st.error("Usuário ou senha inválidos")
             st.stop()
 
         st.session_state.authenticated = True
-        st.session_state.user_name = nome
-        st.session_state.user_role = role
+        st.session_state.user_name = users[usuario]["name"]
         st.rerun()
 
-    st.stop()  # ⛔ BLOQUEIA TODO O RESTO
-
-if st.session_state.get("user_role") == "admin":
-
-    st.subheader("Criar usuário")
-
-    username = st.text_input("Usuário novo")
-    name = st.text_input("Nome")
-    senha = st.text_input("Senha", type="password")
-    confirmar = st.text_input("Confirmar senha", type="password")
-
-    if st.button("Criar usuário"):
-        if not username or not name or not senha:
-            st.error("Preencha todos os campos")
-        elif senha != confirmar:
-            st.error("As senhas não conferem")
-        else:
-            senha_hash = gerar_hash_senha(senha)
-
-            conn = sqlite3.connect("users.db")
-            cursor = conn.cursor()
-
-            try:
-                cursor.execute(
-                    "INSERT INTO users (username, name, password_hash, created_at) VALUES (?, ?, ?, ?)",
-                    (username, name, senha_hash, datetime.now().isoformat())
-                )
-                conn.commit()
-                st.success("Usuário criado com sucesso")
-            except sqlite3.IntegrityError:
-                st.error("Usuário já existe")
-            finally:
-                conn.close()
-
-if st.session_state.get("user_role") == "admin":
-    with st.expander("👤 Administração"):
-        ...
+    st.stop()
 
 # --------------------------------------------------
 # ABAS
