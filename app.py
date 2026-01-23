@@ -117,7 +117,6 @@ CREATE TABLE IF NOT EXISTS users (
 senha_hash = gerar_hash_senha("123456")
 
 cursor.execute("""
-INSERT OR IGNORE INTO users (username, name, password_hash, role, created_at)
 VALUES (?, ?, ?, ?, ?)
 """, ("ariel", "Ariel", senha_hash, "admin", datetime.now().isoformat()))
 
