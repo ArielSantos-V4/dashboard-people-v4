@@ -7,6 +7,18 @@ from dateutil.relativedelta import relativedelta
 from docx import Document
 from datetime import date
 
+import bcrypt
+
+def verificar_senha(senha_digitada, senha_guardada):
+    # senha bcrypt
+    if senha_guardada.startswith("$2"):
+        return bcrypt.checkpw(
+            senha_digitada.encode("utf-8"),
+            senha_guardada.encode("utf-8")
+        )
+    # senha simples
+    return senha_digitada == senha_guardada
+
 if "authenticated" not in st.session_state:
     st.session_state.authenticated = False
 
@@ -111,6 +123,11 @@ def verificar_senha(senha_digitada, senha_hash):
         senha_hash.encode("utf-8")
     )
 
+import streamlit as st
+
+if "authenticated" not in st.session_state:
+    st.session_state.authenticated = False
+
 if not st.session_state.authenticated:
 
     st.title("🔐 Login")
@@ -126,17 +143,17 @@ if not st.session_state.authenticated:
             st.error("Usuário ou senha inválidos")
             st.stop()
 
-        senha_hash = users[usuario]["password"]
+        user = users[usuario]
 
-        if not verificar_senha(senha, senha_hash):
+        if not verificar_senha(senha, user["password"]):
             st.error("Usuário ou senha inválidos")
             st.stop()
 
         st.session_state.authenticated = True
-        st.session_state.user_name = users[usuario]["name"]
+        st.session_state.user_name = user["name"]
         st.rerun()
 
-    st.stop()
+    st.stop()  # ⛔ bloqueia o resto do app
 
 # --------------------------------------------------
 # ABAS
