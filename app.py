@@ -322,7 +322,6 @@ with aba_dashboard:
         st.rerun()
 
     st.sidebar.divider()
-    st.sidebar.page_link("1_Modo_Escuro.py", label="🌙 Modo escuro")
     st.sidebar.page_link("2_Modo_Claro.py", label="☀️ Modo claro")
 
     # --------------------------------------------------
