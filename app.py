@@ -326,11 +326,11 @@ with aba_dashboard:
 
     st.divider()
 
-        st.toggle(
-            "🌙 Modo escuro",
-            value=st.session_state.modo_escuro,
-            key="modo_escuro"
-        )
+    st.toggle(
+        "🌙 Modo escuro",
+        value=st.session_state.modo_escuro,
+        key="modo_escuro"
+    )
 
     if st.session_state.modo_escuro:
         st.markdown(
