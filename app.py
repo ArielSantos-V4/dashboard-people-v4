@@ -1410,6 +1410,12 @@ with aba_relatorios:
                         file_name=nome_arquivo
                     )
 
+        if st.button("Atualização do Vale Transporte"):
+            modal_vale_transporte(
+                df_pessoas=df_pessoas,
+                caminho_modelo="modelo_vale_transporte.docx"
+            )
+
 # --------------------------------------------------
 # ABA BENEFICIOS
 # --------------------------------------------------
