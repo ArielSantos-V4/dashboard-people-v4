@@ -1251,7 +1251,7 @@ with aba_relatorios:
                 st.rerun()
 
         @st.dialog("🚌 Atualização do Vale Transporte")
-        def modal_vale_transporte(df_pessoas, caminho_modelo):
+        def modal_vale_transporte(df_pessoas):
         
             # =====================
             # INVESTIDOR
@@ -1352,6 +1352,14 @@ with aba_relatorios:
         
             hoje = date.today()
             data_extenso = f"{hoje.day} de {MESES_PT[hoje.month]} de {hoje.year}"
+
+            import os
+            from docx import Document
+            
+            CAMINHO_MODELO = os.path.join(
+                os.getcwd(),
+                "declaracao_vale_transporte_clt.docx"
+            )
         
             # =====================
             # GERAR DOCUMENTO
@@ -1390,13 +1398,6 @@ with aba_relatorios:
                     mapa[f"{{valor_{i}_tra}}"] = f"{v:.2f}"
                     mapa[f"{{inte_{i}_tra}}"] = f"{it:.2f}"
 
-                import os
-
-                st.write("Arquivo procurado:", caminho_modelo)
-                st.write("Existe?", os.path.exists(caminho_modelo))
-                st.write("Arquivos na pasta atual:")
-                st.write(os.listdir("."))
-
                 doc = Document(caminho_modelo)
                 substituir_texto_docx(doc, mapa)
         
@@ -1411,10 +1412,7 @@ with aba_relatorios:
                     )
 
         if st.button("🚌 Atualização do Vale Transporte"):
-            modal_vale_transporte(
-                df_pessoas=df,
-                caminho_modelo="declaracao_vale_transporte_clt.docx"
-            )
+            modal_vale_transporte(df_pessoas=df)
 
 # --------------------------------------------------
 # ABA BENEFICIOS
