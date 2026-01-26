@@ -94,9 +94,6 @@ def gerar_hash_senha(senha):
         bcrypt.gensalt()
     ).decode("utf-8")
 
-if "modo_escuro" not in st.session_state:
-    st.session_state.modo_escuro = False
-
 # --------------------------------------------------
 # CONFIGURAÇÃO DA PÁGINA
 # --------------------------------------------------
@@ -326,95 +323,6 @@ with aba_dashboard:
 
     st.sidebar.divider()
 
-    st.sidebar.toggle(
-        "🌙 Modo escuro",
-        value=st.session_state.modo_escuro,
-        key="modo_escuro"
-    )
-
-    if st.session_state.modo_escuro:
-        st.markdown(
-            """
-            <style>
-            /* FUNDO GERAL — IGUAL AO DATAFRAME */
-            .stApp {
-                background-color: rgb(14, 17, 23) !important;
-                color: #ffffff !important;
-            }
-    
-            /* HEADER */
-            header[data-testid="stHeader"] {
-                background-color: rgb(14, 17, 23) !important;
-            }
-    
-            /* SIDEBAR */
-            section[data-testid="stSidebar"] {
-                background-color: rgb(14, 17, 23) !important;
-            }
-    
-            /* DATAFRAME / TABELA */
-            div[data-testid="stDataFrame"] {
-                background-color: rgb(14, 17, 23) !important;
-            }
-    
-            .stDataFrame table {
-                background-color: rgb(14, 17, 23) !important;
-            }
-    
-            /* CÉLULAS */
-            .stDataFrame th,
-            .stDataFrame td {
-                background-color: rgb(14, 17, 23) !important;
-                color: #ffffff !important;
-            }
-    
-            /* BOTÕES */
-            button {
-                background-color: #262730 !important;
-                color: #ffffff !important;
-            }
-    
-            /* INPUTS */
-            input, textarea, select {
-                background-color: rgb(14, 17, 23) !important;
-                color: #ffffff !important;
-            }
-            </style>
-            """,
-            unsafe_allow_html=True
-        )
-        
-    else:
-        st.markdown(
-            """
-            <style>
-            .stApp {
-                background-color: #ffffff;
-                color: #000000;
-            }
-    
-            section[data-testid="stSidebar"] {
-                background-color: #f4f6f8;
-            }
-    
-            header[data-testid="stHeader"] {
-                background-color: #ffffff;
-            }
-    
-            button[data-baseweb="tab"] {
-                background-color: #f4f6f8;
-                color: #000000;
-            }
-    
-            button[data-baseweb="tab"][aria-selected="true"] {
-                background-color: #e6e6e6;
-                font-weight: 600;
-            }
-            </style>
-            """,
-            unsafe_allow_html=True
-        )
-    
     # --------------------------------------------------
     # TOPO
     # --------------------------------------------------
