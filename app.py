@@ -1372,68 +1372,68 @@ with aba_relatorios:
             # GERAR DOCUMENTO
             # =====================
             c1, c2, c3 = st.columns([1, 2, 1])
-
+            
             with c2:
                 gerar = st.button("📄 Gerar documento", use_container_width=True)
-    
-                    mapa = {
-                        "{nome}": nome_sel,
-                        "{cpf}": cpf_sel,
-                        "{cep}": cep,
-                        "{endereço}": endereco,
-                        "{número}": numero,
-                        "{bairro}": bairro,
-                        "{cidade}": cidade,
-                        "{uf_estado}": uf,
-                        "{soma_linhas}": str(soma_linhas),
-                        "{soma_valor}": f"{soma_valor:.2f}",
-                        "{soma_inte}": f"{soma_inte:.2f}",
-                        "{soma_linhas_tra}": str(soma_linhas_tra),
-                        "{soma_valor_tra}": f"{soma_valor_tra:.2f}",
-                        "{soma_inte_tra}": f"{soma_inte_tra:.2f}",
-                        "{soma_unit}": f"{soma_unit:.2f}",
-                        "{soma_integracao}": f"{soma_integracao:.2f}",
-                        "{data}": data_extenso
-                    }
-                
-                    # 🔹 GARANTE CAMPOS EM BRANCO (IDA)
-                    for i in range(1, 5):
-                        mapa.setdefault(f"{{transporte_{i}_res}}", "")
-                        mapa.setdefault(f"{{linha_{i}_res}}", "")
-                        mapa.setdefault(f"{{valor_{i}_res}}", "")
-                        mapa.setdefault(f"{{inte_{i}_res}}", "")
-                
-                    # 🔹 GARANTE CAMPOS EM BRANCO (VOLTA)
-                    for i in range(1, 5):
-                        mapa.setdefault(f"{{transporte_{i}_tra}}", "")
-                        mapa.setdefault(f"{{linha_{i}_tra}}", "")
-                        mapa.setdefault(f"{{valor_{i}_tra}}", "")
-                        mapa.setdefault(f"{{inte_{i}_tra}}", "")
-                
-                    # 🔹 SOBRESCREVE COM O QUE FOI PREENCHIDO (IDA)
-                    for i, (t, l, v, it) in enumerate(transportes_res, start=1):
-                        mapa[f"{{transporte_{i}_res}}"] = t
-                        mapa[f"{{linha_{i}_res}}"] = l
-                        mapa[f"{{valor_{i}_res}}"] = f"{v:.2f}"
-                        mapa[f"{{inte_{i}_res}}"] = f"{it:.2f}"
-                
-                    # 🔹 SOBRESCREVE COM O QUE FOI PREENCHIDO (VOLTA)
-                    for i, (t, l, v, it) in enumerate(transportes_tra, start=1):
-                        mapa[f"{{transporte_{i}_tra}}"] = t
-                        mapa[f"{{linha_{i}_tra}}"] = l
-                        mapa[f"{{valor_{i}_tra}}"] = f"{v:.2f}"
-                        mapa[f"{{inte_{i}_tra}}"] = f"{it:.2f}"
-                
-                    doc = Document(CAMINHO_MODELO)
-                    substituir_texto_docx(doc, mapa)
-                
-                    nome_arquivo = f"Declaração de Vale Transporte CLT - {nome_sel}.docx"
-                    doc.save(nome_arquivo)
-                
-                    with open(nome_arquivo, "rb") as f:
-                    
+            
+            if gerar:
+            
+                mapa = {
+                    "{nome}": nome_sel,
+                    "{cpf}": cpf_sel,
+                    "{cep}": cep,
+                    "{endereço}": endereco,
+                    "{número}": numero,
+                    "{bairro}": bairro,
+                    "{cidade}": cidade,
+                    "{uf_estado}": uf,
+                    "{soma_linhas}": str(soma_linhas),
+                    "{soma_valor}": f"{soma_valor:.2f}",
+                    "{soma_inte}": f"{soma_inte:.2f}",
+                    "{soma_linhas_tra}": str(soma_linhas_tra),
+                    "{soma_valor_tra}": f"{soma_valor_tra:.2f}",
+                    "{soma_inte_tra}": f"{soma_inte_tra:.2f}",
+                    "{soma_unit}": f"{soma_unit:.2f}",
+                    "{soma_integracao}": f"{soma_integracao:.2f}",
+                    "{data}": data_extenso
+                }
+            
+                # 🔹 GARANTE CAMPOS EM BRANCO (IDA)
+                for i in range(1, 5):
+                    mapa.setdefault(f"{{transporte_{i}_res}}", "")
+                    mapa.setdefault(f"{{linha_{i}_res}}", "")
+                    mapa.setdefault(f"{{valor_{i}_res}}", "")
+                    mapa.setdefault(f"{{inte_{i}_res}}", "")
+            
+                # 🔹 GARANTE CAMPOS EM BRANCO (VOLTA)
+                for i in range(1, 5):
+                    mapa.setdefault(f"{{transporte_{i}_tra}}", "")
+                    mapa.setdefault(f"{{linha_{i}_tra}}", "")
+                    mapa.setdefault(f"{{valor_{i}_tra}}", "")
+                    mapa.setdefault(f"{{inte_{i}_tra}}", "")
+            
+                # 🔹 SOBRESCREVE IDA
+                for i, (t, l, v, it) in enumerate(transportes_res, start=1):
+                    mapa[f"{{transporte_{i}_res}}"] = t
+                    mapa[f"{{linha_{i}_res}}"] = l
+                    mapa[f"{{valor_{i}_res}}"] = f"{v:.2f}"
+                    mapa[f"{{inte_{i}_res}}"] = f"{it:.2f}"
+            
+                # 🔹 SOBRESCREVE VOLTA
+                for i, (t, l, v, it) in enumerate(transportes_tra, start=1):
+                    mapa[f"{{transporte_{i}_tra}}"] = t
+                    mapa[f"{{linha_{i}_tra}}"] = l
+                    mapa[f"{{valor_{i}_tra}}"] = f"{v:.2f}"
+                    mapa[f"{{inte_{i}_tra}}"] = f"{it:.2f}"
+            
+                doc = Document(CAMINHO_MODELO)
+                substituir_texto_docx(doc, mapa)
+            
+                nome_arquivo = f"Declaração de Vale Transporte CLT - {nome_sel}.docx"
+                doc.save(nome_arquivo)
+            
+                with open(nome_arquivo, "rb") as f:
                     c1, c2, c3 = st.columns([1, 2, 1])
-
                     with c2:
                         st.download_button(
                             "⬇️ Download do documento",
@@ -1441,9 +1441,6 @@ with aba_relatorios:
                             file_name=nome_arquivo,
                             use_container_width=True
                         )
-    
-            if st.button("🚌 Atualização do Vale Transporte"):
-                modal_vale_transporte(df_pessoas=df)
 
 # --------------------------------------------------
 # ABA BENEFICIOS
