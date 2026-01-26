@@ -1389,7 +1389,14 @@ with aba_relatorios:
                     mapa[f"{{linha_{i}_tra}}"] = l
                     mapa[f"{{valor_{i}_tra}}"] = f"{v:.2f}"
                     mapa[f"{{inte_{i}_tra}}"] = f"{it:.2f}"
-        
+
+                import os
+
+                st.write("Arquivo procurado:", caminho_modelo)
+                st.write("Existe?", os.path.exists(caminho_modelo))
+                st.write("Arquivos na pasta atual:")
+                st.write(os.listdir("."))
+
                 doc = Document(caminho_modelo)
                 substituir_texto_docx(doc, mapa)
         
