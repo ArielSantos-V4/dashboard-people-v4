@@ -1175,10 +1175,10 @@ with aba_relatorios:
         def substituir_texto_docx(doc, mapa):
 
             def substituir_em_paragrafo(paragrafo, mapa):
-                texto = paragrafo.text
-                for chave, valor in mapa.items():
-                    texto = texto.replace(chave, str(valor))
-                paragrafo.text = texto
+                for run in paragrafo.runs:
+                    for chave, valor in mapa.items():
+                        if chave in run.text:
+                            run.text = run.text.replace(chave, str(valor))
         
             # Parágrafos normais
             for p in doc.paragraphs:
@@ -1424,7 +1424,7 @@ with aba_relatorios:
                 doc = Document(CAMINHO_MODELO)
                 substituir_texto_docx(doc, mapa)
             
-                nome_arquivo = f"vale_transporte_{nome_sel}.docx"
+                nome_arquivo = f"Declaração de Vale Transporte CLT - {nome_sel}.docx"
                 doc.save(nome_arquivo)
             
                 with open(nome_arquivo, "rb") as f:
