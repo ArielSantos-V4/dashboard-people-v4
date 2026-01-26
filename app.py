@@ -336,38 +336,39 @@ with aba_dashboard:
         st.markdown(
             """
             <style>
-            /* APP */
+            /* FUNDO GERAL — IGUAL AO DATAFRAME */
             .stApp {
-                background-color: #0e1117 !important;
+                background-color: rgb(14, 17, 23) !important;
                 color: #ffffff !important;
             }
     
-            /* HEADER / ABAS SUPERIORES */
+            /* HEADER */
             header[data-testid="stHeader"] {
-                background-color: #0e1117 !important;
-            }
-    
-            button[data-baseweb="tab"] {
-                background-color: #0e1117 !important;
-                color: #ffffff !important;
-            }
-    
-            button[data-baseweb="tab"][aria-selected="true"] {
-                background-color: #161b22 !important;
-                font-weight: 600;
+                background-color: rgb(14, 17, 23) !important;
             }
     
             /* SIDEBAR */
             section[data-testid="stSidebar"] {
-                background-color: #161b22 !important;
+                background-color: rgb(14, 17, 23) !important;
             }
     
-            /* BOTÕES */
-            section[data-testid="stSidebar"] button {
-                background-color: #262730 !important;
+            /* DATAFRAME / TABELA */
+            div[data-testid="stDataFrame"] {
+                background-color: rgb(14, 17, 23) !important;
+            }
+    
+            .stDataFrame table {
+                background-color: rgb(14, 17, 23) !important;
+            }
+    
+            /* CÉLULAS */
+            .stDataFrame th,
+            .stDataFrame td {
+                background-color: rgb(14, 17, 23) !important;
                 color: #ffffff !important;
             }
     
+            /* BOTÕES */
             button {
                 background-color: #262730 !important;
                 color: #ffffff !important;
@@ -375,12 +376,7 @@ with aba_dashboard:
     
             /* INPUTS */
             input, textarea, select {
-                background-color: #161b22 !important;
-                color: #ffffff !important;
-            }
-    
-            /* TOGGLE */
-            label[data-testid="stWidgetLabel"] {
+                background-color: rgb(14, 17, 23) !important;
                 color: #ffffff !important;
             }
             </style>
