@@ -331,6 +331,65 @@ with aba_dashboard:
             value=st.session_state.modo_escuro,
             key="modo_escuro"
         )
+
+    if st.session_state.modo_escuro:
+        st.markdown(
+            """
+            <style>
+            .stApp {
+                background-color: #0e1117;
+                color: #ffffff;
+            }
+    
+            section[data-testid="stSidebar"] {
+                background-color: #161b22;
+            }
+    
+            div[data-testid="stMetric"] {
+                background-color: #161b22;
+            }
+    
+            input, textarea, select {
+                background-color: #161b22 !important;
+                color: white !important;
+            }
+    
+            button {
+                background-color: #262730 !important;
+                color: white !important;
+            }
+            </style>
+            """,
+            unsafe_allow_html=True
+        )
+    
+    else:
+        st.markdown(
+            """
+            <style>
+            .stApp {
+                background-color: white;
+                color: black;
+            }
+    
+            section[data-testid="stSidebar"] {
+                background-color: #f5f5f5;
+            }
+    
+            input, textarea, select {
+                background-color: white !important;
+                color: black !important;
+            }
+    
+            button {
+                background-color: #e6e6e6 !important;
+                color: black !important;
+            }
+            </style>
+            """,
+            unsafe_allow_html=True
+        )
+
     
     # --------------------------------------------------
     # TOPO
