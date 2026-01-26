@@ -1250,14 +1250,7 @@ with aba_relatorios:
                 st.session_state.gerar_demissao_comum = False
                 st.rerun()
 
-        def substituir_texto_docx(doc, mapa):
-            for p in doc.paragraphs:
-                for chave, valor in mapa.items():
-                    if chave in p.text:
-                        for run in p.runs:
-                            run.text = run.text.replace(chave, valor)
-
-        @st.dialog("Atualização do Vale Transporte")
+        @st.dialog("🚌 Atualização do Vale Transporte")
         def modal_vale_transporte(df_pessoas, caminho_modelo):
         
             # =====================
@@ -1265,11 +1258,11 @@ with aba_relatorios:
             # =====================
             nome_sel = st.selectbox(
                 "Investidor",
-                df_pessoas["nome"].tolist()
+                df_pessoas["Nome"].tolist()
             )
         
             cpf_sel = df_pessoas.loc[
-                df_pessoas["nome"] == nome_sel, "cpf"
+                df_pessoas["Nome"] == nome_sel, "CPF"
             ].values[0]
         
             # =====================
@@ -1412,7 +1405,7 @@ with aba_relatorios:
 
         if st.button("Atualização do Vale Transporte"):
             modal_vale_transporte(
-                df_pessoas=df_pessoas,
+                df_pessoas=df,
                 caminho_modelo="modelo_vale_transporte.docx"
             )
 
