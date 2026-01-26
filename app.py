@@ -324,9 +324,9 @@ with aba_dashboard:
         st.session_state.authenticated = False
         st.rerun()
 
-    st.divider()
+    st.sidebar.divider()
 
-    st.toggle(
+    st.sidebar.toggle(
         "🌙 Modo escuro",
         value=st.session_state.modo_escuro,
         key="modo_escuro"
@@ -345,8 +345,19 @@ with aba_dashboard:
                 background-color: #161b22;
             }
     
-            div[data-testid="stMetric"] {
+            header[data-testid="stHeader"] {
+                background-color: #0e1117;
+            }
+    
+            button[data-baseweb="tab"] {
                 background-color: #161b22;
+                color: #ffffff;
+            }
+    
+            button[data-baseweb="tab"][aria-selected="true"] {
+                background-color: #262730;
+                color: #ffffff;
+                font-weight: 600;
             }
     
             input, textarea, select {
@@ -368,28 +379,31 @@ with aba_dashboard:
             """
             <style>
             .stApp {
-                background-color: white;
-                color: black;
+                background-color: #ffffff;
+                color: #000000;
             }
     
             section[data-testid="stSidebar"] {
-                background-color: #f5f5f5;
+                background-color: #f4f6f8;
             }
     
-            input, textarea, select {
-                background-color: white !important;
-                color: black !important;
+            header[data-testid="stHeader"] {
+                background-color: #ffffff;
             }
     
-            button {
-                background-color: #e6e6e6 !important;
-                color: black !important;
+            button[data-baseweb="tab"] {
+                background-color: #f4f6f8;
+                color: #000000;
+            }
+    
+            button[data-baseweb="tab"][aria-selected="true"] {
+                background-color: #e6e6e6;
+                font-weight: 600;
             }
             </style>
             """,
             unsafe_allow_html=True
         )
-
     
     # --------------------------------------------------
     # TOPO
