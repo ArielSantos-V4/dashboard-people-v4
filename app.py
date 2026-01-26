@@ -1177,7 +1177,7 @@ with aba_relatorios:
                 texto_completo = "".join(run.text for run in p.runs)
         
                 for chave, valor in mapa.items():
-                    texto_completo = texto_completo.replace(chave, valor)
+                    texto_completo = texto_completo.replace(chave, str(valor))
         
                 if p.runs:
                     p.runs[0].text = texto_completo
