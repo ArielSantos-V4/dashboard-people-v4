@@ -1,0 +1,6 @@
+[theme]
+primaryColor = "#D71920"              # vermelho da marca (mantém)
+backgroundColor = "#FFFFFF"           # fundo branco
+secondaryBackgroundColor = "#F2F2F2"  # cards / sidebar
+textColor = "#000000"                 # texto preto
+font = "sans serif"
