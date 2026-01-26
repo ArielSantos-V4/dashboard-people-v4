@@ -6,10 +6,6 @@ from datetime import datetime, timedelta
 from dateutil.relativedelta import relativedelta
 from docx import Document
 from datetime import date
-import os
-st.write("Caminho recebido:", caminho_modelo)
-st.write("Existe?", os.path.exists(caminho_modelo))
-st.write("Arquivos na pasta:", os.listdir("."))
 
 import bcrypt
 
