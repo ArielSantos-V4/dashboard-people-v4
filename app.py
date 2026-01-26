@@ -336,44 +336,58 @@ with aba_dashboard:
         st.markdown(
             """
             <style>
+            /* APP */
             .stApp {
-                background-color: #0e1117;
-                color: #ffffff;
+                background-color: #0e1117 !important;
+                color: #ffffff !important;
             }
     
-            section[data-testid="stSidebar"] {
-                background-color: #161b22;
-            }
-    
+            /* HEADER / ABAS SUPERIORES */
             header[data-testid="stHeader"] {
-                background-color: #0e1117;
+                background-color: #0e1117 !important;
             }
     
             button[data-baseweb="tab"] {
-                background-color: #161b22;
-                color: #ffffff;
+                background-color: #0e1117 !important;
+                color: #ffffff !important;
             }
     
             button[data-baseweb="tab"][aria-selected="true"] {
-                background-color: #262730;
-                color: #ffffff;
+                background-color: #161b22 !important;
                 font-weight: 600;
             }
     
-            input, textarea, select {
+            /* SIDEBAR */
+            section[data-testid="stSidebar"] {
                 background-color: #161b22 !important;
-                color: white !important;
+            }
+    
+            /* BOTÕES */
+            section[data-testid="stSidebar"] button {
+                background-color: #262730 !important;
+                color: #ffffff !important;
             }
     
             button {
                 background-color: #262730 !important;
-                color: white !important;
+                color: #ffffff !important;
+            }
+    
+            /* INPUTS */
+            input, textarea, select {
+                background-color: #161b22 !important;
+                color: #ffffff !important;
+            }
+    
+            /* TOGGLE */
+            label[data-testid="stWidgetLabel"] {
+                color: #ffffff !important;
             }
             </style>
             """,
             unsafe_allow_html=True
         )
-    
+        
     else:
         st.markdown(
             """
