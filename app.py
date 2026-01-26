@@ -322,6 +322,8 @@ with aba_dashboard:
         st.rerun()
 
     st.sidebar.divider()
+    st.sidebar.page_link("app_dark.py", label="🌙 Modo escuro")
+    st.sidebar.page_link("app_light.py", label="☀️ Modo claro")
 
     # --------------------------------------------------
     # TOPO
