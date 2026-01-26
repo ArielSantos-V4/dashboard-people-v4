@@ -1406,7 +1406,7 @@ with aba_relatorios:
         if st.button("Atualização do Vale Transporte"):
             modal_vale_transporte(
                 df_pessoas=df,
-                caminho_modelo="Declaração de Vale Transporte CLT.docx"
+                caminho_modelo="declaracao_vale_transporte_clt.docx"
             )
 
 # --------------------------------------------------
