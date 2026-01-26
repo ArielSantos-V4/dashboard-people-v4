@@ -94,6 +94,9 @@ def gerar_hash_senha(senha):
         bcrypt.gensalt()
     ).decode("utf-8")
 
+if "modo_escuro" not in st.session_state:
+    st.session_state.modo_escuro = False
+
 # --------------------------------------------------
 # CONFIGURAÇÃO DA PÁGINA
 # --------------------------------------------------
@@ -320,6 +323,14 @@ with aba_dashboard:
     if st.sidebar.button("Logout"):
         st.session_state.authenticated = False
         st.rerun()
+
+    st.divider()
+
+        st.toggle(
+            "🌙 Modo escuro",
+            value=st.session_state.modo_escuro,
+            key="modo_escuro"
+        )
     
     # --------------------------------------------------
     # TOPO
