@@ -1441,6 +1441,9 @@ with aba_relatorios:
                             file_name=nome_arquivo,
                             use_container_width=True
                         )
+                        
+        if st.button("🚌 Atualização do Vale Transporte"):
+            modal_vale_transporte(df_pessoas=df)
 
 # --------------------------------------------------
 # ABA BENEFICIOS
