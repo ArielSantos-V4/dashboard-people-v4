@@ -1250,6 +1250,166 @@ with aba_relatorios:
                 st.session_state.gerar_demissao_comum = False
                 st.rerun()
 
+        def substituir_texto_docx(doc, mapa):
+            for p in doc.paragraphs:
+                for chave, valor in mapa.items():
+                    if chave in p.text:
+                        for run in p.runs:
+                            run.text = run.text.replace(chave, valor)
+
+        @st.dialog("Atualização do Vale Transporte")
+        def modal_vale_transporte(df_pessoas, caminho_modelo):
+        
+            # =====================
+            # INVESTIDOR
+            # =====================
+            nome_sel = st.selectbox(
+                "Investidor",
+                df_pessoas["nome"].tolist()
+            )
+        
+            cpf_sel = df_pessoas.loc[
+                df_pessoas["nome"] == nome_sel, "cpf"
+            ].values[0]
+        
+            # =====================
+            # ENDEREÇO
+            # =====================
+            cep = st.text_input("CEP")
+            endereco = st.text_input("Endereço")
+            numero = st.text_input("Número")
+            bairro = st.text_input("Bairro")
+            cidade = st.text_input("Cidade")
+            uf = st.text_input("UF")
+        
+            # =====================
+            # IDA
+            # =====================
+            st.divider()
+            st.subheader("Residência → Trabalho")
+        
+            qtd_res = st.selectbox("Quantidade de transportes", [1,2,3,4], key="qtd_res")
+        
+            transportes_res = []
+        
+            for i in range(qtd_res):
+                c1, c2, c3, c4 = st.columns(4)
+        
+                tipo = c1.selectbox(
+                    "Tipo", ["Ônibus", "Metrô", "Trem"], key=f"tipo_res_{i}"
+                )
+                linha = c2.text_input("Linha", key=f"linha_res_{i}")
+                valor = c3.number_input(
+                    "Valor", min_value=0.0, step=0.01, key=f"valor_res_{i}"
+                )
+                inte = c4.number_input(
+                    "Integração", min_value=0.0, step=0.01, key=f"inte_res_{i}"
+                )
+        
+                transportes_res.append((tipo, linha, valor, inte))
+        
+            soma_linhas = len(transportes_res)
+            soma_valor = sum(v for _,_,v,_ in transportes_res)
+            soma_inte = sum(i for _,_,_,i in transportes_res)
+        
+            # =====================
+            # VOLTA
+            # =====================
+            st.divider()
+            st.subheader("Trabalho → Residência")
+        
+            qtd_tra = st.selectbox("Quantidade de transportes", [1,2,3,4], key="qtd_tra")
+        
+            transportes_tra = []
+        
+            for i in range(qtd_tra):
+                c1, c2, c3, c4 = st.columns(4)
+        
+                tipo = c1.selectbox(
+                    "Tipo", ["Ônibus", "Metrô", "Trem"], key=f"tipo_tra_{i}"
+                )
+                linha = c2.text_input("Linha", key=f"linha_tra_{i}")
+                valor = c3.number_input(
+                    "Valor", min_value=0.0, step=0.01, key=f"valor_tra_{i}"
+                )
+                inte = c4.number_input(
+                    "Integração", min_value=0.0, step=0.01, key=f"inte_tra_{i}"
+                )
+        
+                transportes_tra.append((tipo, linha, valor, inte))
+        
+            soma_linhas_tra = len(transportes_tra)
+            soma_valor_tra = sum(v for _,_,v,_ in transportes_tra)
+            soma_inte_tra = sum(i for _,_,_,i in transportes_tra)
+        
+            # =====================
+            # TOTAIS
+            # =====================
+            soma_unit = soma_valor + soma_valor_tra
+            soma_integracao = soma_inte + soma_inte_tra
+        
+            # =====================
+            # DATA
+            # =====================
+            MESES_PT = {
+                1:"janeiro",2:"fevereiro",3:"março",4:"abril",
+                5:"maio",6:"junho",7:"julho",8:"agosto",
+                9:"setembro",10:"outubro",11:"novembro",12:"dezembro"
+            }
+        
+            hoje = date.today()
+            data_extenso = f"{hoje.day} de {MESES_PT[hoje.month]} de {hoje.year}"
+        
+            # =====================
+            # GERAR DOCUMENTO
+            # =====================
+            if st.button("Gerar documento"):
+        
+                mapa = {
+                    "{nome}": nome_sel,
+                    "{cpf}": cpf_sel,
+                    "{cep}": cep,
+                    "{endereço}": endereco,
+                    "{número}": numero,
+                    "{bairro}": bairro,
+                    "{cidade}": cidade,
+                    "{uf_estado}": uf,
+                    "{soma_linhas}": str(soma_linhas),
+                    "{soma_valor}": f"{soma_valor:.2f}",
+                    "{soma_inte}": f"{soma_inte:.2f}",
+                    "{soma_linhas_tra}": str(soma_linhas_tra),
+                    "{soma_valor_tra}": f"{soma_valor_tra:.2f}",
+                    "{soma_inte_tra}": f"{soma_inte_tra:.2f}",
+                    "{soma_unit}": f"{soma_unit:.2f}",
+                    "{soma_integracao}": f"{soma_integracao:.2f}",
+                    "{data}": data_extenso
+                }
+        
+                for i, (t,l,v,it) in enumerate(transportes_res, start=1):
+                    mapa[f"{{transporte_{i}_res}}"] = t
+                    mapa[f"{{linha_{i}_res}}"] = l
+                    mapa[f"{{valor_{i}_res}}"] = f"{v:.2f}"
+                    mapa[f"{{inte_{i}_res}}"] = f"{it:.2f}"
+        
+                for i, (t,l,v,it) in enumerate(transportes_tra, start=1):
+                    mapa[f"{{transporte_{i}_tra}}"] = t
+                    mapa[f"{{linha_{i}_tra}}"] = l
+                    mapa[f"{{valor_{i}_tra}}"] = f"{v:.2f}"
+                    mapa[f"{{inte_{i}_tra}}"] = f"{it:.2f}"
+        
+                doc = Document(caminho_modelo)
+                substituir_texto_docx(doc, mapa)
+        
+                nome_arquivo = f"vale_transporte_{nome_sel}.docx"
+                doc.save(nome_arquivo)
+        
+                with open(nome_arquivo, "rb") as f:
+                    st.download_button(
+                        "Download do documento",
+                        f,
+                        file_name=nome_arquivo
+                    )
+
 # --------------------------------------------------
 # ABA BENEFICIOS
 # --------------------------------------------------
