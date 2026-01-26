@@ -1399,7 +1399,7 @@ with aba_relatorios:
                     mapa[f"{{inte_{i}_tra}}"] = f"{it:.2f}"
 
                 doc = Document(CAMINHO_MODELO)
-                substituir_texto_docx(doc, mapa)
+                texto_completo = texto_completo.replace(chave, str(valor))
         
                 nome_arquivo = f"vale_transporte_{nome_sel}.docx"
                 doc.save(nome_arquivo)
