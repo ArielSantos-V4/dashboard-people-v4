@@ -1403,7 +1403,7 @@ with aba_relatorios:
                         file_name=nome_arquivo
                     )
 
-        if st.button("Atualização do Vale Transporte"):
+        if st.button("🚌 Atualização do Vale Transporte"):
             modal_vale_transporte(
                 df_pessoas=df,
                 caminho_modelo="declaracao_vale_transporte_clt.docx"
