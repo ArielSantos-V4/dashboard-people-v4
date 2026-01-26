@@ -1173,16 +1173,23 @@ with aba_relatorios:
         # AUTOMAÇÃO — DEMISSÃO POR COMUM ACORDO
         # --------------------------------------------------
         def substituir_texto_docx(doc, mapa):
-            for p in doc.paragraphs:
-                texto_completo = "".join(run.text for run in p.runs)
-        
+
+            def substituir_em_paragrafo(paragrafo, mapa):
+                texto = paragrafo.text
                 for chave, valor in mapa.items():
-                    texto_completo = texto_completo.replace(chave, str(valor))
+                    texto = texto.replace(chave, str(valor))
+                paragrafo.text = texto
         
-                if p.runs:
-                    p.runs[0].text = texto_completo
-                    for run in p.runs[1:]:
-                        run.text = ""
+            # Parágrafos normais
+            for p in doc.paragraphs:
+                substituir_em_paragrafo(p, mapa)
+        
+            # Tabelas (muito importante)
+            for tabela in doc.tables:
+                for linha in tabela.rows:
+                    for celula in linha.cells:
+                        for p in celula.paragraphs:
+                            substituir_em_paragrafo(p, mapa)
                 
         # BOTÃO PRINCIPAL
         if st.button("📄 Demissão por comum acordo"):
@@ -1360,7 +1367,21 @@ with aba_relatorios:
                 os.getcwd(),
                 "declaracao_vale_transporte_clt.docx"
             )
-        
+            
+            # Garante até 4 linhas em branco (ida)
+            for i in range(1, 5):
+                mapa.setdefault(f"{{transporte_{i}_res}}", "")
+                mapa.setdefault(f"{{linha_{i}_res}}", "")
+                mapa.setdefault(f"{{valor_{i}_res}}", "")
+                mapa.setdefault(f"{{inte_{i}_res}}", "")
+            
+            # Garante até 4 linhas em branco (volta)
+            for i in range(1, 5):
+                mapa.setdefault(f"{{transporte_{i}_tra}}", "")
+                mapa.setdefault(f"{{linha_{i}_tra}}", "")
+                mapa.setdefault(f"{{valor_{i}_tra}}", "")
+                mapa.setdefault(f"{{inte_{i}_tra}}", "")
+
             # =====================
             # GERAR DOCUMENTO
             # =====================
