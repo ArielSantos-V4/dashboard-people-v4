@@ -1398,7 +1398,7 @@ with aba_relatorios:
                     mapa[f"{{valor_{i}_tra}}"] = f"{v:.2f}"
                     mapa[f"{{inte_{i}_tra}}"] = f"{it:.2f}"
 
-                doc = Document(caminho_modelo)
+                doc = Document(CAMINHO_MODELO)
                 substituir_texto_docx(doc, mapa)
         
                 nome_arquivo = f"vale_transporte_{nome_sel}.docx"
