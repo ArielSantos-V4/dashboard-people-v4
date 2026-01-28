@@ -97,6 +97,19 @@ def gerar_hash_senha(senha):
 if "mostrar_modal" not in st.session_state:
     st.session_state.mostrar_modal = False
 
+st.markdown(
+    """
+    <style>
+    /* Modal do st.dialog mais largo (modo paisagem) */
+    div[data-testid="stDialog"] > div {
+        width: 95vw !important;      /* quase tela inteira */
+        max-width: 95vw !important;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
+
 # --------------------------------------------------
 # CONFIGURAÇÃO DA PÁGINA
 # --------------------------------------------------
