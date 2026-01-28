@@ -543,19 +543,23 @@ with aba_dashboard:
                 st.session_state[key] = True
         
             if st.session_state[key]:
-                st.markdown(f"""
-                <div class="alerta-flutuante alerta-{tipo}">
-                    <div class="alerta-fechar"
-                         onclick="document.getElementById('{key}').style.display='none'">
-                        ✕
-                    </div>
-                    <div id="{key}">
-                        {mensagem}
-                    </div>
-                </div>
-                """, unsafe_allow_html=True)
+                col_alerta, col_fechar = st.columns([10, 1])
         
-
+                with col_alerta:
+                    st.markdown(
+                        f"""
+                        <div class="alerta-flutuante alerta-{tipo}">
+                            {mensagem}
+                        </div>
+                        """,
+                        unsafe_allow_html=True
+                    )
+        
+                with col_fechar:
+                    if st.button("✕", key=f"btn_{key}"):
+                        st.session_state[key] = False
+                        st.rerun()
+     
         col1, col2, col3 = st.columns([3, 3, 2])
             
         # -------------------------
