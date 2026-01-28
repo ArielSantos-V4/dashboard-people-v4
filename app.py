@@ -358,11 +358,14 @@ with aba_dashboard:
     
     @st.dialog("🔎 Consulta individual do investidor")
     def modal_consulta_investidor(df_consulta, nome):
-        linha = df_consulta[df_consulta["Nome"] == nome].iloc[0]
+        st.markdown(
+            '<div class="modal-consulta-investidor"></div>',
+            unsafe_allow_html=True
+        )
 
+        linha = df_consulta[df_consulta["Nome"] == nome].iloc[0]
         col1, col2, col3 = st.columns([3, 3, 2])
-    
-      
+          
         # -------------------------
         # COLUNA 1 — PROFISSIONAL
         # -------------------------
