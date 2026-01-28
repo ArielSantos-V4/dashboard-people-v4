@@ -435,7 +435,7 @@ with aba_dashboard:
         # -------------------------
         # COLUNA 2 — ADMIN / PESSOAL
         # -------------------------
-         with col2:
+        with col2:
             st.markdown("##### 🧾 Centro de custo")
     
             # Centro de custo (código menor / descrição maior)
