@@ -497,6 +497,65 @@ with aba_dashboard:
         st.markdown('<div class="modal-investidor">', unsafe_allow_html=True)
 
         linha = df_consulta[df_consulta["Nome"] == nome].iloc[0]
+        st.markdown("""
+        <style>
+        .alerta-flutuante {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            max-width: 420px;
+            background: #111827;
+            color: white;
+            padding: 16px 18px;
+            border-radius: 14px;
+            box-shadow: 0 10px 25px rgba(0,0,0,.25);
+            z-index: 9999;
+            animation: slideUp .3s ease-out;
+        }
+        
+        .alerta-info { border-left: 6px solid #3b82f6; }
+        .alerta-warning { border-left: 6px solid #f59e0b; }
+        .alerta-error { border-left: 6px solid #ef4444; }
+        
+        .alerta-fechar {
+            position: absolute;
+            top: 8px;
+            right: 12px;
+            cursor: pointer;
+            font-weight: bold;
+            opacity: .7;
+        }
+        .alerta-fechar:hover { opacity: 1; }
+        
+        @keyframes slideUp {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        </style>
+        """, unsafe_allow_html=True)
+
+        alertas = gerar_alertas_investidor(linha)
+        
+        for i, (tipo, mensagem) in enumerate(alertas):
+            key = f"alerta_{nome}_{i}"
+        
+            if key not in st.session_state:
+                st.session_state[key] = True
+        
+            if st.session_state[key]:
+                st.markdown(f"""
+                <div class="alerta-flutuante alerta-{tipo}">
+                    <div class="alerta-fechar"
+                         onclick="document.getElementById('{key}').style.display='none'">
+                        ✕
+                    </div>
+                    <div id="{key}">
+                        {mensagem}
+                    </div>
+                </div>
+                """, unsafe_allow_html=True)
+        
+
         col1, col2, col3 = st.columns([3, 3, 2])
             
         # -------------------------
