@@ -468,7 +468,14 @@ with aba_dashboard:
         with col3:
             st.markdown("##### 🖼️ Foto")
             if linha["Foto"]:
-                st.image(linha["Foto"], width=160)
+                st.markdown(
+                    f"""
+                    <div style="display:flex; justify-content:center;">
+                        <img src="{linha['Foto']}" width="160">
+                    </div>
+                    """,
+                    unsafe_allow_html=True
+                )
             else:
                 st.info("Sem foto")
     
