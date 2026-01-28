@@ -345,37 +345,37 @@ with aba_dashboard:
 
         col1, col2, col3 = st.columns([3, 3, 2])
     
-        # --------------------------------------------------
-        # CONSULTA INDIVIDUAL
-        # --------------------------------------------------
+    # --------------------------------------------------
+    # CONSULTA INDIVIDUAL
+    # --------------------------------------------------
     
-        st.subheader("🔎 Consulta individual do investidor")
+    st.subheader("🔎 Consulta individual do investidor")
         
-        df_consulta = df.fillna("")
-        lista_nomes = sorted(df_consulta["Nome"].unique())
+    df_consulta = df.fillna("")
+    lista_nomes = sorted(df_consulta["Nome"].unique())
         
-        c_busca, c_limpar = st.columns([5, 1])
+    c_busca, c_limpar = st.columns([5, 1])
         
-        with c_busca:
-            nome = st.selectbox(
-                "Selecione o investidor",
-                ["Selecione um investidor..."] + lista_nomes,
-                key="investidor_selecionado",
-                label_visibility="collapsed"
-            )
+    with c_busca:
+        nome = st.selectbox(
+            "Selecione o investidor",
+            ["Selecione um investidor..."] + lista_nomes,
+            key="investidor_selecionado",
+            label_visibility="collapsed"
+        )
     
-        if nome and nome != "Selecione um investidor...":
-            modal_consulta_investidor(df_consulta, nome)
+    if nome and nome != "Selecione um investidor...":
+        modal_consulta_investidor(df_consulta, nome)
     
-        if nome == "Selecione um investidor...":
-            nome = ""
+    if nome == "Selecione um investidor...":
+        nome = ""
         
-        with c_limpar:
-            st.markdown("<br>", unsafe_allow_html=True)
-            st.button(
-                "Limpar",
-                on_click=limpar_investidor
-            )
+    with c_limpar:
+        st.markdown("<br>", unsafe_allow_html=True)
+        st.button(
+            "Limpar",
+             on_click=limpar_investidor
+        )
             
         
             # -------------------------
