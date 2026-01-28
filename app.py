@@ -100,15 +100,16 @@ if "mostrar_modal" not in st.session_state:
 st.markdown(
     """
     <style>
-    /* Modal do st.dialog mais largo (modo paisagem) */
-    div[data-testid="stDialog"] > div {
-        width: 95vw !important;      /* quase tela inteira */
+    /* Apenas o modal que contém a classe modal-consulta-investidor */
+    div[data-testid="stDialog"]:has(.modal-consulta-investidor) > div {
+        width: 95vw !important;
         max-width: 95vw !important;
     }
     </style>
     """,
     unsafe_allow_html=True
 )
+
 
 # --------------------------------------------------
 # CONFIGURAÇÃO DA PÁGINA
