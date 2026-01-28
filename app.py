@@ -499,17 +499,21 @@ with aba_dashboard:
         linha = df_consulta[df_consulta["Nome"] == nome].iloc[0]
         st.markdown("""
         <style>
-        .alerta-flutuante {
+        .alerta-wrapper {
             position: fixed;
             bottom: 20px;
             right: 20px;
+            z-index: 9999;
+        }
+        
+        .alerta-flutuante {
+            position: relative;
             max-width: 420px;
             background: #111827;
             color: white;
             padding: 16px 18px;
             border-radius: 14px;
             box-shadow: 0 10px 25px rgba(0,0,0,.25);
-            z-index: 9999;
             animation: slideUp .3s ease-out;
         }
         
@@ -519,12 +523,13 @@ with aba_dashboard:
         
         .alerta-fechar {
             position: absolute;
-            top: 8px;
-            right: 12px;
+            top: 6px;
+            right: 10px;
             cursor: pointer;
             font-weight: bold;
             opacity: .7;
         }
+        
         .alerta-fechar:hover { opacity: 1; }
         
         @keyframes slideUp {
@@ -533,6 +538,7 @@ with aba_dashboard:
         }
         </style>
         """, unsafe_allow_html=True)
+
 
         alertas = gerar_alertas_investidor(linha)
         
@@ -543,22 +549,27 @@ with aba_dashboard:
                 st.session_state[key] = True
         
             if st.session_state[key]:
-                col_alerta, col_fechar = st.columns([10, 1])
-        
-                with col_alerta:
-                    st.markdown(
-                        f"""
+                st.markdown(
+                    f"""
+                    <div class="alerta-wrapper">
                         <div class="alerta-flutuante alerta-{tipo}">
                             {mensagem}
                         </div>
-                        """,
+                    </div>
+                    """,
+                    unsafe_allow_html=True
+                )
+        
+                # botão invisível, mas funcional
+                with st.container():
+                    st.markdown(
+                        f"<div class='alerta-fechar-btn'>",
                         unsafe_allow_html=True
                     )
-        
-                with col_fechar:
                     if st.button("✕", key=f"btn_{key}"):
                         st.session_state[key] = False
                         st.rerun()
+                    st.markdown("</div>", unsafe_allow_html=True)
      
         col1, col2, col3 = st.columns([3, 3, 2])
             
