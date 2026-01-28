@@ -94,6 +94,109 @@ def gerar_hash_senha(senha):
         bcrypt.gensalt()
     ).decode("utf-8")
 
+def gerar_alertas_investidor(linha):
+    alertas = []
+    hoje = pd.Timestamp.today().normalize()
+
+    # -------------------------
+    # ALERTA 1 — Plano de saúde / dental
+    # -------------------------
+    status = linha.get("Situação no plano", "")
+    data_docs = pd.to_datetime(linha.get("Data limite docs", ""), errors="coerce")
+    data_dbl = pd.to_datetime(linha.get("Data envio DBL", ""), errors="coerce")
+
+    if status == "Pendente" and pd.notna(data_docs):
+        dias = (data_docs - hoje).days
+
+        if dias < 0:
+            alertas.append(("error",
+                "Plano de saúde e dental 🤕<br>"
+                "Solicitação de documentação em atraso. Verificar com urgência!"
+            ))
+        elif dias == 0:
+            alertas.append(("warning",
+                "Plano de saúde e dental ❤️‍🩹<br>"
+                "Hoje é a data limite para solicitar a documentação!"
+            ))
+        elif dias <= 15:
+            alertas.append(("info",
+                f"Plano de saúde e dental ❤️‍🩹<br>"
+                f"Faltam {dias} dias para solicitar a documentação ao investidor"
+            ))
+
+    if status == "Aguardando docs" and pd.notna(data_dbl):
+        dias = (data_dbl - hoje).days
+
+        if dias < 0:
+            alertas.append(("error",
+                "Plano de saúde e dental 🤕<br>"
+                "Envio à DBL em atraso. Verificar com urgência!"
+            ))
+        elif dias == 0:
+            alertas.append(("warning",
+                "Plano de saúde e dental ❤️‍🩹<br>"
+                "Hoje é a data limite para enviar a solicitação à DBL"
+            ))
+        elif dias <= 15:
+            alertas.append(("info",
+                f"Plano de saúde e dental ❤️‍🩹<br>"
+                f"Faltam {dias} dias para enviar à DBL"
+            ))
+
+    if status == "Aguardando DBL":
+        alertas.append(("info",
+            "Plano de saúde e dental quase prontos! 🤩<br>"
+            "Acompanhar movimentação no portal EB"
+        ))
+
+    # -------------------------
+    # ALERTA 2 — Aniversário
+    # -------------------------
+    nascimento = pd.to_datetime(linha.get("Data de nascimento", ""), errors="coerce")
+
+    if pd.notna(nascimento):
+        if nascimento.month == hoje.month:
+            if nascimento.day == hoje.day:
+                alertas.append(("info",
+                    "Lembrete de Aniversário! 🎉<br>"
+                    "HOJE é aniversário do investidor!!"
+                ))
+            else:
+                alertas.append(("info",
+                    "Lembrete de Aniversário! 🎉<br>"
+                    "Este investidor faz aniversário neste mês"
+                ))
+
+    # -------------------------
+    # ALERTA 3 — Contrato
+    # -------------------------
+    fim_contrato = pd.to_datetime(linha.get("Térm previsto", ""), errors="coerce")
+
+    if pd.notna(fim_contrato):
+        dias = (fim_contrato - hoje).days
+
+        if dias < 0:
+            alertas.append(("error",
+                "Contrato vencido! 🚨<br>"
+                "Verificar com urgência!"
+            ))
+        elif dias <= 30:
+            alertas.append(("warning",
+                f"Alerta! ⚠️<br>"
+                f"O contrato se encerra em {dias} dia(s)."
+            ))
+
+    # -------------------------
+    # ALERTA 4 — MEI
+    # -------------------------
+    if linha.get("Modalidade PJ", "") == "MEI":
+        alertas.append(("warning",
+            "Atenção! ⚠️<br>"
+            "Investidor ainda se encontra na modalidade MEI 😬"
+        ))
+
+    return alertas
+
 if "mostrar_modal" not in st.session_state:
     st.session_state.mostrar_modal = False
 
@@ -112,6 +215,36 @@ div[role="dialog"]:has(.modal-investidor) > div {
 </style>
 """, unsafe_allow_html=True)
 
+# alerta 
+st.markdown("""
+<style>
+.alerta-flutuante {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 380px;
+    padding: 16px;
+    background-color: #1f2937;
+    color: white;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+    z-index: 9999;
+    font-size: 14px;
+}
+
+.alerta-warning { border-left: 6px solid #facc15; }
+.alerta-error { border-left: 6px solid #ef4444; }
+.alerta-info { border-left: 6px solid #38bdf8; }
+
+.alerta-fechar {
+    position: absolute;
+    top: 6px;
+    right: 10px;
+    cursor: pointer;
+    font-size: 16px;
+}
+</style>
+""", unsafe_allow_html=True)
 
 # --------------------------------------------------
 # CONFIGURAÇÃO DA PÁGINA
