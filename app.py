@@ -94,6 +94,9 @@ def gerar_hash_senha(senha):
         bcrypt.gensalt()
     ).decode("utf-8")
 
+if "mostrar_modal" not in st.session_state:
+    st.session_state.mostrar_modal = False
+
 # --------------------------------------------------
 # CONFIGURAÇÃO DA PÁGINA
 # --------------------------------------------------
@@ -354,7 +357,10 @@ with aba_dashboard:
             key="investidor_selecionado",
             label_visibility="collapsed"
         )
-    
+
+    if nome and nome != "Selecione um investidor...":
+        st.session_state.mostrar_modal = True
+
     if nome == "Selecione um investidor...":
         nome = ""
     
@@ -376,7 +382,7 @@ with aba_dashboard:
     
     
     
-    if nome:
+    if st.session_state.mostrar_modal and nome:
         linha = df_consulta[df_consulta["Nome"] == nome].iloc[0]
     
         col1, col2, col3 = st.columns([3, 3, 2])
@@ -505,6 +511,14 @@ with aba_dashboard:
     
             st.markdown("##### 🔗 Link")
             if linha["Link Drive"]: st.link_button("Abrir Drive", linha["Link Drive"])
+    
+        st.markdown("---")
+    
+        if st.button("❌ Fechar"):
+            st.session_state.mostrar_modal = False
+            st.session_state.investidor_selecionado = ""
+            st.rerun()
+
     
     # --------------------------------------------------
     # FORMAT TABELA
