@@ -100,16 +100,24 @@ if "mostrar_modal" not in st.session_state:
 st.markdown(
     """
     <style>
-    /* Apenas o modal que contém a classe modal-consulta-investidor */
-    div[data-testid="stDialog"]:has(.modal-consulta-investidor) > div {
+    /* Modal da consulta individual — largura e altura grandes */
+    div[data-testid="stDialog"]:has(.modal-consulta-investidor)
+    div[data-testid="stDialogContent"] {
         width: 95vw !important;
         max-width: 95vw !important;
+        height: 90vh !important;
+        max-height: 90vh !important;
+    }
+
+    /* Scroll interno bonito */
+    div[data-testid="stDialog"]:has(.modal-consulta-investidor)
+    div[data-testid="stDialogContent"] {
+        overflow-y: auto;
     }
     </style>
     """,
     unsafe_allow_html=True
 )
-
 
 # --------------------------------------------------
 # CONFIGURAÇÃO DA PÁGINA
