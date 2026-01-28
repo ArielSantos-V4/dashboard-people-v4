@@ -1374,6 +1374,7 @@ with aba_relatorios:
                     .replace(".", "")
                     .replace("-", "")
                     .replace("/", "")
+                    .zfill(11)   # 👈 garante 11 dígitos, incluindo zeros à esquerda
                 )
        
                 email_pessoal = dados.get("E-mail pessoal", "")
