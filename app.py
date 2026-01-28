@@ -468,7 +468,7 @@ with aba_dashboard:
         with col3:
             st.markdown("##### 🖼️ Foto")
             if linha["Foto"]:
-                st.image(linha["Foto"], use_container_width=True)
+                st.image(linha["Foto"], width=160)
             else:
                 st.info("Sem foto")
     
@@ -478,14 +478,16 @@ with aba_dashboard:
     
             carteira_med = str(linha["Carteirinha médico"]).replace(".0", "")
             carteira_odo = str(linha["Carteirinha odonto"]).replace(".0", "")
-    
-            st.text_input("Plano médico", linha["Operadora Médico"], disabled=True)
-            st.text_input("Carteirinha médico", carteira_med, disabled=True)
+
+            m1, m2 = st.columns(2)
+            m1.text_input("Plano médico", linha["Operadora Médico"], disabled=True)
+            m2.text_input("Carteirinha médico", carteira_med, disabled=True)
     
             st.markdown('<div class="espaco-beneficio"></div>', unsafe_allow_html=True)
     
-            st.text_input("Plano odonto", linha["Operadora Odonto"], disabled=True)
-            st.text_input("Carteirinha odonto", carteira_odo, disabled=True)
+            o1, o2 = st.columns(2)
+            o1.text_input("Plano odonto", linha["Operadora Odonto"], disabled=True)
+            o2.text_input("Carteirinha odonto", carteira_odo, disabled=True)
     
     
             st.markdown("##### 🔗 Link")
