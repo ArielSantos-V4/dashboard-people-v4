@@ -94,6 +94,51 @@ def gerar_hash_senha(senha):
         bcrypt.gensalt()
     ).decode("utf-8")
 
+import streamlit as st
+
+# ==============================
+# TEMA (TESTE)
+# ==============================
+if "tema" not in st.session_state:
+    st.session_state.tema = "escuro"
+
+col1, col2 = st.columns(2)
+
+with col1:
+    if st.button("🌙 Modo Escuro"):
+        st.session_state.tema = "escuro"
+
+with col2:
+    if st.button("☀️ Modo Claro"):
+        st.session_state.tema = "claro"
+
+# Cores simples (sem código estranho)
+if st.session_state.tema == "escuro":
+    FUNDO = "#0E1117"
+    TEXTO = "#FFFFFF"
+    CARD = "#1C1F26"
+else:
+    FUNDO = "#FFFFFF"
+    TEXTO = "#000000"
+    CARD = "#F3F3F3"
+
+# Aplica as cores
+st.markdown(f"""
+<style>
+.stApp {{
+    background-color: {FUNDO};
+    color: {TEXTO};
+}}
+.card {{
+    background-color: {CARD};
+    padding: 16px;
+    border-radius: 10px;
+}}
+</style>
+""", unsafe_allow_html=True)
+
+st.markdown('<div class="card">TESTE DE CARD</div>', unsafe_allow_html=True)
+
 # --------------------------------------------------
 # CONFIGURAÇÃO DA PÁGINA
 # --------------------------------------------------
