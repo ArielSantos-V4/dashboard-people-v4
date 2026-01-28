@@ -97,27 +97,21 @@ def gerar_hash_senha(senha):
 if "mostrar_modal" not in st.session_state:
     st.session_state.mostrar_modal = False
 
-st.markdown(
-    """
-    <style>
-    /* Modal da consulta individual — largura e altura grandes */
-    div[data-testid="stDialog"]:has(.modal-consulta-investidor)
-    div[data-testid="stDialogContent"] {
-        width: 95vw !important;
-        max-width: 95vw !important;
-        height: 90vh !important;
-        max-height: 90vh !important;
-    }
+st.markdown("""
+<style>
+/* Modal específico da consulta individual */
+div[role="dialog"]:has(.modal-investidor) {
+    width: 95vw !important;
+    max-width: 95vw !important;
+}
 
-    /* Scroll interno bonito */
-    div[data-testid="stDialog"]:has(.modal-consulta-investidor)
-    div[data-testid="stDialogContent"] {
-        overflow-y: auto;
-    }
-    </style>
-    """,
-    unsafe_allow_html=True
-)
+/* Altura maior (opcional) */
+div[role="dialog"]:has(.modal-investidor) > div {
+    max-height: 90vh !important;
+}
+</style>
+""", unsafe_allow_html=True)
+
 
 # --------------------------------------------------
 # CONFIGURAÇÃO DA PÁGINA
@@ -367,14 +361,11 @@ with aba_dashboard:
     
     @st.dialog("🔎 Consulta individual do investidor")
     def modal_consulta_investidor(df_consulta, nome):
-        st.markdown(
-            '<div class="modal-consulta-investidor"></div>',
-            unsafe_allow_html=True
-        )
+        st.markdown('<div class="modal-investidor">', unsafe_allow_html=True)
 
         linha = df_consulta[df_consulta["Nome"] == nome].iloc[0]
         col1, col2, col3 = st.columns([3, 3, 2])
-          
+            
         # -------------------------
         # COLUNA 1 — PROFISSIONAL
         # -------------------------
@@ -499,7 +490,9 @@ with aba_dashboard:
     
             st.markdown("##### 🔗 Link")
             if linha["Link Drive"]: st.link_button("Abrir Drive", linha["Link Drive"])
-                
+        
+        st.markdown('</div>', unsafe_allow_html=True)        
+    
     st.subheader("🔎 Consulta individual do investidor")
         
     df_consulta = df.fillna("")
