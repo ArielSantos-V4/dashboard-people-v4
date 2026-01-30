@@ -566,8 +566,8 @@ with aba_dashboard:
                 )
 
                 if st.button("fechar_alerta", key=f"fechar_{nome}_{i}", help="Fechar alerta"):
-                st.session_state[key] = False
-                st.rerun()
+                    st.session_state[key] = False
+                    st.rerun()
         
                 # botão invisível, mas funcional
                 with st.container():
