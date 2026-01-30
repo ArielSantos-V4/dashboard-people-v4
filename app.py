@@ -94,12 +94,12 @@ def gerar_hash_senha(senha):
         bcrypt.gensalt()
     ).decode("utf-8")
 
+if "abrir_modal_investidor" not in st.session_state:
+    st.session_state.abrir_modal_investidor = False
+
 def gerar_alertas_investidor(linha):
     alertas = []
     hoje = pd.Timestamp.today().normalize()
-
-if "abrir_modal_investidor" not in st.session_state:
-    st.session_state.abrir_modal_investidor = False
 
     # -------------------------
     # ALERTA 1 — Plano de saúde / dental
