@@ -1937,7 +1937,7 @@ with aba_benefícios:
 
     with col_acoes:
         # ==============================
-        # AÇÃO — GERAR SUBFATURA
+        # AÇÃO — INCLUSÃO SUBFATURA
         # ==============================
         
         from docx import Document
@@ -1978,8 +1978,8 @@ with aba_benefícios:
         # -------- BOTÃO PRINCIPAL --------
         st.markdown("### ⚙️ Ações")
 
-        @st.dialog("📄 Gerar Subfatura")
-        def modal_subfatura():
+        @st.dialog("📄 Gerar Inclusão Subfatura")
+        def modal_inclusao_subfatura():
         
             nomes = sorted(df["Nome"].dropna().unique())
             nome_escolhido = st.selectbox("Selecione o investidor", nomes)
@@ -2041,7 +2041,7 @@ with aba_benefícios:
                 cpf_limpo = re.sub(r"\D", "", cpf)
         
                 nome_arquivo = (
-                    f"{nome_escolhido} __ {cpf_limpo} __ {email_arquivo} __ Subfatura.docx"
+                    f"{nome_escolhido} __ {cpf_limpo} __ {email_arquivo} __ Inclusão Subfatura.docx"
                 )
         
                 doc.save(nome_arquivo)
@@ -2066,22 +2066,21 @@ with aba_benefícios:
                     )
 
         
-                st.success("Subfatura gerada com sucesso ✅")
+                st.success("Inclusão Subfatura gerada com sucesso ✅")
                 
-        if st.button("📄 Gerar Subfatura", use_container_width=True):
-            modal_subfatura()
+        if st.button("📄 Gerar Inclusão Subfatura", use_container_width=True):
+            modal_inclusao_subfatura()
        
         # ==============================
         # AÇÃO — GERAR TERMO DE SUBESTIPULANTE
         # ==============================
         st.markdown("---")
-        if st.button("📄 Gerar Termo de Subestipulante", use_container_width=True):
-            st.session_state["abrir_termo_subestipulante"] = not st.session_state.get(
-                "abrir_termo_subestipulante", False
-            )
-        
-        if st.session_state.get("abrir_termo_subestipulante", False):
 
+        @st.dialog("📄 Gerar Termo de Subestipulante")
+        def modal_subestipulante():
+
+            st.markdown('<div class="modal_subestipulante">', unsafe_allow_html=True)
+            
             st.markdown("## 📄 Gerar Termo de Subestipulante")
         
             nomes = sorted(df["Nome"].dropna().unique())
@@ -2163,6 +2162,10 @@ with aba_benefícios:
                     )
         
                 st.success("Termo de Subestipulante gerado com sucesso ✅")
+            st.markdown('</div>', unsafe_allow_html=True)
+
+        if st.button("📄 Gerar Termo de Subestipulante"):
+            modal_subestipulante()
 
         # ==============================
         # AÇÃO — GERAR TERMO DE NÃO ADESÃO
