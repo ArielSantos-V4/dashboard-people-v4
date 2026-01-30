@@ -1445,7 +1445,7 @@ with aba_relatorios:
 
             st.markdown('</div>', unsafe_allow_html=True)
 
-        if st.button("Abrir Modal Comum"):
+        if st.button("📄 Demissão por comum acordo"):
             modal_comum()
 
         @st.dialog("🚌 Atualização do Vale Transporte")
