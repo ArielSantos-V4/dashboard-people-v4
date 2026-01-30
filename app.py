@@ -98,6 +98,9 @@ def gerar_alertas_investidor(linha):
     alertas = []
     hoje = pd.Timestamp.today().normalize()
 
+if "abrir_modal_investidor" not in st.session_state:
+    st.session_state.abrir_modal_investidor = False
+
     # -------------------------
     # ALERTA 1 — Plano de saúde / dental
     # -------------------------
@@ -714,7 +717,7 @@ with aba_dashboard:
     df_consulta = df.fillna("")
     lista_nomes = sorted(df_consulta["Nome"].unique())
         
-    c_busca, c_limpar = st.columns([5, 1])
+    c_busca, c_abrir, c_limpar = st.columns([4, 1, 1])
         
     with c_busca:
         nome = st.selectbox(
@@ -724,18 +727,18 @@ with aba_dashboard:
             label_visibility="collapsed"
         )
     
-    if nome and nome != "Selecione um investidor...":
-        modal_consulta_investidor(df_consulta, nome)
+    with c_abrir:
+        st.markdown("<br>", unsafe_allow_html=True)
+        if st.button("🔍 Consultar"):
+            if nome and nome != "Selecione um investidor...":
+                st.session_state.abrir_modal_investidor = True
     
-    if nome == "Selecione um investidor...":
-        nome = ""
-        
     with c_limpar:
         st.markdown("<br>", unsafe_allow_html=True)
-        st.button(
-            "Limpar",
-             on_click=limpar_investidor
-        )
+        if st.button("Limpar"):
+            limpar_investidor()
+            st.session_state.abrir_modal_investidor = False
+
         
     # --------------------------------------------------
     # FORMAT TABELA
