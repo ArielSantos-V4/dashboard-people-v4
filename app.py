@@ -477,8 +477,6 @@ with aba_dashboard:
         div[role="dialog"]:has(.modal-investidor) > div {
             padding-top: 0px !important;
         }
-        </style>
-        """, unsafe_allow_html=True)
     
         /* REMOVE COMPLETAMENTE O HEADER DO st.dialog */
         div[role="dialog"] > div > header {
