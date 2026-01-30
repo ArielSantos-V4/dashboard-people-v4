@@ -1367,32 +1367,34 @@ with aba_relatorios:
         # --------------------------------------------------
         def substituir_texto_docx(doc, mapa):
             """
-            Substitui chaves por valores em todo o documento:
-            - Parágrafos
-            - Tabelas
-            - Cabeçalho
-            - Rodapé
+            Substitui chaves por valores em todo o documento,
+            unindo runs para garantir que campos divididos sejam substituídos.
             """
         
             def substituir_em_paragrafo(paragrafo, mapa):
-                # Para cada run do parágrafo
+                # Junta todo o texto do parágrafo
+                texto_completo = "".join(run.text for run in paragrafo.runs)
+                for chave, valor in mapa.items():
+                    if chave in texto_completo:
+                        texto_completo = texto_completo.replace(chave, str(valor))
+                # Remove runs antigas
                 for run in paragrafo.runs:
-                    for chave, valor in mapa.items():
-                        if chave in run.text:
-                            run.text = run.text.replace(chave, str(valor))
+                    run.text = ""
+                # Adiciona texto atualizado como um único run
+                paragrafo.add_run(texto_completo)
         
-            # 1️⃣ Parágrafos principais
+            # Parágrafos principais
             for p in doc.paragraphs:
                 substituir_em_paragrafo(p, mapa)
         
-            # 2️⃣ Tabelas
+            # Tabelas
             for tabela in doc.tables:
                 for linha in tabela.rows:
                     for celula in linha.cells:
                         for p in celula.paragraphs:
                             substituir_em_paragrafo(p, mapa)
         
-            # 3️⃣ Cabeçalhos e rodapés
+            # Cabeçalhos e rodapés
             for section in doc.sections:
                 for p in section.header.paragraphs:
                     substituir_em_paragrafo(p, mapa)
