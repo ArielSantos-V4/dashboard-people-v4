@@ -2080,9 +2080,7 @@ with aba_benefícios:
         def modal_subestipulante():
 
             st.markdown('<div class="modal_subestipulante">', unsafe_allow_html=True)
-            
-            st.markdown("## 📄 Gerar Termo de Subestipulante")
-        
+       
             nomes = sorted(df["Nome"].dropna().unique())
             nome_escolhido = st.selectbox(
                 "Selecione o investidor",
