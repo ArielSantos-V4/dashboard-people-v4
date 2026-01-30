@@ -682,20 +682,7 @@ with aba_dashboard:
     
         with c3:
             limpar = st.form_submit_button("Limpar")
-    
-        if consultar:
-            if nome and nome != "Selecione um investidor...":
-                st.session_state.abrir_modal_investidor = True
-    
-        if limpar:
-            limpar_investidor()
-            st.session_state.abrir_modal_investidor = False
-
-
-    if st.session_state.abrir_modal_investidor:
-        modal_consulta_investidor(df_consulta, nome)
-        st.session_state.abrir_modal_investidor = False
-        
+            
     # --------------------------------------------------
     # FORMAT TABELA
     # --------------------------------------------------
