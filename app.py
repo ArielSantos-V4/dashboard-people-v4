@@ -1359,7 +1359,7 @@ with aba_relatorios:
             modal_titulo_doc()
         
         
-        if st.button("📝 Título de doc para automação"):
+        if st.button("📝 Título de doc para automação", use_container_width=True):
             abrir_modal_titulo()
 
         # --------------------------------------------------
@@ -1463,7 +1463,7 @@ with aba_relatorios:
 
             st.markdown('</div>', unsafe_allow_html=True)
 
-        if st.button("📄 Demissão por comum acordo"):
+        if st.button("📄 Demissão por comum acordo", use_container_width=True):
             modal_comum()
 
         @st.dialog("🚌 Atualização do Vale Transporte")
@@ -1652,7 +1652,7 @@ with aba_relatorios:
                             use_container_width=True
                         )
                         
-        if st.button("🚌 Atualização do Vale Transporte"):
+        if st.button("🚌 Atualização do Vale Transporte", use_container_width=True):
             modal_vale_transporte(df_pessoas=df)
 
 # --------------------------------------------------
