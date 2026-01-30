@@ -529,11 +529,14 @@ with aba_dashboard:
             top: 6px;
             right: 10px;
             cursor: pointer;
+            font-size: 16px;
             font-weight: bold;
-            opacity: .7;
+            opacity: 0.7;
         }
         
-        .alerta-fechar:hover { opacity: 1; }
+        .alerta-fechar:hover {
+            opacity: 1;
+        }
         
         @keyframes slideUp {
             from { transform: translateY(20px); opacity: 0; }
@@ -554,14 +557,17 @@ with aba_dashboard:
             if st.session_state[key]:
                 st.markdown(
                     f"""
-                    <div class="alerta-wrapper">
-                        <div class="alerta-flutuante alerta-{tipo}">
-                            {mensagem}
-                        </div>
+                    <div class="alerta-flutuante alerta-{tipo}">
+                        <div class="alerta-fechar">✕</div>
+                        {mensagem}
                     </div>
                     """,
                     unsafe_allow_html=True
                 )
+
+                if st.button("fechar_alerta", key=f"fechar_{nome}_{i}", help="Fechar alerta"):
+                st.session_state[key] = False
+                st.rerun()
         
                 # botão invisível, mas funcional
                 with st.container():
