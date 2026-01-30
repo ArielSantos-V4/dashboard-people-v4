@@ -718,7 +718,7 @@ with aba_dashboard:
     lista_nomes = sorted(df_consulta["Nome"].unique())
         
     with st.form("form_consulta_investidor", clear_on_submit=False):
-        c1, c2, c3 = st.columns([6, 2, 1])
+        c1, c2, c3 = st.columns([7, 1, 1])
     
         with c1:
             nome = st.selectbox(
