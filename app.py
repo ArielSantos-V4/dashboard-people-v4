@@ -487,7 +487,7 @@ with aba_dashboard:
     
     /* Remove o espaço que o header deixava */
     div[role="dialog"] > div {
-        padding-top: 0px !important;
+        padding-top: 1px !important;
     }
     </style>
     """, unsafe_allow_html=True)
