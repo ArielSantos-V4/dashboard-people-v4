@@ -468,27 +468,27 @@ with aba_dashboard:
     # --------------------------------------------------
     st.markdown("""
     <style>
-    /* Remove header APENAS do modal da consulta individual */
-    div[role="dialog"]:has(.modal-investidor) > div > header {
-        display: none !important;
-    }
+        /* Remove header APENAS do modal da consulta individual */
+        div[role="dialog"]:has(.modal-investidor) > div > header {
+            display: none !important;
+        }
+        
+        /* Remove o espaço do header só nesse modal */
+        div[role="dialog"]:has(.modal-investidor) > div {
+            padding-top: 0px !important;
+        }
+        </style>
+        """, unsafe_allow_html=True)
     
-    /* Remove o espaço do header só nesse modal */
-    div[role="dialog"]:has(.modal-investidor) > div {
-        padding-top: 0px !important;
-    }
-    </style>
-    """, unsafe_allow_html=True)
-
-    /* REMOVE COMPLETAMENTE O HEADER DO st.dialog */
-    div[role="dialog"] > div > header {
-        display: none !important;
-    }
-    
-    /* Remove o espaço que o header deixava */
-    div[role="dialog"] > div {
-        padding-top: 1px !important;
-    }
+        /* REMOVE COMPLETAMENTE O HEADER DO st.dialog */
+        div[role="dialog"] > div > header {
+            display: none !important;
+        }
+        
+        /* Remove o espaço que o header deixava */
+        div[role="dialog"] > div {
+            padding-top: 1px !important;
+        }
     </style>
     """, unsafe_allow_html=True)
 
