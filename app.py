@@ -252,6 +252,20 @@ st.set_page_config(
     page_icon="LOGO VERMELHO.png"
 )
 
+st.markdown("""
+<style>
+/* REMOVE COMPLETAMENTE O HEADER DO st.dialog */
+div[role="dialog"] > div > header {
+    display: none !important;
+}
+
+/* Remove o espaço que o header deixava */
+div[role="dialog"] > div {
+    padding-top: 0px !important;
+}
+</style>
+""", unsafe_allow_html=True)
+
 # ==============================
 # LOGIN
 # ==============================
