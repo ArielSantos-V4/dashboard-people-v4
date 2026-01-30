@@ -94,9 +94,6 @@ def gerar_hash_senha(senha):
         bcrypt.gensalt()
     ).decode("utf-8")
 
-if "abrir_modal_investidor" not in st.session_state:
-    st.session_state.abrir_modal_investidor = False
-
 def gerar_alertas_investidor(linha):
     alertas = []
     hoje = pd.Timestamp.today().normalize()
@@ -418,15 +415,7 @@ with aba_dashboard:
     
     # 👇 AQUI É O LUGAR CERTO
     df = df.fillna("")
-        
-    # --------------------------------------------------
-    # BACKUP RAW (ANTES DE CONVERTER)
-    # --------------------------------------------------
-    df["Início na V4_raw"] = df["Início na V4"]
-    df["Data de nascimento_raw"] = df["Data de nascimento"]
-    df["Data do contrato_raw"] = df.iloc[:, 12]
-    df["Térm previsto_raw"] = df.iloc[:, 6]
-    
+            
     # --------------------------------------------------
     # CONVERSÃO CORRETA (DAYFIRST)
     # --------------------------------------------------
