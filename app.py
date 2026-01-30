@@ -740,7 +740,7 @@ with aba_dashboard:
             st.session_state.abrir_modal_investidor = False
 
     if st.session_state.abrir_modal_investidor:
-    modal_consulta_investidor(df_consulta, nome)
+        modal_consulta_investidor(df_consulta, nome)
         
     # --------------------------------------------------
     # FORMAT TABELA
