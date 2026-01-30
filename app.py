@@ -209,17 +209,6 @@ div[role="dialog"]:has(.modal-investidor) {
 div[role="dialog"]:has(.modal-investidor) > div {
     max-height: 90vh !important;
 }
-
-/* 🔥 REMOVE O ESPAÇO DO HEADER DO MODAL */
-div[role="dialog"] > div > div:first-child {
-    padding-top: 4px !important;
-    padding-bottom: 0px !important;
-    min-height: unset !important;
-}
-
-/* Remove respiro extra antes do conteúdo */
-div[role="dialog"] .modal-investidor {
-    margin-top: 0px !important;
     
 </style>
 """, unsafe_allow_html=True)
