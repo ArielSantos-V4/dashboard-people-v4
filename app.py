@@ -2160,7 +2160,7 @@ with aba_benefícios:
                 st.success("Termo de Subestipulante gerado com sucesso ✅")
             st.markdown('</div>', unsafe_allow_html=True)
 
-        if st.button("📄 Gerar Termo de Subestipulante"):
+        if st.button("📄 Gerar Termo de Subestipulante", use_container_width=True):
             modal_subestipulante()
 
         # ==============================
@@ -2245,5 +2245,5 @@ with aba_benefícios:
                 
             st.markdown('</div>', unsafe_allow_html=True)
         
-        if st.button("📄 Gerar Termo de Não Adesão"):
+        if st.button("📄 Gerar Termo de Não Adesão", use_container_width=True):
             modal_nao_adesao() 
