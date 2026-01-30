@@ -198,7 +198,18 @@ def gerar_alertas_investidor(linha):
     return alertas
 
 st.markdown("""
+<style>
+/* Modal específico da consulta individual */
+div[role="dialog"]:has(.modal-investidor) {
+    width: 95vw !important;
+    max-width: 95vw !important;
+}
 
+/* Altura maior (opcional) */
+div[role="dialog"]:has(.modal-investidor) > div {
+    max-height: 90vh !important;
+}
+    
 </style>
 """, unsafe_allow_html=True)
 
