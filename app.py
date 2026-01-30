@@ -200,9 +200,6 @@ def gerar_alertas_investidor(linha):
 
     return alertas
 
-if "mostrar_modal" not in st.session_state:
-    st.session_state.mostrar_modal = False
-
 st.markdown("""
 <style>
 /* Modal específico da consulta individual */
@@ -226,25 +223,23 @@ st.markdown("""
     bottom: 20px;
     right: 20px;
     width: 380px;
-    padding: 16px;
-    background-color: #1f2937;
+    padding: 16px 18px;
+    background: #111827;
     color: white;
-    border-radius: 12px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+    border-radius: 14px;
+    box-shadow: 0 10px 30px rgba(0,0,0,.35);
     z-index: 9999;
     font-size: 14px;
+    animation: slideUp .3s ease-out;
 }
 
-.alerta-warning { border-left: 6px solid #facc15; }
-.alerta-error { border-left: 6px solid #ef4444; }
-.alerta-info { border-left: 6px solid #38bdf8; }
+.alerta-warning { border-left: 6px solid #f59e0b; }
+.alerta-error   { border-left: 6px solid #ef4444; }
+.alerta-info    { border-left: 6px solid #3b82f6; }
 
-.alerta-fechar {
-    position: absolute;
-    top: 6px;
-    right: 10px;
-    cursor: pointer;
-    font-size: 16px;
+@keyframes slideUp {
+    from { transform: translateY(20px); opacity: 0; }
+    to   { transform: translateY(0); opacity: 1; }
 }
 </style>
 """, unsafe_allow_html=True)
@@ -371,9 +366,7 @@ with aba_dashboard:
     
     </style>
     """, unsafe_allow_html=True)
-    
-    st.cache_data.clear()
-       
+           
     # --------------------------------------------------
     # GOOGLE SHEETS
     # --------------------------------------------------
@@ -500,75 +493,29 @@ with aba_dashboard:
         st.markdown('<div class="modal-investidor">', unsafe_allow_html=True)
 
         linha = df_consulta[df_consulta["Nome"] == nome].iloc[0]
-        st.markdown("""
-        <style>
-        .alerta-wrapper {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            z-index: 9999;
-        }
-        
-        .alerta-flutuante {
-            position: relative;
-            max-width: 420px;
-            background: #111827;
-            color: white;
-            padding: 16px 18px;
-            border-radius: 14px;
-            box-shadow: 0 10px 25px rgba(0,0,0,.25);
-            animation: slideUp .3s ease-out;
-        }
-        
-        .alerta-info { border-left: 6px solid #3b82f6; }
-        .alerta-warning { border-left: 6px solid #f59e0b; }
-        .alerta-error { border-left: 6px solid #ef4444; }
-        
-        .alerta-fechar {
-            position: absolute;
-            top: 6px;
-            right: 10px;
-            cursor: pointer;
-            font-size: 16px;
-            font-weight: bold;
-            opacity: 0.7;
-        }
-        
-        .alerta-fechar:hover {
-            opacity: 1;
-        }
-        
-        @keyframes slideUp {
-            from { transform: translateY(20px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
-        }
-        </style>
-        """, unsafe_allow_html=True)
 
+        import time
 
         alertas = gerar_alertas_investidor(linha)
+        agora = time.time()
         
         for i, (tipo, mensagem) in enumerate(alertas):
-            key = f"alerta_{nome}_{i}"
+            key_time = f"alerta_time_{nome}_{i}"
         
-            if key not in st.session_state:
-                st.session_state[key] = True
+            # grava o horário da primeira exibição
+            if key_time not in st.session_state:
+                st.session_state[key_time] = agora
         
-            if st.session_state[key]:
+            # mostra só por 10 segundos
+            if agora - st.session_state[key_time] <= 10:
                 st.markdown(
                     f"""
                     <div class="alerta-flutuante alerta-{tipo}">
-                        <div class="alerta-fechar">✕</div>
                         {mensagem}
                     </div>
                     """,
                     unsafe_allow_html=True
                 )
-        
-                # botão invisível (lógica)
-                if st.button(" ", key=f"fechar_{key}"):
-                    st.session_state[key] = False
-                    st.rerun()
 
              
         col1, col2, col3 = st.columns([3, 3, 2])
