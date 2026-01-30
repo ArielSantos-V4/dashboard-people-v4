@@ -2169,10 +2169,8 @@ with aba_benefícios:
         @st.dialog("📄 Gerar Termo de Não Adesão")
         def modal_nao_adesao():
             
-            st.markdown('<div class="modal-exemplo">', unsafe_allow_html=True) 
-        
-            st.markdown("## 📄 Gerar Termo de Não Adesão")
-        
+            st.markdown('<div class="modal-nao-adesao">', unsafe_allow_html=True) 
+                
             nomes = sorted(df["Nome"].dropna().unique())
             nome_escolhido = st.selectbox(
                 "Selecione o investidor",
