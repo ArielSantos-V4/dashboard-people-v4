@@ -2247,5 +2247,5 @@ with aba_benefícios:
                 
             st.markdown('</div>', unsafe_allow_html=True)
         
-        if st.button("Abrir Modal Exemplo"):
+        if st.button("📄 Gerar Termo de Não Adesão"):
             modal_nao_adesao() 
