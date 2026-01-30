@@ -15,9 +15,6 @@ if "authenticated" not in st.session_state:
 if "investidor_selecionado" not in st.session_state:
     st.session_state.investidor_selecionado = ""
 
-if st.button("📄 Gerar Subfatura", use_container_width=True):
-    modal_subfatura()
-
 def limpar_investidor():
     st.session_state.investidor_selecionado = ""
 
@@ -2053,7 +2050,12 @@ with aba_benefícios:
 
         
                 st.success("Subfatura gerada com sucesso ✅")
-                
+        
+        st.markdown("### ⚙️ Ações")
+        
+        if st.button("📄 Gerar Subfatura", use_container_width=True):
+            modal_subfatura()
+       
         # ==============================
         # AÇÃO — GERAR TERMO DE SUBESTIPULANTE
         # ==============================
