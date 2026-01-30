@@ -15,8 +15,8 @@ if "authenticated" not in st.session_state:
 if "investidor_selecionado" not in st.session_state:
     st.session_state.investidor_selecionado = ""
 
-if "abrir_subfatura" not in st.session_state:
-    st.session_state["abrir_subfatura"] = False
+if st.button("📄 Gerar Subfatura", use_container_width=True):
+    modal_subfatura()
 
 def limpar_investidor():
     st.session_state.investidor_selecionado = ""
@@ -1964,106 +1964,95 @@ with aba_benefícios:
         # -------- BOTÃO PRINCIPAL --------
         st.markdown("### ⚙️ Ações")
 
-        if st.button("📄 Gerar Subfatura", use_container_width=True):
-            st.session_state["abrir_subfatura"] = True
-
-        if st.session_state["abrir_subfatura"]:
-
-            if st.button("❌ Fechar"):
-                st.session_state["abrir_subfatura"] = False
-                st.stop()
+        @st.dialog("📄 Gerar Subfatura")
+        def modal_subfatura():
         
-            st.markdown("## 📄 Gerar Subfatura")
-    
-            if st.session_state["abrir_subfatura"]:
-                st.markdown("## 📄 Gerar Subfatura")
-            
-                nomes = sorted(df["Nome"].dropna().unique())
-                nome_escolhido = st.selectbox("Selecione o investidor", nomes)
-            
-                data_vigencia = st.date_input(
-                    "Data de início da vigência",
-                    format="DD/MM/YYYY"
-                )
-            
-                st.markdown("<br>", unsafe_allow_html=True)
-            
-                col1, col2, col3 = st.columns([1, 2, 1])
-                with col2:
-                    gerar = st.button("✅ Gerar", use_container_width=True)
-            
-                if gerar:
-            
-                    dados = df[df["Nome"] == nome_escolhido].iloc[0]
-            
-                    razao_social = str(dados["Razão social"])
-                    cnpj = formatar_cnpj(dados["CNPJ"])
-                    cpf = normalizar_cpf(dados["CPF"])
-                    email_pessoal = str(dados["E-mail pessoal"])
-                    email_arquivo = email_para_nome_arquivo(email_pessoal)
-                    modelo_contrato = str(dados["Modelo de contrato"])
-            
-                    # -------- VALIDAÇÃO PJ --------
-                    if "PJ" not in modelo_contrato.upper():
-                        st.warning(
-                            f"⚠️ **{nome_escolhido}** não possui contrato PJ.\n\n"
-                            f"Modelo atual: **{modelo_contrato}**"
-                        )
-            
-                    # -------- ABRE TEMPLATE --------
-                    doc = Document("Subfatura.docx")
-            
-                    vigencia_formatada = data_vigencia.strftime("%d/%m/%Y")
-            
-                    hoje = date.today()
-                    data_assinatura = f"{hoje.day} de {MESES_PT[hoje.month]} de {hoje.year}"
-            
-                    mapa = {
-                        "{RAZAO_SOCIAL}": razao_social,
-                        "{CNPJ}": cnpj,
-                        "{VIGENCIA}": vigencia_formatada,
-                        "{DATA}": data_assinatura
-                    }
-            
-                    substituir_texto(doc.paragraphs, mapa)
-            
-                    for table in doc.tables:
-                        for row in table.rows:
-                            for cell in row.cells:
-                                substituir_texto(cell.paragraphs, mapa)
-            
-                    for section in doc.sections:
-                        substituir_texto(section.header.paragraphs, mapa)
-            
-                    cpf_limpo = re.sub(r"\D", "", cpf)
-            
-                    nome_arquivo = (
-                        f"{nome_escolhido} __ {cpf_limpo} __ {email_arquivo} __ Subfatura.docx"
+            nomes = sorted(df["Nome"].dropna().unique())
+            nome_escolhido = st.selectbox("Selecione o investidor", nomes)
+        
+            data_vigencia = st.date_input(
+                "Data de início da vigência",
+                format="DD/MM/YYYY"
+            )
+        
+            st.markdown("<br>", unsafe_allow_html=True)
+        
+            col1, col2, col3 = st.columns([1, 2, 1])
+            with col2:
+                gerar = st.button("✅ Gerar", use_container_width=True)
+        
+            if gerar:
+        
+                dados = df[df["Nome"] == nome_escolhido].iloc[0]
+        
+                razao_social = str(dados["Razão social"])
+                cnpj = formatar_cnpj(dados["CNPJ"])
+                cpf = normalizar_cpf(dados["CPF"])
+                email_pessoal = str(dados["E-mail pessoal"])
+                email_arquivo = email_para_nome_arquivo(email_pessoal)
+                modelo_contrato = str(dados["Modelo de contrato"])
+        
+                # -------- VALIDAÇÃO PJ --------
+                if "PJ" not in modelo_contrato.upper():
+                    st.warning(
+                        f"⚠️ **{nome_escolhido}** não possui contrato PJ.\n\n"
+                        f"Modelo atual: **{modelo_contrato}**"
                     )
-            
-                    doc.save(nome_arquivo)
-            
-                    col_btn1, col_btn2 = st.columns(2)
-    
-                    with col_btn1:
-                        with open(nome_arquivo, "rb") as f:
-                            st.download_button(
-                                "⬇️ Download",
-                                data=f,
-                                file_name=nome_arquivo,
-                                mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-                                use_container_width=True
-                            )
-                    
-                    with col_btn2:
-                        st.link_button(
-                            "🔁 Converter PDF",
-                            "https://www.ilovepdf.com/pt/word_para_pdf",
+        
+                # -------- ABRE TEMPLATE --------
+                doc = Document("Subfatura.docx")
+        
+                vigencia_formatada = data_vigencia.strftime("%d/%m/%Y")
+        
+                hoje = date.today()
+                data_assinatura = f"{hoje.day} de {MESES_PT[hoje.month]} de {hoje.year}"
+        
+                mapa = {
+                    "{RAZAO_SOCIAL}": razao_social,
+                    "{CNPJ}": cnpj,
+                    "{VIGENCIA}": vigencia_formatada,
+                    "{DATA}": data_assinatura
+                }
+        
+                substituir_texto(doc.paragraphs, mapa)
+        
+                for table in doc.tables:
+                    for row in table.rows:
+                        for cell in row.cells:
+                            substituir_texto(cell.paragraphs, mapa)
+        
+                for section in doc.sections:
+                    substituir_texto(section.header.paragraphs, mapa)
+        
+                cpf_limpo = re.sub(r"\D", "", cpf)
+        
+                nome_arquivo = (
+                    f"{nome_escolhido} __ {cpf_limpo} __ {email_arquivo} __ Subfatura.docx"
+                )
+        
+                doc.save(nome_arquivo)
+        
+                col_btn1, col_btn2 = st.columns(2)
+
+                with col_btn1:
+                    with open(nome_arquivo, "rb") as f:
+                        st.download_button(
+                            "⬇️ Download",
+                            data=f,
+                            file_name=nome_arquivo,
+                            mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
                             use_container_width=True
                         )
-    
-            
-                    st.success("Subfatura gerada com sucesso ✅")
+                
+                with col_btn2:
+                    st.link_button(
+                        "🔁 Converter PDF",
+                        "https://www.ilovepdf.com/pt/word_para_pdf",
+                        use_container_width=True
+                    )
+
+        
+                st.success("Subfatura gerada com sucesso ✅")
                 
         # ==============================
         # AÇÃO — GERAR TERMO DE SUBESTIPULANTE
