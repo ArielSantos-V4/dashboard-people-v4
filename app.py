@@ -2166,13 +2166,10 @@ with aba_benefícios:
         # ==============================
         # AÇÃO — GERAR TERMO DE NÃO ADESÃO
         # ==============================
-              
-        if st.button("📄 Gerar Termo de Não Adesão", use_container_width=True):
-            st.session_state["abrir_termo_nao_adesao"] = not st.session_state.get(
-                "abrir_termo_nao_adesao", False
-            )
-        
-        if st.session_state.get("abrir_termo_nao_adesao", False):
+        @st.dialog("📄 Gerar Termo de Não Adesão")
+        def modal_nao_adesao():
+            
+            st.markdown('<div class="modal-exemplo">', unsafe_allow_html=True) 
         
             st.markdown("## 📄 Gerar Termo de Não Adesão")
         
@@ -2247,3 +2244,8 @@ with aba_benefícios:
                     )
         
                 st.success("Termo de Não Adesão gerado com sucesso ✅")
+                
+            st.markdown('</div>', unsafe_allow_html=True)
+        
+        if st.button("Abrir Modal Exemplo"):
+        modal_nao_adesao() 
