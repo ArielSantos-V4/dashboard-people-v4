@@ -2074,8 +2074,6 @@ with aba_benefícios:
         # ==============================
         # AÇÃO — GERAR TERMO DE SUBESTIPULANTE
         # ==============================
-        st.markdown("---")
-
         @st.dialog("📄 Gerar Termo de Subestipulante")
         def modal_subestipulante():
 
@@ -2168,9 +2166,7 @@ with aba_benefícios:
         # ==============================
         # AÇÃO — GERAR TERMO DE NÃO ADESÃO
         # ==============================
-        
-        st.markdown("---")
-        
+              
         if st.button("📄 Gerar Termo de Não Adesão", use_container_width=True):
             st.session_state["abrir_termo_nao_adesao"] = not st.session_state.get(
                 "abrir_termo_nao_adesao", False
