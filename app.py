@@ -477,7 +477,7 @@ with aba_dashboard:
     # CONSULTA INDIVIDUAL
     # --------------------------------------------------
     
-    @st.dialog("")
+    @st.dialog(" ")
     def modal_consulta_investidor(df_consulta, nome):
         st.markdown('<div class="modal-investidor">', unsafe_allow_html=True)
 
