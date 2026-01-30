@@ -1385,18 +1385,11 @@ with aba_relatorios:
                             substituir_em_paragrafo(p, mapa)
                 
         # BOTÃO PRINCIPAL
-        if st.button("📄 Demissão por comum acordo"):
-        
-            st.session_state.gerar_demissao_comum = True
-        
-        
-        # CONTROLE DE ESTADO
-        if "gerar_demissao_comum" not in st.session_state:
-            st.session_state.gerar_demissao_comum = False
-        
-        
-        if st.session_state.gerar_demissao_comum:
-        
+        @st.dialog("📄 Demissão por comum acordo")  # Deixe em branco se não quiser título
+        def modal_comum():
+
+            st.markdown('<div class="modal_comum">', unsafe_allow_html=True)
+            
             st.markdown("#### Preencha os dados abaixo")
 
             nome_selecionado = st.selectbox(
@@ -1449,6 +1442,11 @@ with aba_relatorios:
             if st.button("❌ Cancelar"):
                 st.session_state.gerar_demissao_comum = False
                 st.rerun()
+
+            st.markdown('</div>', unsafe_allow_html=True)
+
+        if st.button("Abrir Modal Comum"):
+            modal_comum()
 
         @st.dialog("🚌 Atualização do Vale Transporte")
         def modal_vale_transporte(df_pessoas):
