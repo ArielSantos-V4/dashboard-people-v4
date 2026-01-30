@@ -1366,23 +1366,39 @@ with aba_relatorios:
         # AUTOMAÇÃO — DEMISSÃO POR COMUM ACORDO
         # --------------------------------------------------
         def substituir_texto_docx(doc, mapa):
-
+            """
+            Substitui chaves por valores em todo o documento:
+            - Parágrafos
+            - Tabelas
+            - Cabeçalho
+            - Rodapé
+            """
+        
             def substituir_em_paragrafo(paragrafo, mapa):
+                # Para cada run do parágrafo
                 for run in paragrafo.runs:
                     for chave, valor in mapa.items():
                         if chave in run.text:
                             run.text = run.text.replace(chave, str(valor))
         
-            # Parágrafos normais
+            # 1️⃣ Parágrafos principais
             for p in doc.paragraphs:
                 substituir_em_paragrafo(p, mapa)
         
-            # Tabelas (muito importante)
+            # 2️⃣ Tabelas
             for tabela in doc.tables:
                 for linha in tabela.rows:
                     for celula in linha.cells:
                         for p in celula.paragraphs:
                             substituir_em_paragrafo(p, mapa)
+        
+            # 3️⃣ Cabeçalhos e rodapés
+            for section in doc.sections:
+                for p in section.header.paragraphs:
+                    substituir_em_paragrafo(p, mapa)
+                for p in section.footer.paragraphs:
+                    substituir_em_paragrafo(p, mapa)
+
                 
         # BOTÃO PRINCIPAL
         @st.dialog("📄 Demissão por comum acordo")  # Deixe em branco se não quiser título
