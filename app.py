@@ -198,18 +198,7 @@ def gerar_alertas_investidor(linha):
     return alertas
 
 st.markdown("""
-<style>
-/* Modal específico da consulta individual */
-div[role="dialog"]:has(.modal-investidor) {
-    width: 95vw !important;
-    max-width: 95vw !important;
-}
 
-/* Altura maior (opcional) */
-div[role="dialog"]:has(.modal-investidor) > div {
-    max-height: 90vh !important;
-}
-    
 </style>
 """, unsafe_allow_html=True)
 
@@ -491,7 +480,20 @@ with aba_dashboard:
     # --------------------------------------------------
     # CONSULTA INDIVIDUAL
     # --------------------------------------------------
+    st.markdown("""
+    <style>
+    /* Remove header APENAS do modal da consulta individual */
+    div[role="dialog"]:has(.modal-investidor) > div > header {
+        display: none !important;
+    }
     
+    /* Remove o espaço do header só nesse modal */
+    div[role="dialog"]:has(.modal-investidor) > div {
+        padding-top: 0px !important;
+    }
+    </style>
+    """, unsafe_allow_html=True)
+
     @st.dialog(" ")
     def modal_consulta_investidor(df_consulta, nome):
         st.markdown('<div class="modal-investidor">', unsafe_allow_html=True)
@@ -2050,9 +2052,7 @@ with aba_benefícios:
 
         
                 st.success("Subfatura gerada com sucesso ✅")
-        
-        st.markdown("### ⚙️ Ações")
-        
+                
         if st.button("📄 Gerar Subfatura", use_container_width=True):
             modal_subfatura()
        
