@@ -2248,4 +2248,4 @@ with aba_benefícios:
             st.markdown('</div>', unsafe_allow_html=True)
         
         if st.button("Abrir Modal Exemplo"):
-        modal_nao_adesao() 
+            modal_nao_adesao() 
