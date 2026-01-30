@@ -717,39 +717,31 @@ with aba_dashboard:
     df_consulta = df.fillna("")
     lista_nomes = sorted(df_consulta["Nome"].unique())
         
-    c_busca, c_botoes = st.columns([5, 2])
-        
-    with c_busca:
-        nome = st.selectbox(
-            "Selecione o investidor",
-            ["Selecione um investidor..."] + lista_nomes,
-            key="investidor_selecionado",
-            label_visibility="collapsed"
-        )
+    with st.form("form_consulta_investidor", clear_on_submit=False):
+        c1, c2, c3 = st.columns([6, 2, 1])
     
-    with c_botoes:
-        st.markdown(
-            """
-            <div style="
-                display: flex;
-                align-items: center;
-                gap: 8px;
-                height: 100%;
-                margin-top: 2px;
-            ">
-            """,
-            unsafe_allow_html=True
-        )
+        with c1:
+            nome = st.selectbox(
+                "Selecione o investidor",
+                ["Selecione um investidor..."] + lista_nomes,
+                key="investidor_selecionado",
+                label_visibility="collapsed"
+            )
     
-        if st.button("🔍 Consultar"):
+        with c2:
+            consultar = st.form_submit_button("🔍 Consultar")
+    
+        with c3:
+            limpar = st.form_submit_button("Limpar")
+    
+        if consultar:
             if nome and nome != "Selecione um investidor...":
                 st.session_state.abrir_modal_investidor = True
     
-        if st.button("Limpar"):
+        if limpar:
             limpar_investidor()
             st.session_state.abrir_modal_investidor = False
-    
-        st.markdown("</div>", unsafe_allow_html=True)
+
 
     if st.session_state.abrir_modal_investidor:
         modal_consulta_investidor(df_consulta, nome)
