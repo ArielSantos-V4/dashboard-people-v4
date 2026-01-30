@@ -564,22 +564,13 @@ with aba_dashboard:
                     """,
                     unsafe_allow_html=True
                 )
-
-                if st.button("fechar_alerta", key=f"fechar_{nome}_{i}", help="Fechar alerta"):
+        
+                # botão invisível (lógica)
+                if st.button(" ", key=f"fechar_{key}"):
                     st.session_state[key] = False
                     st.rerun()
-        
-                # botão invisível, mas funcional
-                with st.container():
-                    st.markdown(
-                        f"<div class='alerta-fechar-btn'>",
-                        unsafe_allow_html=True
-                    )
-                    if st.button("✕", key=f"btn_{key}"):
-                        st.session_state[key] = False
-                        st.rerun()
-                    st.markdown("</div>", unsafe_allow_html=True)
-     
+
+             
         col1, col2, col3 = st.columns([3, 3, 2])
             
         # -------------------------
