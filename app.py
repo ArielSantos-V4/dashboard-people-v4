@@ -242,6 +242,42 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
+from io import BytesIO
+
+def gerar_docx_com_substituicoes(caminho_modelo, mapa_substituicao):
+    doc = Document(caminho_modelo)
+
+    def substituir_em_paragrafo(paragrafo, mapa):
+        texto = "".join(run.text for run in paragrafo.runs)
+        for chave, valor in mapa.items():
+            texto = texto.replace(chave, str(valor))
+        for run in paragrafo.runs:
+            run.text = ""
+        paragrafo.add_run(texto)
+
+    # Parágrafos
+    for p in doc.paragraphs:
+        substituir_em_paragrafo(p, mapa_substituicao)
+
+    # Tabelas
+    for tabela in doc.tables:
+        for linha in tabela.rows:
+            for celula in linha.cells:
+                for p in celula.paragraphs:
+                    substituir_em_paragrafo(p, mapa_substituicao)
+
+    # Header / Footer
+    for section in doc.sections:
+        for p in section.header.paragraphs:
+            substituir_em_paragrafo(p, mapa_substituicao)
+        for p in section.footer.paragraphs:
+            substituir_em_paragrafo(p, mapa_substituicao)
+
+    buffer = BytesIO()
+    doc.save(buffer)
+    buffer.seek(0)
+    return buffer
+
 # --------------------------------------------------
 # CONFIGURAÇÃO DA PÁGINA
 # --------------------------------------------------
@@ -1452,84 +1488,44 @@ with aba_relatorios:
 
         if st.button("📄 Demissão por comum acordo", use_container_width=True):
             modal_comum()
-
-        # ----------------------------------------
-        # FUNÇÃO PARA GERAR O DOCUMENTO
-        # ----------------------------------------
-        def gerar_aviso_previo_indenizado(nome, data_desligamento, data_homologacao):
-            doc = Document("Aviso prévio Indenizado.docx")
         
-            # Substituição nos parágrafos
-            for paragrafo in doc.paragraphs:
-                if "{nome_selecionado}" in paragrafo.text:
-                    paragrafo.text = paragrafo.text.replace(
-                        "{nome_selecionado}", nome
-                    )
-                if "{data_desligamento}" in paragrafo.text:
-                    paragrafo.text = paragrafo.text.replace(
-                        "{data_desligamento}", data_desligamento.strftime("%d/%m/%Y")
-                    )
-                if "{data_homologacao}" in paragrafo.text:
-                    paragrafo.text = paragrafo.text.replace(
-                        "{data_homologacao}", data_homologacao.strftime("%d/%m/%Y")
-                    )
-        
-            # Substituição também em tabelas (caso o texto esteja nelas)
-            for tabela in doc.tables:
-                for linha in tabela.rows:
-                    for celula in linha.cells:
-                        if "{nome_selecionado}" in celula.text:
-                            celula.text = celula.text.replace(
-                                "{nome_selecionado}", nome
-                            )
-                        if "{data_desligamento}" in celula.text:
-                            celula.text = celula.text.replace(
-                                "{data_desligamento}", data_desligamento.strftime("%d/%m/%Y")
-                            )
-                        if "{data_homologacao}" in celula.text:
-                            celula.text = celula.text.replace(
-                                "{data_homologacao}", data_homologacao.strftime("%d/%m/%Y")
-                            )
-        
-            buffer = BytesIO()
-            doc.save(buffer)
-            buffer.seek(0)
-        
-            return buffer
-        
-        
-        # ----------------------------------------
-        # MODAL (DIALOG)
-        # ----------------------------------------
         @st.dialog("📄 Aviso Prévio Indenizado")
-        def modal_aviso_previo(lista_investidores):
+        def modal_aviso_previo_indenizado():
+        
+            st.markdown("#### Preencha os dados")
+        
+            lista_nomes = sorted(df["Nome"].dropna().unique())
         
             nome = st.selectbox(
                 "Nome do investidor",
-                ["Selecione..."] + lista_investidores
+                ["Selecione..."] + lista_nomes
             )
         
             data_desligamento = st.date_input(
                 "Data do desligamento",
-                value=date.today()
+                format="DD/MM/YYYY"
             )
         
             data_homologacao = st.date_input(
                 "Data da homologação",
-                value=date.today()
+                format="DD/MM/YYYY"
             )
         
-            gerar = st.button("Gerar documento")
+            if st.button("📄 Gerar documento", use_container_width=True):
         
-            if gerar:
                 if nome == "Selecione...":
-                    st.warning("Selecione o nome do investidor.")
+                    st.warning("Selecione o investidor.")
                     return
         
-                arquivo = gerar_aviso_previo_indenizado(
-                    nome,
-                    data_desligamento,
-                    data_homologacao
+                mapa = {
+                    "{nome_selecionado}": nome,
+                    "{data_desligamento}": data_desligamento.strftime("%d/%m/%Y"),
+                    "{data_homologacao}": data_homologacao.strftime("%d/%m/%Y"),
+                }
+        
+                arquivo = gerar_docx_com_substituicoes(
+                    "Aviso prévio Indenizado.docx",
+                    mapa
                 )
         
                 st.success("Documento gerado com sucesso!")
@@ -1538,12 +1534,14 @@ with aba_relatorios:
                     label="⬇️ Baixar documento",
                     data=arquivo,
                     file_name=f"Aviso prévio Indenizado - {nome}.docx",
-                    mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                    mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                    use_container_width=True
                 )
-
-            if st.button("Aviso Prévio Indenizado"):
-                modal_aviso_previo(lista_investidores)
         
+        
+        if st.button("📄 Aviso Prévio Indenizado", use_container_width=True):
+            modal_aviso_previo_indenizado()
+
         @st.dialog("🚌 Atualização do Vale Transporte")
         def modal_vale_transporte(df_pessoas):
         
