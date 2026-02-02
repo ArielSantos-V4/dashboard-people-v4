@@ -242,40 +242,31 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
+from docx import Document
 from io import BytesIO
 
-def gerar_docx_com_substituicoes(caminho_modelo, mapa_substituicao):
+def gerar_docx_com_substituicoes(caminho_modelo, substituicoes):
     doc = Document(caminho_modelo)
 
-    def substituir_em_paragrafo(paragrafo, mapa):
-        texto = "".join(run.text for run in paragrafo.runs)
-        for chave, valor in mapa.items():
-            texto = texto.replace(chave, str(valor))
+    for paragrafo in doc.paragraphs:
         for run in paragrafo.runs:
-            run.text = ""
-        paragrafo.add_run(texto)
+            for chave, valor in substituicoes.items():
+                if chave in run.text:
+                    run.text = run.text.replace(chave, valor)
 
-    # Parágrafos
-    for p in doc.paragraphs:
-        substituir_em_paragrafo(p, mapa_substituicao)
-
-    # Tabelas
     for tabela in doc.tables:
         for linha in tabela.rows:
             for celula in linha.cells:
-                for p in celula.paragraphs:
-                    substituir_em_paragrafo(p, mapa_substituicao)
-
-    # Header / Footer
-    for section in doc.sections:
-        for p in section.header.paragraphs:
-            substituir_em_paragrafo(p, mapa_substituicao)
-        for p in section.footer.paragraphs:
-            substituir_em_paragrafo(p, mapa_substituicao)
+                for paragrafo in celula.paragraphs:
+                    for run in paragrafo.runs:
+                        for chave, valor in substituicoes.items():
+                            if chave in run.text:
+                                run.text = run.text.replace(chave, valor)
 
     buffer = BytesIO()
     doc.save(buffer)
     buffer.seek(0)
+
     return buffer
 
 # --------------------------------------------------
