@@ -714,9 +714,11 @@ with aba_dashboard:
             limpar = st.form_submit_button("Limpar")
     
         if consultar and st.session_state.investidor_selecionado != "Selecione um investidor...":
-            st.session_state.abrir_modal_investidor = True
-            st.rerun()
-    
+            modal_consulta_investidor(
+                df_consulta,
+                st.session_state.investidor_selecionado
+            )
+            
         if limpar:
             limpar_investidor()
             st.session_state.abrir_modal_investidor = False
