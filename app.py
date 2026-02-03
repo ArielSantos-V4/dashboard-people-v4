@@ -9,6 +9,9 @@ from datetime import date
 
 import bcrypt
 
+if "abrir_modal_investidor" not in st.session_state:
+    st.session_state.abrir_modal_investidor = False
+
 if "authenticated" not in st.session_state:
     st.session_state.authenticated = False
 
@@ -709,6 +712,14 @@ with aba_dashboard:
     
         with c3:
             limpar = st.form_submit_button("Limpar")
+    
+        if consultar and nome != "Selecione um investidor...":
+            st.session_state.abrir_modal_investidor = True
+    
+        if limpar:
+            limpar_investidor()
+            st.session_state.abrir_modal_investidor = False
+
             
     # --------------------------------------------------
     # FORMAT TABELA
