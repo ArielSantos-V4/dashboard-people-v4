@@ -269,6 +269,24 @@ def gerar_docx_com_substituicoes(caminho_modelo, substituicoes):
 
     return buffer
 
+from docx import Document
+
+def gerar_vale_transporte(dados):
+    # Abre o documento ORIGINAL (modelo)
+    doc = Document("modelo_vale_transporte.docx")
+
+    for p in doc.paragraphs:
+        if "{{NOME}}" in p.text:
+            p.text = p.text.replace("{{NOME}}", dados["nome"])
+
+        if "{{CPF}}" in p.text:
+            p.text = p.text.replace("{{CPF}}", dados["cpf"])
+
+        if "{{VALOR}}" in p.text:
+            p.text = p.text.replace("{{VALOR}}", dados["valor"])
+
+    doc.save("vale_transporte_final.docx")
+
 # --------------------------------------------------
 # CONFIGURAÇÃO DA PÁGINA
 # --------------------------------------------------
