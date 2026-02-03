@@ -287,6 +287,22 @@ def gerar_vale_transporte(dados):
 
     doc.save("vale_transporte_final.docx")
 
+def substituir_runs_header_footer(doc, mapa):
+    for section in doc.sections:
+        # HEADER
+        for p in section.header.paragraphs:
+            for run in p.runs:
+                for chave, valor in mapa.items():
+                    if chave in run.text:
+                        run.text = run.text.replace(chave, str(valor))
+
+        # FOOTER
+        for p in section.footer.paragraphs:
+            for run in p.runs:
+                for chave, valor in mapa.items():
+                    if chave in run.text:
+                        run.text = run.text.replace(chave, str(valor))
+
 # --------------------------------------------------
 # CONFIGURAÇÃO DA PÁGINA
 # --------------------------------------------------
@@ -1753,6 +1769,7 @@ with aba_relatorios:
 
                 substituir_runs_paragrafos(doc, mapa)
                 substituir_runs_tabelas(doc, mapa)
+                substituir_runs_header_footer(doc, mapa)
             
                 nome_arquivo = f"Declaração de Vale Transporte CLT - {nome_sel}.docx"
                 doc.save(nome_arquivo)
