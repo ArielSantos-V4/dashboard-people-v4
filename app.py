@@ -1925,7 +1925,10 @@ with aba_benefícios:
             st.markdown("#### Investidores com documentação pendente")
         
             # --- FILTRO: somente pendentes ---
-            df_pendentes = df[df["Situação no plano"] == "Pendente"]
+            df_pendentes = df[
+                (df["Situação no plano"] == "Pendente") &
+                (df["Modalidade PJ"] != "MEI")
+            ]
         
             # --- SELEÇÃO DAS COLUNAS ---
             tabela_docs = df_pendentes[[
