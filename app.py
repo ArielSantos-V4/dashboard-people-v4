@@ -1561,6 +1561,24 @@ with aba_relatorios:
         if st.button("📄 Aviso Prévio Indenizado", use_container_width=True):
             modal_aviso_previo_indenizado()
 
+        def substituir_runs_paragrafos(doc, mapa):
+            for p in doc.paragraphs:
+                for run in p.runs:
+                    for chave, valor in mapa.items():
+                        if chave in run.text:
+                            run.text = run.text.replace(chave, str(valor))
+        
+        
+        def substituir_runs_tabelas(doc, mapa):
+            for table in doc.tables:
+                for row in table.rows:
+                    for cell in row.cells:
+                        for p in cell.paragraphs:
+                            for run in p.runs:
+                                for chave, valor in mapa.items():
+                                    if chave in run.text:
+                                        run.text = run.text.replace(chave, str(valor))
+
         @st.dialog("🚌 Atualização do Vale Transporte")
         def modal_vale_transporte(df_pessoas):
         
@@ -1732,7 +1750,9 @@ with aba_relatorios:
                     mapa[f"{{inte_{i}_tra}}"] = f"{it:.2f}"
             
                 doc = Document(CAMINHO_MODELO)
-                substituir_texto_docx(doc, mapa)
+
+                substituir_runs_paragrafos(doc, mapa)
+                substituir_runs_tabelas(doc, mapa)
             
                 nome_arquivo = f"Declaração de Vale Transporte CLT - {nome_sel}.docx"
                 doc.save(nome_arquivo)
