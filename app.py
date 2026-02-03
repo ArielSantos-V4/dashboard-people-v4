@@ -9,9 +9,6 @@ from datetime import date
 
 import bcrypt
 
-if "abrir_modal_investidor" not in st.session_state:
-    st.session_state.abrir_modal_investidor = False
-
 if "authenticated" not in st.session_state:
     st.session_state.authenticated = False
 
@@ -722,14 +719,7 @@ with aba_dashboard:
         if limpar:
             limpar_investidor()
             st.session_state.abrir_modal_investidor = False
-            
-    if st.session_state.abrir_modal_investidor:
-        modal_consulta_investidor(
-            df_consulta,
-            st.session_state.investidor_selecionado
-        )
-        st.session_state.abrir_modal_investidor = False
-            
+                        
     # --------------------------------------------------
     # FORMAT TABELA
     # --------------------------------------------------
