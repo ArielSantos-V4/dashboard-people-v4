@@ -2464,8 +2464,6 @@ with aba_benefícios:
         # UI
         # ------------------------------
         
-        st.markdown("### ⚙️ Ações")
-        
         @st.dialog("📄 Gerar Exclusão Subfatura")
         def modal_exclusao_subfatura():
         
