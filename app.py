@@ -2382,3 +2382,133 @@ with aba_benefícios:
         
         if st.button("📄 Gerar Termo de Não Adesão", use_container_width=True):
             modal_nao_adesao() 
+
+        # ==============================
+        # AÇÃO — EXCLUSÃO SUBFATURA
+        # ==============================
+        
+        from docx import Document
+        import re
+        from datetime import datetime, date
+        
+        MESES_PT = {
+            1: "janeiro", 2: "fevereiro", 3: "março", 4: "abril",
+            5: "maio", 6: "junho", 7: "julho", 8: "agosto",
+            9: "setembro", 10: "outubro", 11: "novembro", 12: "dezembro"
+        }
+        
+        def substituir_texto(paragraphs, mapa):
+            for p in paragraphs:
+                for run in p.runs:
+                    for chave, valor in mapa.items():
+                        if chave in run.text:
+                            run.text = run.text.replace(chave, str(valor))
+        
+        def formatar_cnpj(cnpj):
+            cnpj_str = str(cnpj).replace(".0", "")
+            cnpj_numeros = re.sub(r"\D", "", cnpj_str)
+            cnpj_numeros = cnpj_numeros.zfill(14)
+        
+            return (
+                f"{cnpj_numeros[0:2]}."
+                f"{cnpj_numeros[2:5]}."
+                f"{cnpj_numeros[5:8]}/"
+                f"{cnpj_numeros[8:12]}-"
+                f"{cnpj_numeros[12:14]}"
+            )
+        
+        # -------- BOTÃO PRINCIPAL --------
+        st.markdown("### ⚙️ Ações")
+        
+        @st.dialog("📄 Gerar Exclusão Subfatura")
+        def modal_exclusao_subfatura():
+        
+            nomes = sorted(df["Nome"].dropna().unique())
+            nome_escolhido = st.selectbox("Selecione o investidor", nomes)
+        
+            data_exclusao = st.date_input(
+                "Data de exclusão",
+                format="DD/MM/YYYY"
+            )
+        
+            st.markdown("<br>", unsafe_allow_html=True)
+        
+            col1, col2, col3 = st.columns([1, 2, 1])
+            with col2:
+                gerar = st.button("✅ Gerar", use_container_width=True)
+        
+            if gerar:
+        
+                dados = df[df["Nome"] == nome_escolhido].iloc[0]
+        
+                razao_social = str(dados["Razão social"])
+                cnpj = formatar_cnpj(dados["CNPJ"])
+                cpf = normalizar_cpf(dados["CPF"])
+                email_pessoal = str(dados["E-mail pessoal"])
+                email_arquivo = email_para_nome_arquivo(email_pessoal)
+                modelo_contrato = str(dados["Modelo de contrato"])
+        
+                # -------- VALIDAÇÃO PJ --------
+                if "PJ" not in modelo_contrato.upper():
+                    st.warning(
+                        f"⚠️ **{nome_escolhido}** não possui contrato PJ.\n\n"
+                        f"Modelo atual: **{modelo_contrato}**"
+                    )
+        
+                # -------- ABRE TEMPLATE --------
+                doc = Document("Exclusao_Subfatura.docx")
+        
+                data_exclusao_formatada = data_exclusao.strftime("%d/%m/%Y")
+        
+                hoje = date.today()
+                data_assinatura = f"{hoje.day} de {MESES_PT[hoje.month]} de {hoje.year}"
+        
+                mapa = {
+                    "{RAZAO_SOCIAL}": razao_social,
+                    "{CNPJ}": cnpj,
+                    "{DATA_EXCLUSAO}": data_exclusao_formatada,
+                    "{DATA}": data_assinatura
+                }
+        
+                substituir_texto(doc.paragraphs, mapa)
+        
+                for table in doc.tables:
+                    for row in table.rows:
+                        for cell in row.cells:
+                            substituir_texto(cell.paragraphs, mapa)
+        
+                for section in doc.sections:
+                    substituir_texto(section.header.paragraphs, mapa)
+        
+                cpf_limpo = re.sub(r"\D", "", cpf)
+        
+                nome_arquivo = (
+                    f"{nome_escolhido} __ {cpf_limpo} __ {email_arquivo} __ Exclusão Subfatura.docx"
+                )
+        
+                doc.save(nome_arquivo)
+        
+                col_btn1, col_btn2 = st.columns(2)
+        
+                with col_btn1:
+                    with open(nome_arquivo, "rb") as f:
+                        st.download_button(
+                            "⬇️ Download",
+                            data=f,
+                            file_name=nome_arquivo,
+                            mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                            use_container_width=True
+                        )
+        
+                with col_btn2:
+                    st.link_button(
+                        "🔁 Converter PDF",
+                        "https://www.ilovepdf.com/pt/word_para_pdf",
+                        use_container_width=True
+                    )
+        
+                st.success("Exclusão Subfatura gerada com sucesso ✅")
+        
+        if st.button("📄 Gerar Exclusão Subfatura", use_container_width=True):
+            modal_exclusao_subfatura()
+
