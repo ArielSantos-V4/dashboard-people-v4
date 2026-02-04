@@ -2387,9 +2387,45 @@ with aba_benefícios:
         # AÇÃO — EXCLUSÃO SUBFATURA
         # ==============================
         
-        from docx import Document
+        import streamlit as st
+        import pandas as pd
         import re
-        from datetime import datetime, date
+        from datetime import date
+        from docx import Document
+        import gspread
+        from google.oauth2.service_account import Credentials
+        
+        # ------------------------------
+        # CONFIG GOOGLE SHEETS
+        # ------------------------------
+        
+        def carregar_desligados_google_sheets():
+        
+            scopes = [
+                "https://www.googleapis.com/auth/spreadsheets",
+                "https://www.googleapis.com/auth/drive"
+            ]
+        
+            creds = Credentials.from_service_account_file(
+                "credenciais_google.json",  # <-- ajuste aqui
+                scopes=scopes
+            )
+        
+            client = gspread.authorize(creds)
+        
+            spreadsheet = client.open_by_key(
+                "ID_DA_PLANILHA"  # <-- ajuste aqui
+            )
+        
+            worksheet = spreadsheet.get_worksheet_by_id(1422602176)
+        
+            dados = worksheet.get_all_records()
+            return pd.DataFrame(dados)
+        
+        
+        # ------------------------------
+        # AUXILIARES
+        # ------------------------------
         
         MESES_PT = {
             1: "janeiro", 2: "fevereiro", 3: "março", 4: "abril",
@@ -2406,8 +2442,7 @@ with aba_benefícios:
         
         def formatar_cnpj(cnpj):
             cnpj_str = str(cnpj).replace(".0", "")
-            cnpj_numeros = re.sub(r"\D", "", cnpj_str)
-            cnpj_numeros = cnpj_numeros.zfill(14)
+            cnpj_numeros = re.sub(r"\D", "", cnpj_str).zfill(14)
         
             return (
                 f"{cnpj_numeros[0:2]}."
@@ -2417,12 +2452,26 @@ with aba_benefícios:
                 f"{cnpj_numeros[12:14]}"
             )
         
-        # -------- BOTÃO PRINCIPAL --------
+        def normalizar_cpf(cpf):
+            cpf_str = str(cpf).replace(".0", "")
+            return re.sub(r"\D", "", cpf_str).zfill(11)
+        
+        def email_para_nome_arquivo(email):
+            return email.replace("@", "_").replace(".", "_").lower()
+        
+        
+        # ------------------------------
+        # UI
+        # ------------------------------
+        
+        st.markdown("### ⚙️ Ações")
         
         @st.dialog("📄 Gerar Exclusão Subfatura")
         def modal_exclusao_subfatura():
         
-            nomes = sorted(df["Nome"].dropna().unique())
+            df_desligados = carregar_desligados_google_sheets()
+        
+            nomes = sorted(df_desligados["Nome"].dropna().unique())
             nome_escolhido = st.selectbox("Selecione o investidor", nomes)
         
             data_exclusao = st.date_input(
@@ -2438,7 +2487,7 @@ with aba_benefícios:
         
             if gerar:
         
-                dados = df[df["Nome"] == nome_escolhido].iloc[0]
+                dados = df_desligados[df_desligados["Nome"] == nome_escolhido].iloc[0]
         
                 razao_social = str(dados["Razão social"])
                 cnpj = formatar_cnpj(dados["CNPJ"])
@@ -2454,7 +2503,7 @@ with aba_benefícios:
                         f"Modelo atual: **{modelo_contrato}**"
                     )
         
-                # -------- ABRE TEMPLATE --------
+                # -------- TEMPLATE --------
                 doc = Document("Exclusao_Subfatura.docx")
         
                 data_exclusao_formatada = data_exclusao.strftime("%d/%m/%Y")
@@ -2508,6 +2557,8 @@ with aba_benefícios:
         
                 st.success("Exclusão Subfatura gerada com sucesso ✅")
         
+        
         if st.button("📄 Gerar Exclusão Subfatura", use_container_width=True):
             modal_exclusao_subfatura()
+
 
