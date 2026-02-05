@@ -530,29 +530,6 @@ with aba_dashboard:
         st.markdown('<div class="modal-investidor">', unsafe_allow_html=True)
 
         linha = df_consulta[df_consulta["Nome"] == nome].iloc[0]
-
-        # 🔔 ALERTAS
-        alertas = st.session_state.get("alertas_atuais", [])
-    
-        if alertas:
-            for i, alerta in enumerate(alertas):
-                col1, col2 = st.columns([10, 1])
-    
-                with col1:
-                    if alerta["tipo"] == "error":
-                        st.error(alerta["mensagem"])
-                    elif alerta["tipo"] == "warning":
-                        st.warning(alerta["mensagem"])
-                    else:
-                        st.info(alerta["mensagem"])
-    
-                with col2:
-                    if st.button("✖", key=f"fechar_alerta_{i}"):
-                        alertas.pop(i)
-                        st.session_state.alertas_atuais = alertas
-                        st.rerun()
-    
-            st.divider()
              
         col1, col2, col3 = st.columns([3, 3, 2])
             
@@ -686,9 +663,35 @@ with aba_dashboard:
             o1.text_input("Plano odonto", linha["Operadora Odonto"], disabled=True)
             o2.text_input("Carteirinha odonto", carteira_odo, disabled=True)
     
-    
+            st.markdown("##### 🔗 Link e Alertas")
+
+            col_link, col_alertas = st.columns([1, 1])
+            
+            # --- LINK DRIVE ---
+            with col_link:
             st.markdown("##### 🔗 Link")
-            if linha["Link Drive"]: st.link_button("Abrir Drive", linha["Link Drive"])
+                if linha["Link Drive"]:
+                    st.link_button("Abrir Drive", linha["Link Drive"])
+                else:
+                    st.caption("Sem link de Drive")
+            
+            # --- ALERTAS ---
+            with col_alertas:
+            st.markdown("##### ⚠️ Alertas")
+                alertas = st.session_state.get("alertas_atuais", [])
+            
+                if alertas:
+                    st.markdown("**⚠️ Alertas**")
+            
+                    with st.container(height=220, border=True):
+                        for tipo, mensagem in alertas:
+                            if tipo == "error":
+                                st.error(mensagem)
+                            elif tipo == "warning":
+                                st.warning(mensagem)
+                            else:
+                                st.info(mensagem)
+
         
         st.markdown('</div>', unsafe_allow_html=True)        
     
@@ -715,6 +718,16 @@ with aba_dashboard:
             limpar = st.form_submit_button("Limpar")
     
         if consultar and st.session_state.investidor_selecionado != "Selecione um investidor...":
+
+            # pega a linha do investidor selecionado
+            linha = df_consulta[
+                df_consulta["Nome"] == st.session_state.investidor_selecionado
+            ].iloc[0]
+        
+            # gera e salva os alertas
+            st.session_state.alertas_atuais = gerar_alertas_investidor(linha)
+        
+            # abre o modal
             modal_consulta_investidor(
                 df_consulta,
                 st.session_state.investidor_selecionado
@@ -723,11 +736,7 @@ with aba_dashboard:
         if limpar:
             limpar_investidor()
             st.session_state.abrir_modal_investidor = False
-            
-    if st.session_state.get("mostrar_modal_alertas"):
-        modal_alertas(st.session_state.alertas_atuais)
-        st.session_state.mostrar_modal_alertas = False
-                        
+                                   
     # --------------------------------------------------
     # FORMAT TABELA
     # --------------------------------------------------
