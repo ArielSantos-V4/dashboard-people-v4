@@ -679,7 +679,7 @@ with aba_dashboard:
                 alertas = st.session_state.get("alertas_atuais", [])
             
                 if alertas:
-                    with st.container(height=220, border=True):
+                    with st.container(height=100, border=True):
                         for tipo, mensagem in alertas:
                             if tipo == "error":
                                 st.error(mensagem)
