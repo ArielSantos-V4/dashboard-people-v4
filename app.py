@@ -191,8 +191,7 @@ def gerar_alertas_investidor(linha):
     # -------------------------
     if linha.get("Modalidade PJ", "") == "MEI":
         alertas.append(("warning",
-            "Atenção!"
-            "Investidor ainda se encontra na modalidade MEI 😬"
+            "Atenção! Investidor ainda se encontra na modalidade MEI 😬"
         ))
 
     return alertas
