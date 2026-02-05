@@ -194,7 +194,11 @@ def gerar_alertas_investidor(linha):
     # -------------------------
     # ALERTA 3 — Contrato
     # -------------------------
-    fim_contrato = pd.to_datetime(linha.get("Térm previsto", ""), errors="coerce")
+    fim_contrato = (
+        pd.to_datetime(linha.get("Térm previsto", ""), errors="coerce")
+        .normalize()
+    )
+
 
     if pd.notna(fim_contrato):
         dias = (fim_contrato - hoje).days
