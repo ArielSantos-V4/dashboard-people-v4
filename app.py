@@ -101,46 +101,53 @@ def gerar_alertas_investidor(linha):
     # -------------------------
     # ALERTA 1 — Plano de saúde / dental
     # -------------------------
-    status = linha.get("Situação no plano", "")
-    data_docs = pd.to_datetime(linha.get("Data limite docs", ""), errors="coerce")
-    data_dbl = pd.to_datetime(linha.get("Data envio DBL", ""), errors="coerce")
-
-    if status == "Pendente" and pd.notna(data_docs):
-        dias = (data_docs - hoje).days
-
+    status = str(linha["Situação no plano"]).strip()
+    data_solicitar = linha["Solicitar documentação"]
+    
+    if status == "Pendente" and pd.notna(data_solicitar):
+        dias = (data_solicitar - hoje).days
+    
         if dias < 0:
-            alertas.append(("error",
-                "Plano de saúde e dental 🤕"
+            alertas.append((
+                "error",
+                "Plano de saúde e dental 🤕\n"
                 "Solicitação de documentação em atraso. Verificar com urgência!"
             ))
         elif dias == 0:
-            alertas.append(("warning",
-                "Plano de saúde e dental ❤️‍🩹"
+            alertas.append((
+                "warning",
+                "Plano de saúde e dental ❤️‍🩹\n"
                 "Hoje é a data limite para solicitar a documentação!"
             ))
         elif dias <= 15:
-            alertas.append(("info",
-                f"Plano de saúde e dental ❤️‍🩹"
+            alertas.append((
+                "info",
+                f"Plano de saúde e dental ❤️‍🩹\n"
                 f"Faltam {dias} dias para solicitar a documentação ao investidor"
             ))
 
-    if status == "Aguardando docs" and pd.notna(data_dbl):
-        dias = (data_dbl - hoje).days
+    data_enviar_eb = linha["Enviar no EB"]
 
+    if status == "Aguardando docs" and pd.notna(data_enviar_eb):
+        dias = (data_enviar_eb - hoje).days
+    
         if dias < 0:
-            alertas.append(("error",
-                "Plano de saúde e dental 🤕"
-                "Envio à DBL em atraso. Verificar com urgência!"
+            alertas.append((
+                "error",
+                "Plano de saúde e dental 🤕\n"
+                "Envio à EB em atraso. Verificar com urgência!"
             ))
         elif dias == 0:
-            alertas.append(("warning",
-                "Plano de saúde e dental ❤️‍🩹"
-                "Hoje é a data limite para enviar a solicitação à DBL"
+            alertas.append((
+                "warning",
+                "Plano de saúde e dental ❤️‍🩹\n"
+                "Hoje é a data limite para enviar à EB"
             ))
         elif dias <= 15:
-            alertas.append(("info",
-                f"Plano de saúde e dental ❤️‍🩹"
-                f"Faltam {dias} dias para enviar à DBL"
+            alertas.append((
+                "info",
+                f"Plano de saúde e dental ❤️‍🩹\n"
+                f"Faltam {dias} dias para enviar à EB"
             ))
 
     if status == "Aguardando DBL":
