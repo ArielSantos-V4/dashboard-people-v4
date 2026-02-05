@@ -174,20 +174,30 @@ def gerar_alertas_investidor(linha):
         ))
     
     # -------------------------
-    # ALERTA 2 — Aniversário
+    # ALERTA — Aniversário
     # -------------------------
-    nascimento = pd.to_datetime(linha.get("Data de nascimento", ""), errors="coerce")
-
+    nascimento_raw = linha.get("Data de nascimento", "")
+    
+    nascimento = pd.to_datetime(
+        nascimento_raw,
+        errors="coerce",
+        dayfirst=True
+    )
+    
     if pd.notna(nascimento):
+        nascimento = pd.Timestamp(nascimento).normalize()
+    
         if nascimento.month == hoje.month:
             if nascimento.day == hoje.day:
-                alertas.append(("info",
-                    "Lembrete de Aniversário! 🎉"
+                alertas.append((
+                    "info",
+                    "Lembrete de Aniversário! 🎉\n"
                     "HOJE é aniversário do investidor!!"
                 ))
             else:
-                alertas.append(("info",
-                    "Lembrete de Aniversário! 🎉"
+                alertas.append((
+                    "info",
+                    "Lembrete de Aniversário! 🎉\n"
                     "Este investidor faz aniversário neste mês"
                 ))
 
