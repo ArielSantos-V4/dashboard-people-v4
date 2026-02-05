@@ -110,17 +110,17 @@ def gerar_alertas_investidor(linha):
 
         if dias < 0:
             alertas.append(("error",
-                "Plano de saúde e dental 🤕<br>"
+                "Plano de saúde e dental 🤕"
                 "Solicitação de documentação em atraso. Verificar com urgência!"
             ))
         elif dias == 0:
             alertas.append(("warning",
-                "Plano de saúde e dental ❤️‍🩹<br>"
+                "Plano de saúde e dental ❤️‍🩹"
                 "Hoje é a data limite para solicitar a documentação!"
             ))
         elif dias <= 15:
             alertas.append(("info",
-                f"Plano de saúde e dental ❤️‍🩹<br>"
+                f"Plano de saúde e dental ❤️‍🩹"
                 f"Faltam {dias} dias para solicitar a documentação ao investidor"
             ))
 
@@ -129,23 +129,23 @@ def gerar_alertas_investidor(linha):
 
         if dias < 0:
             alertas.append(("error",
-                "Plano de saúde e dental 🤕<br>"
+                "Plano de saúde e dental 🤕"
                 "Envio à DBL em atraso. Verificar com urgência!"
             ))
         elif dias == 0:
             alertas.append(("warning",
-                "Plano de saúde e dental ❤️‍🩹<br>"
+                "Plano de saúde e dental ❤️‍🩹"
                 "Hoje é a data limite para enviar a solicitação à DBL"
             ))
         elif dias <= 15:
             alertas.append(("info",
-                f"Plano de saúde e dental ❤️‍🩹<br>"
+                f"Plano de saúde e dental ❤️‍🩹"
                 f"Faltam {dias} dias para enviar à DBL"
             ))
 
     if status == "Aguardando DBL":
         alertas.append(("info",
-            "Plano de saúde e dental quase prontos! 🤩<br>"
+            "Plano de saúde e dental quase prontos! 🤩"
             "Acompanhar movimentação no portal EB"
         ))
 
@@ -158,12 +158,12 @@ def gerar_alertas_investidor(linha):
         if nascimento.month == hoje.month:
             if nascimento.day == hoje.day:
                 alertas.append(("info",
-                    "Lembrete de Aniversário! 🎉<br>"
+                    "Lembrete de Aniversário! 🎉"
                     "HOJE é aniversário do investidor!!"
                 ))
             else:
                 alertas.append(("info",
-                    "Lembrete de Aniversário! 🎉<br>"
+                    "Lembrete de Aniversário! 🎉"
                     "Este investidor faz aniversário neste mês"
                 ))
 
@@ -177,12 +177,12 @@ def gerar_alertas_investidor(linha):
 
         if dias < 0:
             alertas.append(("error",
-                "Contrato vencido! 🚨<br>"
+                "Contrato vencido! 🚨"
                 "Verificar com urgência!"
             ))
         elif dias <= 30:
             alertas.append(("warning",
-                f"Alerta! ⚠️<br>"
+                f"Alerta! ⚠️"
                 f"O contrato se encerra em {dias} dia(s)."
             ))
 
@@ -191,7 +191,7 @@ def gerar_alertas_investidor(linha):
     # -------------------------
     if linha.get("Modalidade PJ", "") == "MEI":
         alertas.append(("warning",
-            "Atenção! ⚠️<br>"
+            "Atenção! ⚠️"
             "Investidor ainda se encontra na modalidade MEI 😬"
         ))
 
