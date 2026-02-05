@@ -216,17 +216,23 @@ div[role="dialog"]:has(.modal-investidor) > div {
 # alerta 
 st.markdown("""
 <style>
-.alerta-flutuante {
+.alerta-container {
     position: fixed;
     bottom: 20px;
     right: 20px;
     width: 380px;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.alerta-flutuante {
     padding: 16px 18px;
     background: #111827;
     color: white;
     border-radius: 14px;
     box-shadow: 0 10px 30px rgba(0,0,0,.35);
-    z-index: 9999;
     font-size: 14px;
     animation: slideUp .3s ease-out;
 }
@@ -241,6 +247,7 @@ st.markdown("""
 }
 </style>
 """, unsafe_allow_html=True)
+
 
 from docx import Document
 from io import BytesIO
@@ -565,24 +572,33 @@ with aba_dashboard:
         alertas = gerar_alertas_investidor(linha)
         agora = time.time()
         
+        alertas_ativos = []
+        
         for i, (tipo, mensagem) in enumerate(alertas):
             key_time = f"alerta_time_{nome}_{i}"
         
-            # grava o horário da primeira exibição
             if key_time not in st.session_state:
                 st.session_state[key_time] = agora
         
-            # mostra só por 10 segundos
             if agora - st.session_state[key_time] <= 10:
-                st.markdown(
-                    f"""
-                    <div class="alerta-flutuante alerta-{tipo}">
-                        {mensagem}
-                    </div>
-                    """,
-                    unsafe_allow_html=True
-                )
-
+                alertas_ativos.append((tipo, mensagem))
+        
+        # renderiza todos empilhados
+        if alertas_ativos:
+            html = '<div class="alerta-container">'
+            for tipo, mensagem in alertas_ativos:
+                html += f'''
+                <div class="alerta-flutuante alerta-{tipo}">
+                    {mensagem}
+                </div>
+                '''
+            html += '</div>'
+        
+            st.markdown(html, unsafe_allow_html=True)
+        
+            # força re-render enquanto ainda existir alerta
+            time.sleep(0.3)
+            st.rerun()
              
         col1, col2, col3 = st.columns([3, 3, 2])
             
