@@ -94,19 +94,29 @@ def gerar_hash_senha(senha):
         bcrypt.gensalt()
     ).decode("utf-8")
 
+import pandas as pd
+
 def gerar_alertas_investidor(linha):
     alertas = []
+
+    # --- data de hoje (sem hora) ---
     hoje = pd.Timestamp.today().normalize()
 
-    # -------------------------
-    # ALERTA 1 — Plano de saúde / dental
-    # -------------------------
+    # --- status do plano ---
     status = str(linha["Situação no plano"]).strip()
-    data_solicitar = linha["Solicitar documentação"]
-    
+
+    # =========================================================
+    # ALERTA 1 — SOLICITAR DOCUMENTAÇÃO
+    # status = Pendente → usa coluna "Solicitar documentação"
+    # =========================================================
+    data_solicitar = pd.to_datetime(
+        linha["Solicitar documentação"],
+        errors="coerce"
+    )
+
     if status == "Pendente" and pd.notna(data_solicitar):
         dias = (data_solicitar - hoje).days
-    
+
         if dias < 0:
             alertas.append((
                 "error",
@@ -126,11 +136,18 @@ def gerar_alertas_investidor(linha):
                 f"Faltam {dias} dias para solicitar a documentação ao investidor"
             ))
 
-    data_enviar_eb = linha["Enviar no EB"]
+    # =========================================================
+    # ALERTA 2 — ENVIAR NO EB
+    # status = Aguardando docs → usa coluna "Enviar no EB"
+    # =========================================================
+    data_enviar_eb = pd.to_datetime(
+        linha["Enviar no EB"],
+        errors="coerce"
+    )
 
     if status == "Aguardando docs" and pd.notna(data_enviar_eb):
         dias = (data_enviar_eb - hoje).days
-    
+
         if dias < 0:
             alertas.append((
                 "error",
@@ -155,7 +172,7 @@ def gerar_alertas_investidor(linha):
             "Plano de saúde e dental quase prontos! 🤩"
             "Acompanhar movimentação no portal EB"
         ))
-
+    
     # -------------------------
     # ALERTA 2 — Aniversário
     # -------------------------
