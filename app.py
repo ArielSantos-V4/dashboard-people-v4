@@ -663,7 +663,7 @@ with aba_dashboard:
             o1.text_input("Plano odonto", linha["Operadora Odonto"], disabled=True)
             o2.text_input("Carteirinha odonto", carteira_odo, disabled=True)
     
-            col_link, col_alertas = st.columns([1, 2])
+            col_link, col_alertas = st.columns([1, 3])
             
             # --- LINK DRIVE ---
             with col_link:
