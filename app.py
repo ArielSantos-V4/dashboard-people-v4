@@ -712,14 +712,14 @@ with aba_dashboard:
                 df_consulta,
                 st.session_state.investidor_selecionado
             )
-
-        if st.session_state.get("mostrar_modal_alertas"):
-            modal_alertas(st.session_state.alertas_atuais)
-            st.session_state.mostrar_modal_alertas = False
-            
+           
         if limpar:
             limpar_investidor()
             st.session_state.abrir_modal_investidor = False
+            
+    if st.session_state.get("mostrar_modal_alertas"):
+        modal_alertas(st.session_state.alertas_atuais)
+        st.session_state.mostrar_modal_alertas = False
                         
     # --------------------------------------------------
     # FORMAT TABELA
