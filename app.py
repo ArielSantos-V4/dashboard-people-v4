@@ -213,35 +213,6 @@ div[role="dialog"]:has(.modal-investidor) > div {
 </style>
 """, unsafe_allow_html=True)
 
-# alerta 
-st.markdown("""
-<style>
-.alerta-container {
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    width: 380px;
-    z-index: 9999;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-}
-
-.alerta-flutuante {
-    padding: 16px 18px;
-    background: #111827;
-    color: white;
-    border-radius: 14px;
-    box-shadow: 0 10px 30px rgba(0,0,0,.35);
-    font-size: 14px;
-}
-
-.alerta-warning { border-left: 6px solid #f59e0b; }
-.alerta-error   { border-left: 6px solid #ef4444; }
-.alerta-info    { border-left: 6px solid #3b82f6; }
-</style>
-""", unsafe_allow_html=True)
-
 from docx import Document
 from io import BytesIO
 
@@ -362,6 +333,16 @@ aba_dashboard, aba_relatorios, aba_benefícios = st.tabs([
     "📄 Relatórios",
     "🎁 Benefícios"
 ])
+
+@st.dialog("🚨 Alertas do investidor")
+def modal_alertas(alertas):
+    for tipo, mensagem in alertas:
+        if tipo == "error":
+            st.error(mensagem, icon="🚨")
+        elif tipo == "warning":
+            st.warning(mensagem, icon="⚠️")
+        else:
+            st.info(mensagem, icon="ℹ️")
 
 # --------------------------------------------------
 # ABA DASHBOARD
@@ -560,41 +541,11 @@ with aba_dashboard:
 
         linha = df_consulta[df_consulta["Nome"] == nome].iloc[0]
 
-        import time
-        
         alertas = gerar_alertas_investidor(linha)
-        agora = time.time()
-        
-        # container único
-        alertas_html = []
-        
-        for i, (tipo, mensagem) in enumerate(alertas):
-            key_time = f"alerta_time_{nome}_{i}"
-        
-            # registra quando o alerta nasceu
-            if key_time not in st.session_state:
-                st.session_state[key_time] = agora
-        
-            # mostra por até 10s
-            if agora - st.session_state[key_time] <= 10:
-                alertas_html.append(
-                    f"""
-                    <div class="alerta-flutuante alerta-{tipo}">
-                        {mensagem}
-                    </div>
-                    """
-                )
-        
-        # renderiza empilhado
-        if alertas_html:
-            st.markdown(
-                f"""
-                <div class="alerta-container">
-                    {''.join(alertas_html)}
-                </div>
-                """,
-                unsafe_allow_html=True
-            )
+
+        if alertas:
+            st.session_state.mostrar_modal_alertas = True
+            st.session_state.alertas_atuais = alertas
              
         col1, col2, col3 = st.columns([3, 3, 2])
             
@@ -761,6 +712,10 @@ with aba_dashboard:
                 df_consulta,
                 st.session_state.investidor_selecionado
             )
+
+        if st.session_state.get("mostrar_modal_alertas"):
+            modal_alertas(st.session_state.alertas_atuais)
+            st.session_state.mostrar_modal_alertas = False
             
         if limpar:
             limpar_investidor()
