@@ -568,37 +568,40 @@ with aba_dashboard:
         linha = df_consulta[df_consulta["Nome"] == nome].iloc[0]
 
         import time
-
+        
         alertas = gerar_alertas_investidor(linha)
         agora = time.time()
         
-        alertas_ativos = []
+        # container único
+        alertas_html = []
         
         for i, (tipo, mensagem) in enumerate(alertas):
             key_time = f"alerta_time_{nome}_{i}"
         
+            # registra quando o alerta nasceu
             if key_time not in st.session_state:
                 st.session_state[key_time] = agora
         
+            # mostra por até 10s
             if agora - st.session_state[key_time] <= 10:
-                alertas_ativos.append((tipo, mensagem))
+                alertas_html.append(
+                    f"""
+                    <div class="alerta-flutuante alerta-{tipo}">
+                        {mensagem}
+                    </div>
+                    """
+                )
         
-        # renderiza todos empilhados
-        if alertas_ativos:
-            html = '<div class="alerta-container">'
-            for tipo, mensagem in alertas_ativos:
-                html += f'''
-                <div class="alerta-flutuante alerta-{tipo}">
-                    {mensagem}
+        # renderiza empilhado
+        if alertas_html:
+            st.markdown(
+                f"""
+                <div class="alerta-container">
+                    {''.join(alertas_html)}
                 </div>
-                '''
-            html += '</div>'
-        
-            st.markdown(html, unsafe_allow_html=True)
-        
-            # força re-render enquanto ainda existir alerta
-            time.sleep(0.3)
-            st.rerun()
+                """,
+                unsafe_allow_html=True
+            )
              
         col1, col2, col3 = st.columns([3, 3, 2])
             
