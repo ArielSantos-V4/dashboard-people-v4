@@ -711,8 +711,8 @@ with aba_dashboard:
             # --- LINK DRIVE ---
             with col_link:
                 st.markdown("##### 🔗 Link")
-                if linha["Link Drive"]:
-                    st.link_button("Abrir Drive", linha["Link Drive"])
+                if linha["Drive"]:
+                    st.link_button("Abrir Drive", linha["Drive"])
                 else:
                     st.caption("Sem link de Drive")
             
