@@ -679,8 +679,6 @@ with aba_dashboard:
                 alertas = st.session_state.get("alertas_atuais", [])
             
                 if alertas:
-                    st.markdown("**⚠️ Alertas**")
-            
                     with st.container(height=220, border=True):
                         for tipo, mensagem in alertas:
                             if tipo == "error":
