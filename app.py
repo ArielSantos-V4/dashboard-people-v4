@@ -667,7 +667,7 @@ with aba_dashboard:
             
             # --- LINK DRIVE ---
             with col_link:
-            st.markdown("##### 🔗 Link")
+                st.markdown("##### 🔗 Link")
                 if linha["Link Drive"]:
                     st.link_button("Abrir Drive", linha["Link Drive"])
                 else:
@@ -675,7 +675,7 @@ with aba_dashboard:
             
             # --- ALERTAS ---
             with col_alertas:
-            st.markdown("##### ⚠️ Alertas")
+                st.markdown("##### ⚠️ Alertas")
                 alertas = st.session_state.get("alertas_atuais", [])
             
                 if alertas:
