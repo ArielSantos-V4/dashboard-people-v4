@@ -334,16 +334,6 @@ aba_dashboard, aba_relatorios, aba_benefícios = st.tabs([
     "🎁 Benefícios"
 ])
 
-@st.dialog("🚨 Alertas do investidor")
-def modal_alertas(alertas):
-    for tipo, mensagem in alertas:
-        if tipo == "error":
-            st.error(mensagem, icon="🚨")
-        elif tipo == "warning":
-            st.warning(mensagem, icon="⚠️")
-        else:
-            st.info(mensagem, icon="ℹ️")
-
 # --------------------------------------------------
 # ABA DASHBOARD
 # --------------------------------------------------
@@ -541,11 +531,28 @@ with aba_dashboard:
 
         linha = df_consulta[df_consulta["Nome"] == nome].iloc[0]
 
-        alertas = gerar_alertas_investidor(linha)
-
-        if alertas:
-            st.session_state.mostrar_modal_alertas = True
-            st.session_state.alertas_atuais = alertas
+            # 🔔 ALERTAS
+            alertas = st.session_state.get("alertas_atuais", [])
+        
+            if alertas:
+                for i, alerta in enumerate(alertas):
+                    col1, col2 = st.columns([10, 1])
+        
+                    with col1:
+                        if alerta["tipo"] == "error":
+                            st.error(alerta["mensagem"])
+                        elif alerta["tipo"] == "warning":
+                            st.warning(alerta["mensagem"])
+                        else:
+                            st.info(alerta["mensagem"])
+        
+                    with col2:
+                        if st.button("✖", key=f"fechar_alerta_{i}"):
+                            alertas.pop(i)
+                            st.session_state.alertas_atuais = alertas
+                            st.rerun()
+        
+                st.divider()
              
         col1, col2, col3 = st.columns([3, 3, 2])
             
