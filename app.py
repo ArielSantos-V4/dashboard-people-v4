@@ -531,28 +531,28 @@ with aba_dashboard:
 
         linha = df_consulta[df_consulta["Nome"] == nome].iloc[0]
 
-            # 🔔 ALERTAS
-            alertas = st.session_state.get("alertas_atuais", [])
-        
-            if alertas:
-                for i, alerta in enumerate(alertas):
-                    col1, col2 = st.columns([10, 1])
-        
-                    with col1:
-                        if alerta["tipo"] == "error":
-                            st.error(alerta["mensagem"])
-                        elif alerta["tipo"] == "warning":
-                            st.warning(alerta["mensagem"])
-                        else:
-                            st.info(alerta["mensagem"])
-        
-                    with col2:
-                        if st.button("✖", key=f"fechar_alerta_{i}"):
-                            alertas.pop(i)
-                            st.session_state.alertas_atuais = alertas
-                            st.rerun()
-        
-                st.divider()
+        # 🔔 ALERTAS
+        alertas = st.session_state.get("alertas_atuais", [])
+    
+        if alertas:
+            for i, alerta in enumerate(alertas):
+                col1, col2 = st.columns([10, 1])
+    
+                with col1:
+                    if alerta["tipo"] == "error":
+                        st.error(alerta["mensagem"])
+                    elif alerta["tipo"] == "warning":
+                        st.warning(alerta["mensagem"])
+                    else:
+                        st.info(alerta["mensagem"])
+    
+                with col2:
+                    if st.button("✖", key=f"fechar_alerta_{i}"):
+                        alertas.pop(i)
+                        st.session_state.alertas_atuais = alertas
+                        st.rerun()
+    
+            st.divider()
              
         col1, col2, col3 = st.columns([3, 3, 2])
             
