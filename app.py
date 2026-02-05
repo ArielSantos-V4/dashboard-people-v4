@@ -234,20 +234,13 @@ st.markdown("""
     border-radius: 14px;
     box-shadow: 0 10px 30px rgba(0,0,0,.35);
     font-size: 14px;
-    animation: slideUp .3s ease-out;
 }
 
 .alerta-warning { border-left: 6px solid #f59e0b; }
 .alerta-error   { border-left: 6px solid #ef4444; }
 .alerta-info    { border-left: 6px solid #3b82f6; }
-
-@keyframes slideUp {
-    from { transform: translateY(20px); opacity: 0; }
-    to   { transform: translateY(0); opacity: 1; }
-}
 </style>
 """, unsafe_allow_html=True)
-
 
 from docx import Document
 from io import BytesIO
