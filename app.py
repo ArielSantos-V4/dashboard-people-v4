@@ -101,29 +101,13 @@ else:
 
     if pagina == "🏠 Início":
 
-        # ---------------------------------------------------------
-        # CABEÇALHO DA LANDING PAGE (CENTRALIZADO E JUSTINHO)
-        # ---------------------------------------------------------
-        
-        # 1. Empurra para baixo (Para ficar no meio verticalmente)
-        st.markdown("<br>" * 5, unsafe_allow_html=True)
-    
-        # 2. Cria 4 colunas: [Vazio, Logo, Texto, Vazio]
-        # Os números definem a largura. Note que as pontas (1.5) são iguais para centralizar.
-        c_vazio_esq, c_logo, c_texto, c_vazio_dir = st.columns([1.5, 0.6, 2.5, 1.5]) 
-    
-        with c_logo:
-            # Aumentei um pouco a largura para a logo não ficar espremida
-            st.image("LOGO VERMELHO.png", width=130) 
-    
-        with c_texto:
-            # Ajuste fino do texto
-            st.markdown("""
-                <div style="display: flex; flex-direction: column; justify-content: center; height: 110px;">
-                    <h1 style="margin: 0; padding: 0; font-size: 3rem; line-height: 1.0;">People</h1>
-                    <span style="color: grey; font-size: 1.3rem; margin-top: 5px;">V4 Company</span>
-                </div>
-            """, unsafe_allow_html=True)
+        st.markdown("""
+            <div style="height:85vh;display:flex;flex-direction:column;
+                        justify-content:center;align-items:center;">
+                <h1 style="font-size:60px;">People</h1>
+                <p style="font-size:22px;color:gray;">V4 Company</p>
+            </div>
+        """, unsafe_allow_html=True)
                 
     elif pagina == "💼 Departamento Pessoal":
         departamento_pessoal.render(df)
