@@ -100,32 +100,13 @@ else:
 
     if pagina == "🏠 Início":
 
-        import streamlit as st
-
-        # Ajuste o caminho local ou use o caminho relativo dentro do seu projeto
-        logo_path = "f16f00d1-bde9-4218-8f66-65d5b66e4a17.png"
-        
-        # Cria um container que ocupa a altura da tela
-        with st.container():
-            st.write("")  # espaço superior
-            # Cria três colunas: esquerda (logo), central (texto) e direita (vazio para centralizar)
-            col_logo, col_texto, col_vazio = st.columns([1, 3, 1])
-        
-            # Logo à esquerda
-            with col_logo:
-                st.image(logo_path, width=120)
-        
-            # Texto centralizado
-            with col_texto:
-                st.markdown(
-                    """
-                    <div style="text-align:center; margin-top:100px;">
-                        <h1 style="font-size:60px; margin:0;">People</h1>
-                        <p style="font-size:22px; color:gray; margin:0;">V4 Company</p>
-                    </div>
-                    """,
-                    unsafe_allow_html=True
-                )
+        st.markdown("""
+            <div style="height:85vh;display:flex;flex-direction:column;
+                        justify-content:center;align-items:center;">
+                <h1 style="font-size:60px;">People</h1>
+                <p style="font-size:22px;color:gray;">V4 Company</p>
+            </div>
+        """, unsafe_allow_html=True)
 
 
     elif pagina == "💼 Departamento Pessoal":
