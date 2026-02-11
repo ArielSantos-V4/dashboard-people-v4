@@ -100,13 +100,20 @@ else:
 
     if pagina == "🏠 Início":
 
-        st.markdown("""
-            <div style="height:85vh;display:flex;flex-direction:column;
-                        justify-content:center;align-items:center;">
-                <h1 style="font-size:60px;">People</h1>
-                <p style="font-size:22px;color:gray;">V4 Company</p>
-            </div>
-        """, unsafe_allow_html=True)
+        st.markdown("<div style='height:85vh; display:flex; justify-content:center; align-items:center;'>", unsafe_allow_html=True)
+
+        col_logo, col_texto = st.columns([1, 3])  # proporção para o logo e texto
+        with col_logo:
+            st.image("LOGO VERMELHO.png", width=120)
+        
+        with col_texto:
+            st.markdown(
+                "<h1 style='margin:0;'>People</h1>"
+                "<p style='font-size:22px;color:gray;margin:0;'>V4 Company</p>",
+                unsafe_allow_html=True
+            )
+        
+        st.markdown("</div>", unsafe_allow_html=True)
 
     elif pagina == "💼 Departamento Pessoal":
         departamento_pessoal.render(df)
