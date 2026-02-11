@@ -290,8 +290,6 @@ def render(df): # <-- Corrigido para receber 'df'
             </div>
         """, unsafe_allow_html=True)
     
-    st.markdown("---")
-
     # ABAS
     aba_beneficios = st.tabs(["🎁 Benefícios"])
     
