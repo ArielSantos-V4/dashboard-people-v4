@@ -331,7 +331,7 @@ def render(df):
 
     with c_logo:
         # Aqui o Streamlit consegue ler seu arquivo local perfeitamente
-        st.image("LOGO VERMELHO.png", width=75) 
+        st.image("LOGO VERMELHO.png", width=150) 
 
     with c_texto:
         # Aqui usamos HTML para alinhar o título e subtítulo verticalmente com a logo
@@ -341,8 +341,6 @@ def render(df):
                 <span style="color: grey; font-size: 1.1rem; margin-top: 2px;">V4 Company</span>
             </div>
         """, unsafe_allow_html=True)
-
-    st.markdown("---")
         
     # --------------------------------------------------
     # ABAS
