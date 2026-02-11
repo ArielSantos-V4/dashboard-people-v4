@@ -102,24 +102,25 @@ else:
     if pagina == "🏠 Início":
 
         # ---------------------------------------------------------
-        # CABEÇALHO DA LANDING PAGE (INFERIOR ESQUERDO)
+        # CABEÇALHO DA LANDING PAGE (CENTRALIZADO E JUSTINHO)
         # ---------------------------------------------------------
         
-        # 1. Empurra o conteúdo para baixo (Aumente o número de <br> se quiser mais baixo)
-        st.markdown("<br>" * 12, unsafe_allow_html=True)
+        # 1. Empurra para baixo (Para ficar no meio verticalmente)
+        st.markdown("<br>" * 5, unsafe_allow_html=True)
     
-        # 2. Cria colunas alinhadas à ESQUERDA
-        # [Logo, Texto, Resto da tela vazio]
-        c_logo, c_texto, c_vazio = st.columns([0.6, 4, 5]) 
+        # 2. Cria 4 colunas: [Vazio, Logo, Texto, Vazio]
+        # Os números definem a largura. Note que as pontas (1.5) são iguais para centralizar.
+        c_vazio_esq, c_logo, c_texto, c_vazio_dir = st.columns([1.5, 0.6, 2.5, 1.5]) 
     
         with c_logo:
-            st.image("LOGO VERMELHO.png", width=110) 
+            # Aumentei um pouco a largura para a logo não ficar espremida
+            st.image("LOGO VERMELHO.png", width=130) 
     
         with c_texto:
-            # O HTML abaixo alinha o texto verticalmente com a imagem
+            # Ajuste fino do texto
             st.markdown("""
-                <div style="display: flex; flex-direction: column; justify-content: center; height: 100px;">
-                    <h1 style="margin: 0; padding: 0; font-size: 3rem; line-height: 1.0;">Dashboard People</h1>
+                <div style="display: flex; flex-direction: column; justify-content: center; height: 110px;">
+                    <h1 style="margin: 0; padding: 0; font-size: 3rem; line-height: 1.0;">People</h1>
                     <span style="color: grey; font-size: 1.3rem; margin-top: 5px;">V4 Company</span>
                 </div>
             """, unsafe_allow_html=True)
