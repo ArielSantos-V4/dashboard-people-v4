@@ -330,12 +330,12 @@ def render(df):
     c_logo, c_texto = st.columns([0.5, 6]) 
 
     with c_logo:
-        st.image("LOGO VERMELHO.png", width=110) 
+        st.image("LOGO VERMELHO.png", width=100) 
 
     with c_texto:
         # O 'justify-content: center' e 'height: 65px' garantem o alinhamento vertical no meio da altura da logo
         st.markdown("""
-            <div style="display: flex; flex-direction: column; justify-content: center; height: 110px;">
+            <div style="display: flex; flex-direction: column; justify-content: center; height: 100px;">
                 <h1 style="margin: 0; padding: 0; font-size: 2.2rem; line-height: 1.1;">Departamento Pessoal</h1>
                 <span style="color: grey; font-size: 1.1rem; margin-top: 2px;">V4 Company</span>
             </div>
