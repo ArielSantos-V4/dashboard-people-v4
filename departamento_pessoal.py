@@ -327,14 +327,13 @@ def render(df):
     # NOVO CABEÇALHO (Híbrido: Imagem Local + Texto HTML)
     # ---------------------------------------------------------
     # Cria duas colunas: uma estreita para a logo, outra larga para o texto
-    c_logo, c_texto = st.columns([0.8, 6]) 
+    c_logo, c_texto = st.columns([0.5, 6]) 
 
     with c_logo:
-        # Aqui o Streamlit consegue ler seu arquivo local perfeitamente
         st.image("LOGO VERMELHO.png", width=110) 
 
     with c_texto:
-        # Aqui usamos HTML para alinhar o título e subtítulo verticalmente com a logo
+        # O 'justify-content: center' e 'height: 65px' garantem o alinhamento vertical no meio da altura da logo
         st.markdown("""
             <div style="display: flex; flex-direction: column; justify-content: center; height: 65px;">
                 <h1 style="margin: 0; padding: 0; font-size: 2.2rem; line-height: 1.1;">Departamento Pessoal</h1>
