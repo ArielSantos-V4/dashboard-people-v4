@@ -102,20 +102,36 @@ else:
     if pagina == "🏠 Início":
 
         # ---------------------------------------------------------
-        # CABEÇALHO DA LANDING PAGE (Logo + Título)
+        # CABEÇALHO DA LANDING PAGE (CENTRALIZADO)
         # ---------------------------------------------------------
-        c_logo, c_texto = st.columns([0.5, 6]) 
+        
+        # 1. Empurra o conteúdo para baixo (Ajuste a quantidade de <br> se quiser mais para baixo)
+        st.markdown("<br><br><br>", unsafe_allow_html=True)
     
-        with c_logo:
-            st.image("LOGO VERMELHO.png", width=100) 
+        # 2. Cria 3 colunas: [Vazio, CONTEÚDO NO MEIO, Vazio]
+        # O [1, 2.5, 1] define a largura. O meio é mais largo.
+        col_esq, col_centro, col_dir = st.columns([1, 2.5, 1])
     
-        with c_texto:
-            st.markdown("""
-                <div style="display: flex; flex-direction: column; justify-content: center; height: 100px;">
-                    <h1 style="margin: 0; padding: 0; font-size: 3rem; line-height: 1.1;">Dashboard People</h1>
-                    <span style="color: grey; font-size: 1.2rem; margin-top: 5px;">Bem-vindo ao sistema de gestão</span>
-                </div>
-            """, unsafe_allow_html=True)
+        # 3. Desenha apenas na coluna do centro
+        with col_centro:
+            
+            # Dentro do centro, dividimos de novo: [Logo] [Texto]
+            c_logo, c_texto = st.columns([1, 3]) 
+    
+            with c_logo:
+                st.image("LOGO VERMELHO.png", use_container_width=True) 
+    
+            with c_texto:
+                # O 'padding-top' ajuda a alinhar o texto exatamente com o meio da imagem
+                st.markdown("""
+                    <div style="display: flex; flex-direction: column; justify-content: center; height: 100%; padding-top: 20px;">
+                        <h1 style="margin: 0; padding: 0; font-size: 3.5rem; line-height: 1.0;">Dashboard People</h1>
+                        <span style="color: grey; font-size: 1.4rem; margin-top: 5px;">Bem-vindo ao sistema de gestão</span>
+                    </div>
+                """, unsafe_allow_html=True)
+        
+        # Linha divisória opcional (pode tirar se quiser limpar mais)
+        st.markdown("<br><hr>", unsafe_allow_html=True)
         
     elif pagina == "💼 Departamento Pessoal":
         departamento_pessoal.render(df)
