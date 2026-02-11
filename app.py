@@ -58,7 +58,7 @@ else:
         "Menu",
         [
             "🏠 Início",
-            "📁 Departamento Pessoal",
+            "💼 Departamento Pessoal",
             "🎁 Benefícios"
         ]
     )
