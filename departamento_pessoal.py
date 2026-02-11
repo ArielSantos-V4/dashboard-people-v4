@@ -498,13 +498,8 @@ def render(df):
                 a5.text_input("Término previsto", linha["Térm previsto"], disabled=True)
                 a6.text_input("Modelo contrato", linha["Modelo de contrato"], disabled=True)
                 
-                tempo_casa = ""
-                if linha["Início na V4"] != "":
-                    delta = datetime.today() - linha["Início na V4_dt"]
-                    anos = delta.days // 365
-                    meses = (delta.days % 365) // 30
-                    dias = (delta.days % 365) % 30
-                    tempo_casa = f"{anos} anos, {meses} meses e {dias} dias"
+                # Usa a função pronta que trata erros e plural corretamente
+                tempo_casa = calcular_tempo_casa(linha["Início na V4_dt"])
                 
                 a7, a8 = st.columns([1, 2])
                 a7.text_input("Início na V4", linha["Início na V4"], disabled=True)
