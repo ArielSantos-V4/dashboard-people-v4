@@ -54,3 +54,21 @@ else:
             <p style="font-size:22px;color:gray;">V4 Company</p>
         </div>
     """, unsafe_allow_html=True)
+
+    
+    # --------------------------------------------------
+    # SIDEBAR
+    # --------------------------------------------------
+    st.sidebar.success(
+        f"Bem-vindo(a), {st.session_state.get('user_name', 'Usuário')}"
+    )
+    
+    if st.sidebar.button("🔄 Atualizar dados"):
+        st.cache_data.clear()
+        st.rerun()
+    
+    if st.sidebar.button("Logout"):
+        st.session_state.authenticated = False
+        st.rerun()
+
+    st.sidebar.divider()
