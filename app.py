@@ -101,15 +101,22 @@ else:
 
     if pagina == "🏠 Início":
 
-        st.markdown("""
-            <div style="height:85vh;display:flex;flex-direction:column;
-                        justify-content:center;align-items:center;">
-                <h1 style="font-size:60px;">People</h1>
-                <p style="font-size:22px;color:gray;">V4 Company</p>
-            </div>
-        """, unsafe_allow_html=True)
-
-
+        # ---------------------------------------------------------
+        # CABEÇALHO DA LANDING PAGE (Logo + Título)
+        # ---------------------------------------------------------
+        c_logo, c_texto = st.columns([0.5, 6]) 
+    
+        with c_logo:
+            st.image("LOGO VERMELHO.png", width=100) 
+    
+        with c_texto:
+            st.markdown("""
+                <div style="display: flex; flex-direction: column; justify-content: center; height: 100px;">
+                    <h1 style="margin: 0; padding: 0; font-size: 3rem; line-height: 1.1;">Dashboard People</h1>
+                    <span style="color: grey; font-size: 1.2rem; margin-top: 5px;">Bem-vindo ao sistema de gestão</span>
+                </div>
+            """, unsafe_allow_html=True)
+        
     elif pagina == "💼 Departamento Pessoal":
         departamento_pessoal.render(df)
     
