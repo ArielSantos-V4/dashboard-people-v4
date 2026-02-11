@@ -64,13 +64,14 @@ def parse_data_br(coluna):
 from dateutil.relativedelta import relativedelta
 import pandas as pd
 
+from dateutil.relativedelta import relativedelta
+
 def calcular_tempo_casa(data_inicio):
-    if pd.isna(data_inicio):
+    if pd.isna(data_inicio) or data_inicio == "":
         return ""
-
     hoje = pd.Timestamp.today().normalize()
+    # Usa relativedelta para cálculo preciso de anos/meses/dias
     diff = relativedelta(hoje, data_inicio)
-
     return f"{diff.years} anos, {diff.months} meses e {diff.days} dias"
 
 import unicodedata
