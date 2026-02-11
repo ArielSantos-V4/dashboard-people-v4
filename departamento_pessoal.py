@@ -725,7 +725,7 @@ def render(df):
                     st.info("Nenhum contrato vencendo no período selecionado ⏳")
                 else:
                     df_venc["Térm previsto"] = df_venc["Térm previsto_dt"].dt.strftime("%d/%m/%Y")
-                    render_table(df_venc[["Nome", "E-mail corporativo", "Térm previsto"]], use_container_width=True, hide_index=True)
+                    render_table(df_venc[["Nome", "E-mail corporativo", "Modelo de contrato", "Térm previsto"]], use_container_width=True, hide_index=True)
 
             # MEI
             with st.expander("💼 Investidores MEI", expanded=False):
