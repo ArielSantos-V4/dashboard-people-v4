@@ -366,9 +366,6 @@ if not st.session_state.authenticated:
         st.session_state.user_name = user["name"]
         st.rerun()
 
-    st.stop()  # ⛔ bloqueia o resto do app
-
-
 # ==============================
 # LANDING PAGE (após login)
 # ==============================
