@@ -321,17 +321,6 @@ def substituir_runs_header_footer(doc, mapa):
                         run.text = run.text.replace(chave, str(valor))
 
 # --------------------------------------------------
-# CONFIGURAÇÃO DA PÁGINA
-# --------------------------------------------------
-
-st.set_page_config(
-    page_title="People | V4 Company",
-    layout="wide",
-    page_icon="LOGO VERMELHO.png"
-)
-
-
-# --------------------------------------------------
 # ABAS
 # --------------------------------------------------
 aba_dashboard, aba_relatorios = st.tabs([
