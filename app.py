@@ -56,19 +56,53 @@ else:
     """, unsafe_allow_html=True)
 
     
+# ==============================
+# ÁREA AUTENTICADA
+# ==============================
+else:
+
     # --------------------------------------------------
     # SIDEBAR
     # --------------------------------------------------
     st.sidebar.success(
         f"Bem-vindo(a), {st.session_state.get('user_name', 'Usuário')}"
     )
-    
-    if st.sidebar.button("🔄 Atualizar dados"):
-        st.cache_data.clear()
-        st.rerun()
-    
+
+    pagina = st.sidebar.radio(
+        "Menu",
+        [
+            "🏠 Início",
+            "📁 Departamento Pessoal",
+            "🎁 Benefícios"
+        ]
+    )
+
     if st.sidebar.button("Logout"):
         st.session_state.authenticated = False
         st.rerun()
 
     st.sidebar.divider()
+
+    # --------------------------------------------------
+    # PÁGINAS
+    # --------------------------------------------------
+
+    if pagina == "🏠 Início":
+
+        st.markdown("""
+            <div style="height:85vh;display:flex;flex-direction:column;
+                        justify-content:center;align-items:center;">
+                <h1 style="font-size:60px;">People</h1>
+                <p style="font-size:22px;color:gray;">V4 Company</p>
+            </div>
+        """, unsafe_allow_html=True)
+
+    elif pagina == "📁 Departamento Pessoal":
+
+        st.title("Departamento Pessoal")
+        st.write("Aqui entra o código do dashboard de DP")
+
+    elif pagina == "🎁 Benefícios":
+
+        st.title("Benefícios")
+        st.write("Aqui entra o código de benefícios")
