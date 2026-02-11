@@ -1,4 +1,10 @@
 import streamlit as st
+
+# 🔒 Proteção da página
+if "authenticated" not in st.session_state or not st.session_state.authenticated:
+    st.warning("Você precisa fazer login para acessar esta página.")
+    st.stop()
+
 import pandas as pd
 import bcrypt
 import altair as alt
