@@ -100,15 +100,22 @@ else:
 
     if pagina == "🏠 Início":
 
-        st.image("LOGO VERMELHO.png", width=120)
         st.markdown("""
-            <div style="height:85vh;display:flex;flex-direction:column;
-                        justify-content:center;align-items:center;">
-                <h1 style="font-size:60px;">People</h1>
-                <p style="font-size:22px;color:gray;">V4 Company</p>
+            <div style="
+                height:85vh;
+                display:flex;
+                justify-content:center;
+                align-items:center;
+            ">
+                <div style="display:flex; align-items:center; gap:30px;">
+                    <img src='LOGO VERMELHO.png' width='120' style="display:block;">
+                    <div style="text-align:center;">
+                        <h1 style="font-size:60px; margin:0;">People</h1>
+                        <p style="font-size:22px; color:gray; margin:0;">V4 Company</p>
+                    </div>
+                </div>
             </div>
         """, unsafe_allow_html=True)
-
 
     elif pagina == "💼 Departamento Pessoal":
         departamento_pessoal.render(df)
