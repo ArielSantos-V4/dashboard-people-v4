@@ -1,7 +1,7 @@
 import streamlit as st
 
 st.set_page_config(
-    page_title="People em Desenvolvimento",
+    page_title="V4 People Hub",
     layout="wide",
     page_icon="LOGO VERMELHO.png"
 )
