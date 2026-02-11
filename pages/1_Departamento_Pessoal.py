@@ -316,7 +316,7 @@ def substituir_runs_header_footer(doc, mapa):
                     if chave in run.text:
                         run.text = run.text.replace(chave, str(valor))
                         
-def render():
+def render(df):
     
     # 🔒 Proteção da página
     if "authenticated" not in st.session_state or not st.session_state.authenticated:
@@ -397,59 +397,7 @@ def render():
         
         </style>
         """, unsafe_allow_html=True)
-               
-        # --------------------------------------------------
-        # GOOGLE SHEETS
-        # --------------------------------------------------
-        import gspread
-        from google.oauth2.service_account import Credentials
         
-        @st.cache_data(ttl=600)
-        def load_google_sheet():
-            creds = Credentials.from_service_account_info(
-                st.secrets["gcp_service_account"],
-                scopes=["https://www.googleapis.com/auth/spreadsheets.readonly"]
-            )
-        
-            client = gspread.authorize(creds)
-        
-            sheet = client.open_by_key("13EPwhiXgh8BkbhyrEy2aCy3cv1O8npxJ_hA-HmLZ-pY")
-            worksheet = sheet.get_worksheet(5)
-        
-            data = worksheet.get_all_records()
-            return pd.DataFrame(data)
-    
-        
-        # --------------------------------------------------
-        # LOAD + ORGANIZAÇÃO
-        # --------------------------------------------------
-        df = load_google_sheet()
-    
-        # Padronização de colunas
-        df = df.rename(columns={
-            "Nome completo": "Nome",
-            "Data Início": "Início na V4",
-            "Término contrato previsto": "Térm previsto",
-            "Ativo no plano": "Situação no plano"
-        })
-    
-        df.columns = (
-            df.columns
-            .astype(str)
-            .str.replace("\u00a0", " ", regex=False)
-            .str.strip()
-        )
-    
-        if "Nome" not in df.columns:
-            st.error("❌ A coluna 'Nome' não foi encontrada na planilha.")
-            st.write("Colunas disponíveis:", df.columns.tolist())
-            st.stop()
-    
-        df = df.sort_values(df.columns[0]).reset_index(drop=True)
-        
-        # 👇 AQUI É O LUGAR CERTO
-        df = df.fillna("")
-                
         # --------------------------------------------------
         # CONVERSÃO CORRETA (DAYFIRST)
         # --------------------------------------------------
