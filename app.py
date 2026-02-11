@@ -100,22 +100,29 @@ else:
 
     if pagina == "🏠 Início":
 
-        st.markdown("""
-            <div style="
-                height:85vh;
-                display:flex;
-                justify-content:center;
-                align-items:center;
-            ">
-                <div style="display:flex; align-items:center; gap:30px;">
-                    <img src='LOGO VERMELHO.png' width='120' style="display:block;">
+        from PIL import Image
+
+        # Carrega a imagem local
+        logo = Image.open("/mnt/data/f16f00d1-bde9-4218-8f66-65d5b66e4a17.png")
+        
+        # Cria container centralizado
+        with st.container():
+            st.write("")  # espaço superior
+            col_logo, col_texto, col_vazio = st.columns([1, 3, 1])
+        
+            with col_logo:
+                st.image(logo, width=120)
+        
+            with col_texto:
+                st.markdown(
+                    """
                     <div style="text-align:center;">
                         <h1 style="font-size:60px; margin:0;">People</h1>
                         <p style="font-size:22px; color:gray; margin:0;">V4 Company</p>
                     </div>
-                </div>
-            </div>
-        """, unsafe_allow_html=True)
+                    """,
+                    unsafe_allow_html=True
+                )
 
     elif pagina == "💼 Departamento Pessoal":
         departamento_pessoal.render(df)
