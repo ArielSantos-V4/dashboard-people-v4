@@ -1,5 +1,315 @@
 import streamlit as st
+import pandas as pd
+import plotly.express as px
+import bcrypt
+import altair as alt
+from datetime import datetime, timedelta
+from dateutil.relativedelta import relativedelta
+from docx import Document
+from datetime import date
 
+if "investidor_selecionado" not in st.session_state:
+    st.session_state.investidor_selecionado = ""
+
+def limpar_investidor():
+    st.session_state.investidor_selecionado = ""
+
+def formatar_cpf(valor):
+    v = str(valor).replace(".0", "").zfill(11)
+    if len(v) != 11:
+        return ""
+    return f"{v[:3]}.{v[3:6]}.{v[6:9]}-{v[9:]}"
+
+
+def formatar_cnpj(valor):
+    v = str(valor).replace(".0", "").zfill(14)
+    if len(v) != 14:
+        return ""
+    return f"{v[:2]}.{v[2:5]}.{v[5:8]}/{v[8:12]}-{v[12:]}"
+
+def render_table(df, *, dataframe=True, **kwargs):
+    """
+    Renderiza tabelas no Streamlit sem mostrar NaN / NaT / None,
+    preservando os tipos originais do dataframe.
+    """
+    df_view = df.copy()
+
+    # Substitui apenas para exibição
+    df_view = df_view.where(pd.notna(df_view), "")
+
+    if dataframe:
+        st.dataframe(df_view, **kwargs)
+    else:
+        st.table(df_view)
+
+def parse_data_br(coluna):
+    return pd.to_datetime(coluna, dayfirst=True, errors="coerce")
+
+from dateutil.relativedelta import relativedelta
+
+def calcular_tempo_casa(data_inicio):
+    if pd.isna(data_inicio):
+        return ""
+
+    hoje = pd.Timestamp.today().normalize()
+    diff = relativedelta(hoje, data_inicio)
+
+    return f"{diff.years} anos, {diff.months} meses e {diff.days} dias"
+
+import unicodedata
+
+def email_para_nome_arquivo(email):
+    if not email:
+        return ""
+
+    email = unicodedata.normalize("NFKC", email)
+
+    return (
+        email
+        .strip()
+        .lower()
+        .replace(" ", "")
+    )
+
+import re
+
+def normalizar_cpf(cpf):
+    if not cpf:
+        return ""
+
+    # remove tudo que não for número
+    cpf = re.sub(r"\D", "", str(cpf))
+
+    # garante 11 dígitos com zero à esquerda
+    return cpf.zfill(11)
+
+def gerar_hash_senha(senha):
+    return bcrypt.hashpw(
+        senha.encode("utf-8"),
+        bcrypt.gensalt()
+    ).decode("utf-8")
+
+def gerar_alertas_investidor(linha):
+    alertas = []
+
+    # --- data de hoje (sem hora) ---
+    hoje = pd.Timestamp.today().normalize()
+
+    # --- status do plano ---
+    status = str(linha["Situação no plano"]).strip()
+
+    # =========================================================
+    # ALERTA 1 — SOLICITAR DOCUMENTAÇÃO
+    # status = Pendente → usa coluna "Solicitar documentação"
+    # =========================================================
+    data_solicitar = pd.to_datetime(
+        linha["Solicitar documentação"],
+        errors="coerce"
+    )
+
+    if status == "Pendente" and pd.notna(data_solicitar):
+        dias = (data_solicitar - hoje).days
+
+        if dias < 0:
+            alertas.append((
+                "error",
+                "Plano de saúde e dental 🤕\n"
+                "Solicitação de documentação em atraso. Verificar com urgência!"
+            ))
+        elif dias == 0:
+            alertas.append((
+                "warning",
+                "Plano de saúde e dental ❤️‍🩹\n"
+                "Hoje é a data limite para solicitar a documentação!"
+            ))
+        elif dias <= 15:
+            alertas.append((
+                "info",
+                f"Plano de saúde e dental ❤️‍🩹\n"
+                f"Faltam {dias} dias para solicitar a documentação ao investidor"
+            ))
+
+    # =========================================================
+    # ALERTA 2 — ENVIAR NO EB
+    # status = Aguardando docs → usa coluna "Enviar no EB"
+    # =========================================================
+    data_enviar_eb = pd.to_datetime(
+        linha["Enviar no EB"],
+        errors="coerce"
+    )
+
+    if status == "Aguardando docs" and pd.notna(data_enviar_eb):
+        dias = (data_enviar_eb - hoje).days
+
+        if dias < 0:
+            alertas.append((
+                "error",
+                "Plano de saúde e dental 🤕\n"
+                "Envio à EB em atraso. Verificar com urgência!"
+            ))
+        elif dias == 0:
+            alertas.append((
+                "warning",
+                "Plano de saúde e dental ❤️‍🩹\n"
+                "Hoje é a data limite para enviar à EB"
+            ))
+        elif dias <= 15:
+            alertas.append((
+                "info",
+                f"Plano de saúde e dental ❤️‍🩹\n"
+                f"Faltam {dias} dias para enviar à EB"
+            ))
+
+    if status == "Aguardando DBL":
+        alertas.append(("info",
+            "Plano de saúde e dental quase prontos! 🤩"
+            "Acompanhar movimentação no portal EB"
+        ))
+    
+    # -------------------------
+    # ALERTA — Aniversário
+    # -------------------------
+    nascimento_raw = linha.get("Data de nascimento", "")
+    
+    nascimento = pd.to_datetime(
+        nascimento_raw,
+        errors="coerce",
+        dayfirst=True
+    )
+    
+    if pd.notna(nascimento):
+        nascimento = pd.Timestamp(nascimento).normalize()
+    
+        if nascimento.month == hoje.month:
+            if nascimento.day == hoje.day:
+                alertas.append((
+                    "info",
+                    "Lembrete de Aniversário! 🎉\n"
+                    "HOJE é aniversário do investidor!!"
+                ))
+            else:
+                alertas.append((
+                    "info",
+                    "Lembrete de Aniversário! 🎉\n"
+                    "Este investidor faz aniversário neste mês"
+                ))
+
+    # -------------------------
+    # ALERTA 3 — Contrato
+    # -------------------------
+    fim_contrato_raw = linha.get("Térm previsto", "")
+
+    fim_contrato = pd.to_datetime(
+        fim_contrato_raw,
+        errors="coerce",
+        dayfirst=True
+    )
+    
+    if pd.notna(fim_contrato):
+        fim_contrato = pd.Timestamp(fim_contrato).normalize()
+        dias = (fim_contrato - hoje).days
+    
+    if pd.notna(fim_contrato):
+        dias = (fim_contrato - hoje).days
+
+        if dias < 0:
+            alertas.append(("error",
+                "Contrato vencido! 🚨"
+                "Verificar com urgência!"
+            ))
+        elif dias <= 30:
+            alertas.append(("warning",
+                f"Alerta! ⚠️"
+                f"O contrato se encerra em {dias} dia(s)."
+            ))
+
+    # -------------------------
+    # ALERTA 4 — MEI
+    # -------------------------
+    if linha.get("Modalidade PJ", "") == "MEI":
+        alertas.append(("warning",
+            "Atenção! Investidor ainda se encontra na modalidade MEI 😬"
+        ))
+
+    return alertas
+
+st.markdown("""
+<style>
+/* Modal específico da consulta individual */
+div[role="dialog"]:has(.modal-investidor) {
+    width: 95vw !important;
+    max-width: 95vw !important;
+}
+
+/* Altura maior (opcional) */
+div[role="dialog"]:has(.modal-investidor) > div {
+    max-height: 90vh !important;
+}
+    
+</style>
+""", unsafe_allow_html=True)
+
+from docx import Document
+from io import BytesIO
+
+def gerar_docx_com_substituicoes(caminho_modelo, substituicoes):
+    doc = Document(caminho_modelo)
+
+    for paragrafo in doc.paragraphs:
+        for run in paragrafo.runs:
+            for chave, valor in substituicoes.items():
+                if chave in run.text:
+                    run.text = run.text.replace(chave, valor)
+
+    for tabela in doc.tables:
+        for linha in tabela.rows:
+            for celula in linha.cells:
+                for paragrafo in celula.paragraphs:
+                    for run in paragrafo.runs:
+                        for chave, valor in substituicoes.items():
+                            if chave in run.text:
+                                run.text = run.text.replace(chave, valor)
+
+    buffer = BytesIO()
+    doc.save(buffer)
+    buffer.seek(0)
+
+    return buffer
+
+from docx import Document
+
+def gerar_vale_transporte(dados):
+    # Abre o documento ORIGINAL (modelo)
+    doc = Document("modelo_vale_transporte.docx")
+
+    for p in doc.paragraphs:
+        if "{{NOME}}" in p.text:
+            p.text = p.text.replace("{{NOME}}", dados["nome"])
+
+        if "{{CPF}}" in p.text:
+            p.text = p.text.replace("{{CPF}}", dados["cpf"])
+
+        if "{{VALOR}}" in p.text:
+            p.text = p.text.replace("{{VALOR}}", dados["valor"])
+
+    doc.save("vale_transporte_final.docx")
+
+def substituir_runs_header_footer(doc, mapa):
+    for section in doc.sections:
+        # HEADER
+        for p in section.header.paragraphs:
+            for run in p.runs:
+                for chave, valor in mapa.items():
+                    if chave in run.text:
+                        run.text = run.text.replace(chave, str(valor))
+
+        # FOOTER
+        for p in section.footer.paragraphs:
+            for run in p.runs:
+                for chave, valor in mapa.items():
+                    if chave in run.text:
+                        run.text = run.text.replace(chave, str(valor))
+                        
 def render():
     
     # --------------------------------------------------
