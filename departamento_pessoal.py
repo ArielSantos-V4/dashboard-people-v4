@@ -331,7 +331,7 @@ def render(df):
 
     with c_logo:
         # Aqui o Streamlit consegue ler seu arquivo local perfeitamente
-        st.image("LOGO VERMELHO.png", width=150) 
+        st.image("LOGO VERMELHO.png", width=110) 
 
     with c_texto:
         # Aqui usamos HTML para alinhar o título e subtítulo verticalmente com a logo
