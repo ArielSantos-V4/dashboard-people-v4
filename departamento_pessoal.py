@@ -424,24 +424,7 @@ def render(df):
             df["Térm previsto_dt"].isna(),
             df["Térm previsto_dt"].dt.strftime("%d/%m/%Y")
         )
-    
-        # --------------------------------------------------
-        # SIDEBAR
-        # --------------------------------------------------
-        st.sidebar.success(
-            f"Bem-vindo(a), {st.session_state.get('user_name', 'Usuário')}"
-        )
         
-        if st.sidebar.button("🔄 Atualizar dados"):
-            st.cache_data.clear()
-            st.rerun()
-        
-        if st.sidebar.button("Logout"):
-            st.session_state.authenticated = False
-            st.rerun()
-    
-        st.sidebar.divider()
-    
         # --------------------------------------------------
         # TOPO
         # --------------------------------------------------
