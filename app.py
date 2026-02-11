@@ -104,7 +104,7 @@ else:
         st.markdown("""
             <div style="height:85vh;display:flex;flex-direction:column;
                         justify-content:center;align-items:center;">
-                <h1 style="font-size:60px;">People</h1>
+                <h1 style="font-size:60px;">People em desenvolvimento</h1>
                 <p style="font-size:22px;color:gray;">V4 Company</p>
             </div>
         """, unsafe_allow_html=True)
