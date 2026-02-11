@@ -368,6 +368,56 @@ if not st.session_state.authenticated:
 
     st.stop()  # ⛔ bloqueia o resto do app
 
+
+# ==============================
+# LANDING PAGE (após login)
+# ==============================
+
+st.set_page_config(
+    page_title="Dashboard People V4",
+    layout="wide"
+)
+
+# Esconde menu padrão
+hide_streamlit_style = """
+    <style>
+        #MainMenu {visibility: hidden;}
+        footer {visibility: hidden;}
+        header {visibility: hidden;}
+    </style>
+"""
+st.markdown(hide_streamlit_style, unsafe_allow_html=True)
+
+# CSS de centralização
+st.markdown("""
+    <style>
+    .centered {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 85vh;
+        flex-direction: column;
+        text-align: center;
+    }
+    .title {
+        font-size: 60px;
+        font-weight: bold;
+    }
+    .subtitle {
+        font-size: 22px;
+        color: gray;
+        margin-top: -15px;
+    }
+    </style>
+""", unsafe_allow_html=True)
+
+st.markdown(f"""
+<div class="centered">
+    <div class="title">People</div>
+    <div class="subtitle">V4 Company</div>
+</div>
+""", unsafe_allow_html=True)
+
 # --------------------------------------------------
 # ABAS
 # --------------------------------------------------
