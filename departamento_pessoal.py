@@ -323,7 +323,13 @@ def render(df):
         st.warning("Você precisa fazer login para acessar esta página.")
         st.stop()
         
-    st.title("Departamento Pessoal")
+    # NOVO CABEÇALHO (Logo + Título na mesma linha)
+        st.markdown("""
+            <div style="display: flex; align-items: center; margin-bottom: 20px;">
+                <img src="LOGO VERMELHO.png" width="60" style="margin-right: 15px;">
+                <h1 style="margin: 0; padding: 0; font-size: 2.5rem;">Departamento Pessoal</h1>
+            </div>
+        """, unsafe_allow_html=True)
 
     st.write("Conteúdo do DP aqui")
         
@@ -424,20 +430,7 @@ def render(df):
             df["Térm previsto_dt"].isna(),
             df["Térm previsto_dt"].dt.strftime("%d/%m/%Y")
         )
-        
-        # --------------------------------------------------
-        # TOPO
-        # --------------------------------------------------
-        col_logo, col_title = st.columns([1, 6])
-        
-        with col_logo:
-            st.image("LOGO VERMELHO.png", width=120)
             
-        with col_title:
-            st.markdown("<h1>Dashboard People</h1><h3 style='color:#ccc;'>V4 Company</h3>", unsafe_allow_html=True)
-        
-        st.markdown("---")
-    
         # --------------------------------------------------
         # CONSULTA INDIVIDUAL
         # --------------------------------------------------
@@ -862,22 +855,6 @@ def render(df):
     with aba_relatorios:
     
         st.markdown("<div style='height:20px'></div>", unsafe_allow_html=True)
-    
-        # --------------------------------------------------
-        # TOPO
-        # --------------------------------------------------
-        col_logo, col_title = st.columns([1, 6])
-    
-        with col_logo:
-            st.image("LOGO VERMELHO.png", width=120)
-    
-        with col_title:
-            st.markdown(
-                "<h1>Análises & Relatórios</h1><h3 style='color:#ccc;'>V4 Company</h3>",
-                unsafe_allow_html=True
-            )
-    
-        st.markdown("---")
     
         # --------------------------------------------------
         # LAYOUT PRINCIPAL — RELATÓRIOS
