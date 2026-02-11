@@ -323,15 +323,26 @@ def render(df):
         st.warning("Você precisa fazer login para acessar esta página.")
         st.stop()
         
-    # NOVO CABEÇALHO (Logo + Título na mesma linha)
+    # ---------------------------------------------------------
+    # NOVO CABEÇALHO (Híbrido: Imagem Local + Texto HTML)
+    # ---------------------------------------------------------
+    # Cria duas colunas: uma estreita para a logo, outra larga para o texto
+    c_logo, c_texto = st.columns([0.8, 6]) 
+
+    with c_logo:
+        # Aqui o Streamlit consegue ler seu arquivo local perfeitamente
+        st.image("LOGO VERMELHO.png", width=75) 
+
+    with c_texto:
+        # Aqui usamos HTML para alinhar o título e subtítulo verticalmente com a logo
         st.markdown("""
-            <div style="display: flex; align-items: center; margin-bottom: 20px;">
-                <img src="LOGO VERMELHO.png" width="60" style="margin-right: 15px;">
-                <h1 style="margin: 0; padding: 0; font-size: 2.5rem;">Departamento Pessoal</h1>
+            <div style="display: flex; flex-direction: column; justify-content: center; height: 65px;">
+                <h1 style="margin: 0; padding: 0; font-size: 2.2rem; line-height: 1.1;">Departamento Pessoal</h1>
+                <span style="color: grey; font-size: 1.1rem; margin-top: 2px;">V4 Company</span>
             </div>
         """, unsafe_allow_html=True)
 
-    st.write("Conteúdo do DP aqui")
+    st.markdown("---")
         
     # --------------------------------------------------
     # ABAS
