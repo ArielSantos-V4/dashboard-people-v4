@@ -100,6 +100,7 @@ else:
 
     if pagina == "🏠 Início":
 
+        import streamlit as st
         from PIL import Image
 
         # Carrega a imagem local
