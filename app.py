@@ -1,5 +1,7 @@
 import streamlit as st
 import bcrypt
+import departamento_pessoal
+import beneficios
 
 st.set_page_config(
     page_title="People | V4 Company",
@@ -84,11 +86,7 @@ else:
         """, unsafe_allow_html=True)
 
     elif pagina == "📁 Departamento Pessoal":
-
-        st.title("Departamento Pessoal")
-        st.write("Aqui entra o código do dashboard de DP")
+        departamento_pessoal.render()
 
     elif pagina == "🎁 Benefícios":
-
-        st.title("Benefícios")
-        st.write("Aqui entra o código de benefícios")
+        beneficios.render()
