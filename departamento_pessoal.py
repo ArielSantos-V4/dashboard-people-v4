@@ -17,18 +17,31 @@ if "investidor_selecionado" not in st.session_state:
 def limpar_investidor():
     st.session_state.investidor_selecionado = ""
 
-def formatar_cpf(valor):
-    v = str(valor).replace(".0", "").zfill(11)
-    if len(v) != 11:
+# ==========================================
+# FUNÇÕES AUXILIARES (GLOBAL)
+# ==========================================
+def limpar_numero(valor):
+    if valor == "" or pd.isna(valor):
         return ""
-    return f"{v[:3]}.{v[3:6]}.{v[6:9]}-{v[9:]}"
+    return str(valor).replace(".0", "").replace(".", "").replace("-", "").replace("/", "").strip()
 
+def formatar_cpf(valor):
+    v = limpar_numero(valor).zfill(11)
+    if len(v) == 11:
+        return f"{v[:3]}.{v[3:6]}.{v[6:9]}-{v[9:]}"
+    return v
 
 def formatar_cnpj(valor):
-    v = str(valor).replace(".0", "").zfill(14)
-    if len(v) != 14:
-        return ""
-    return f"{v[:2]}.{v[2:5]}.{v[5:8]}/{v[8:12]}-{v[12:]}"
+    v = limpar_numero(valor).zfill(14)
+    if len(v) == 14:
+        return f"{v[:2]}.{v[2:5]}.{v[5:8]}/{v[8:12]}-{v[12:]}"
+    return v
+
+def formatar_matricula(valor):
+    v = limpar_numero(valor)
+    if v.isdigit():
+        return v.zfill(6)
+    return v
 
 def render_table(df, *, dataframe=True, **kwargs):
     """
@@ -665,37 +678,7 @@ def render(df):
             if limpar:
                 limpar_investidor()
                 st.session_state.abrir_modal_investidor = False
-                                       
-        # --------------------------------------------------
-        # FORMAT TABELA
-        # --------------------------------------------------
-        
-        def limpar_numero(valor):
-            if valor == "" or pd.isna(valor):
-                return ""
-            return str(valor).replace(".0", "").strip()
-        
-        
-        def formatar_cpf(valor):
-            v = limpar_numero(valor)
-            if len(v) == 11:
-                return f"{v[0:3]}.{v[3:6]}.{v[6:9]}-{v[9:11]}"
-            return v
-        
-        
-        def formatar_cnpj(valor):
-            v = limpar_numero(valor)
-            if len(v) == 14:
-                return f"{v[0:2]}.{v[2:5]}.{v[5:8]}/{v[8:12]}-{v[12:14]}"
-            return v
-        
-        
-        def formatar_matricula(valor):
-            v = limpar_numero(valor)
-            if v.isdigit():
-                return v.zfill(6)
-            return v
-        
+                                               
         # --------------------------------------------------
         # TABELA
         # --------------------------------------------------
