@@ -125,14 +125,11 @@ else:
                 # O 'padding-top' ajuda a alinhar o texto exatamente com o meio da imagem
                 st.markdown("""
                     <div style="display: flex; flex-direction: column; justify-content: center; height: 100%; padding-top: 20px;">
-                        <h1 style="margin: 0; padding: 0; font-size: 3.5rem; line-height: 1.0;">Dashboard People</h1>
-                        <span style="color: grey; font-size: 1.4rem; margin-top: 5px;">Bem-vindo ao sistema de gestão</span>
+                        <h1 style="margin: 0; padding: 0; font-size: 3.5rem; line-height: 1.0;">People</h1>
+                        <span style="color: grey; font-size: 1.4rem; margin-top: 5px;">V4 Company</span>
                     </div>
                 """, unsafe_allow_html=True)
-        
-        # Linha divisória opcional (pode tirar se quiser limpar mais)
-        st.markdown("<br><hr>", unsafe_allow_html=True)
-        
+                
     elif pagina == "💼 Departamento Pessoal":
         departamento_pessoal.render(df)
     
