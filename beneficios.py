@@ -206,68 +206,6 @@ def modal_nao_adesao(df):
         except Exception as e:
             st.error(f"Erro ao gerar documento: {e}")
 
-@st.dialog("📄 Gerar Exclusão Subfatura")
-def modal_exclusao_subfatura():
-    # Carrega planilha de desligados (função específica)
-    df_desligados = carregar_desligados_google_sheets()
-    
-    if df_desligados.empty:
-        st.warning("Não foi possível carregar a base de desligados.")
-        return
-
-    nomes = sorted(df_desligados["Nome"].dropna().unique())
-    nome_escolhido = st.selectbox("Selecione o investidor", nomes, key="nome_exclusao")
-    data_exclusao = st.date_input("Data de exclusão", format="DD/MM/YYYY")
-
-    st.markdown("<br>", unsafe_allow_html=True)
-    col1, col2, col3 = st.columns([1, 2, 1])
-    
-    if col2.button("✅ Gerar", use_container_width=True, key="btn_exclusao"):
-        dados = df_desligados[df_desligados["Nome"] == nome_escolhido].iloc[0]
-        
-        razao_social = str(dados.get("Razão social", ""))
-        cnpj = formatar_cnpj(dados.get("CNPJ", ""))
-        cpf = normalizar_cpf(dados.get("CPF", ""))
-        email_pessoal = str(dados.get("E-mail pessoal", ""))
-        email_arquivo = email_para_nome_arquivo(email_pessoal)
-        modelo_contrato = str(dados.get("Modelo de contrato", ""))
-
-        if "PJ" not in modelo_contrato.upper():
-            st.warning(f"⚠️ **{nome_escolhido}** não possui contrato PJ. Modelo atual: **{modelo_contrato}**")
-
-        try:
-            doc = Document("Exclusao_Subfatura.docx")
-            data_exclusao_formatada = data_exclusao.strftime("%d/%m/%Y")
-            hoje = date.today()
-            data_assinatura = f"{hoje.day} de {MESES_PT[hoje.month]} de {hoje.year}"
-
-            mapa = {
-                "{RAZAO_SOCIAL}": razao_social,
-                "{CNPJ}": cnpj,
-                "{DATA_EXCLUSAO}": data_exclusao_formatada,
-                "{DATA}": data_assinatura
-            }
-
-            substituir_texto(doc.paragraphs, mapa)
-            for table in doc.tables:
-                for row in table.rows:
-                    for cell in row.cells:
-                        substituir_texto(cell.paragraphs, mapa)
-            for section in doc.sections:
-                substituir_texto(section.header.paragraphs, mapa)
-
-            cpf_limpo = re.sub(r"\D", "", cpf)
-            nome_arquivo = f"{nome_escolhido} __ {cpf_limpo} __ {email_arquivo} __ Exclusão Subfatura.docx"
-            doc.save(nome_arquivo)
-
-            with open(nome_arquivo, "rb") as f:
-                st.download_button("⬇️ Download", f, file_name=nome_arquivo, mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document", use_container_width=True)
-            
-            st.link_button("🔁 Converter PDF", "https://www.ilovepdf.com/pt/word_para_pdf", use_container_width=True)
-            st.success("Exclusão Subfatura gerada com sucesso ✅")
-        except Exception as e:
-            st.error(f"Erro ao gerar documento: {e}")
-
 # ==========================================
 # FUNÇÃO PRINCIPAL (RENDER)
 # ==========================================
@@ -389,6 +327,3 @@ def render(df): # <-- Corrigido para receber 'df'
                 
             if st.button("📄 Gerar Termo de Não Adesão", use_container_width=True):
                 modal_nao_adesao(df)
-            
-            if st.button("📄 Gerar Exclusão Subfatura", use_container_width=True):
-                modal_exclusao_subfatura()
