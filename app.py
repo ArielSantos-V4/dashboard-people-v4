@@ -101,6 +101,7 @@ else:
     if pagina == "🏠 Início":
 
         st.markdown("""
+            st.image("LOGO VERMELHO.png", width=120)
             <div style="height:85vh;display:flex;flex-direction:column;
                         justify-content:center;align-items:center;">
                 <h1 style="font-size:60px;">People</h1>
