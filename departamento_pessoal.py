@@ -145,6 +145,13 @@ def substituir_runs_header_footer(doc, mapa):
                     if chave in run.text:
                         run.text = run.text.replace(chave, str(valor))
 
+# --- FUNÇÃO QUE FALTAVA (CORREÇÃO AQUI) ---
+def substituir_texto_docx(doc, mapa):
+    """Função wrapper para substituir em todo o documento"""
+    substituir_runs_paragrafos(doc, mapa)
+    substituir_runs_tabelas(doc, mapa)
+    substituir_runs_header_footer(doc, mapa)
+
 # ==========================================
 # LÓGICA DE ALERTAS
 # ==========================================
@@ -233,7 +240,7 @@ def modal_consulta_investidor(df_consulta, nome):
         a5.text_input("Término previsto", linha["Térm previsto"], disabled=True)
         a6.text_input("Modelo contrato", linha["Modelo de contrato"], disabled=True)
         
-        # CÁLCULO SEGURO DO TEMPO DE CASA (AGORA FUNCIONA)
+        # CÁLCULO SEGURO DO TEMPO DE CASA
         tempo_casa = calcular_tempo_casa(linha["Início na V4_dt"])
         
         a7, a8 = st.columns([1, 2])
@@ -396,7 +403,7 @@ def modal_comum(df):
             "{cargo}": cargo,
             "{data}": data_desligamento.strftime("%d/%m/%Y")
         }
-        substituir_texto_docx(doc, mapa_substituicao) # <--- Esta função também precisa estar global
+        substituir_texto_docx(doc, mapa_substituicao) # <--- Agora esta função existe
         buffer = BytesIO()
         doc.save(buffer)
         buffer.seek(0)
@@ -515,9 +522,7 @@ def modal_vale_transporte(df_pessoas):
             mapa[f"{{inte_{i}_tra}}"] = f"{it:.2f}"
 
         doc = Document("declaracao_vale_transporte_clt.docx")
-        substituir_runs_paragrafos(doc, mapa)
-        substituir_runs_tabelas(doc, mapa)
-        substituir_runs_header_footer(doc, mapa)
+        substituir_texto_docx(doc, mapa) # <--- Usa o wrapper
         
         nome_arquivo = f"Declaração de Vale Transporte CLT - {nome_sel}.docx"
         doc.save(nome_arquivo)
@@ -725,7 +730,7 @@ def render(df):
                     st.info("Nenhum contrato vencendo no período selecionado ⏳")
                 else:
                     df_venc["Térm previsto"] = df_venc["Térm previsto_dt"].dt.strftime("%d/%m/%Y")
-                    render_table(df_venc[["Nome", "E-mail corporativo", "Modelo de contrato", "Térm previsto"]], use_container_width=True, hide_index=True)
+                    render_table(df_venc[["Nome", "E-mail corporativo", "Térm previsto"]], use_container_width=True, hide_index=True)
 
             # MEI
             with st.expander("💼 Investidores MEI", expanded=False):
