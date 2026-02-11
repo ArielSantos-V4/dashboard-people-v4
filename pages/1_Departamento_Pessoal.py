@@ -9,9 +9,6 @@ from datetime import date
 
 import bcrypt
 
-if "authenticated" not in st.session_state:
-    st.session_state.authenticated = False
-
 if "investidor_selecionado" not in st.session_state:
     st.session_state.investidor_selecionado = ""
 
