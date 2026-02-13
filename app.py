@@ -30,18 +30,15 @@ def load_google_sheet():
     sheet = client.open_by_key("13EPwhiXgh8BkbhyrEy2aCy3cv1O8npxJ_hA-HmLZ-pY")
     
     # --- CARREGA ATIVOS (Pelo GID) ---
-    # GID da aba Ativos que você passou
     worksheet_ativos = sheet.get_worksheet_by_id(2056973316)
     data_ativos = worksheet_ativos.get_all_records()
     df_ativos = pd.DataFrame(data_ativos)
 
     # --- CARREGA DESLIGADOS (Pelo GID) ---
-    # GID da aba Desligados que você passou
     worksheet_desligados = sheet.get_worksheet_by_id(1422602176)
     data_desligados = worksheet_desligados.get_all_records()
     df_desligados = pd.DataFrame(data_desligados)
 
-    # Retorna OS DOIS dataframes
     return df_ativos, df_desligados
 
 # ==============================
@@ -64,31 +61,34 @@ if "authenticated" not in st.session_state:
 # ==============================
 if not st.session_state.authenticated:
 
-    st.title("🔐 Login")
+    col1, col2, col3 = st.columns([1, 1, 1])
+    with col2:
+        st.markdown("<br><br>", unsafe_allow_html=True)
+        st.image("LOGO VERMELHO.png", width=150)
+        st.markdown("### Acesso Restrito")
 
-    usuario = st.text_input("Usuário")
-    senha = st.text_input("Senha", type="password")
+        usuario = st.text_input("Usuário")
+        senha = st.text_input("Senha", type="password")
 
-    if st.button("Entrar"):
-        # Verifica se existe a chave 'users' no secrets
-        if "users" in st.secrets:
-            users = st.secrets["users"]
-            
-            if usuario in users and verificar_senha(senha, users[usuario]["password"]):
-                st.session_state.authenticated = True
-                st.session_state.user_name = users[usuario]["name"]
-                st.rerun()
+        if st.button("Entrar", use_container_width=True):
+            if "users" in st.secrets:
+                users = st.secrets["users"]
+                
+                if usuario in users and verificar_senha(senha, users[usuario]["password"]):
+                    st.session_state.authenticated = True
+                    st.session_state.user_name = users[usuario]["name"]
+                    st.rerun()
+                else:
+                    st.error("Usuário ou senha inválidos")
             else:
-                st.error("Usuário ou senha inválidos")
-        else:
-            st.error("Erro de configuração: Usuários não encontrados nos Secrets.")
+                st.error("Erro de configuração: Usuários não encontrados nos Secrets.")
     
 # ==============================
 # ÁREA AUTENTICADA (SISTEMA)
 # ==============================
 else:
-    # Carrega os dados APENAS se estiver logado (economiza recurso)
-    with st.spinner("Carregando dados..."):
+    # Carrega os dados
+    with st.spinner("Sincronizando dados com Google Sheets..."):
         try:
             df_ativos, df_desligados = load_google_sheet()
         except Exception as e:
@@ -98,12 +98,12 @@ else:
     # --------------------------------------------------
     # SIDEBAR
     # --------------------------------------------------
-    st.sidebar.success(
-        f"Olá, {st.session_state.get('user_name', 'Usuário')}"
-    )
+    st.sidebar.markdown("<br>", unsafe_allow_html=True)
+    
+    st.sidebar.success(f"Olá, {st.session_state.get('user_name', 'Gestor')}")
 
     pagina = st.sidebar.radio(
-        "Menu",
+        "Navegação",
         [
             "🏠 Início",
             "💼 Departamento Pessoal",
@@ -111,29 +111,37 @@ else:
         ]
     )
 
-    st.sidebar.divider()
+    st.sidebar.markdown("---")
+    
+    # --- BOTÃO DE ATUALIZAR DADOS ---
+    if st.sidebar.button("🔄 Atualizar Dados"):
+        st.cache_data.clear()  # Limpa o cache
+        st.rerun()             # Recarrega a página
 
-    if st.sidebar.button("Logout"):
+    # --- BOTÃO DE LOGOUT ---
+    if st.sidebar.button("Sair"):
         st.session_state.authenticated = False
         st.rerun()
 
+    st.sidebar.image("LOGO VERMELHO.png", width=50)
     # --------------------------------------------------
     # ROTEAMENTO DE PÁGINAS
     # --------------------------------------------------
 
     if pagina == "🏠 Início":
-        st.markdown("""
-            <div style="height:85vh;display:flex;flex-direction:column;
-                        justify-content:center;align-items:center;">
-                <h1 style="font-size:60px;">People em desenvolvimento</h1>
-                <p style="font-size:22px;color:gray;">V4 Company</p>
-            </div>
-        """, unsafe_allow_html=True)
+        st.markdown("<br>", unsafe_allow_html=True)
+        c1, c2 = st.columns([0.5, 4])
+        with c1: st.image("LOGO VERMELHO.png", width=80)
+        with c2: st.title("V4 People Hub")
+        
+        st.info("👋 Bem-vindo ao Sistema Operacional de People. Selecione um módulo ao lado.")
+        
+        col_kpi1, col_kpi2 = st.columns(2)
+        col_kpi1.metric("Colaboradores Ativos", len(df_ativos))
+        col_kpi2.metric("Base de Histórico (Desligados)", len(df_desligados))
                 
     elif pagina == "💼 Departamento Pessoal":
-        # AQUI MUDOU: Passamos as DUAS tabelas
         departamento_pessoal.render(df_ativos, df_desligados)
     
     elif pagina == "🎁 Benefícios":
-        # Benefícios geralmente usa só a base ativa
         beneficios.render(df_ativos)
