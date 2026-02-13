@@ -98,7 +98,6 @@ else:
     # --------------------------------------------------
     # SIDEBAR
     # --------------------------------------------------
-    st.sidebar.image("LOGO VERMELHO.png", width=150)
     st.sidebar.success(
         f"Olá, {st.session_state.get('user_name', 'Usuário')}"
     )
