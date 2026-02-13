@@ -11,7 +11,6 @@ import unicodedata
 # ==========================================
 # PALETA DE CORES V4
 # ==========================================
-# Vermelho V4, Vermelho Escuro, Vermelho Claro, Cinza Escuro, Cinza Claro
 CORES_V4 = ["#E30613", "#8B0000", "#FF4C4C", "#404040", "#D3D3D3"]
 
 # ==========================================
@@ -130,15 +129,13 @@ def gerar_alertas_investidor(linha):
 def modal_consulta_investidor(df_consulta, nome, tipo_base="ativo"):
     st.markdown('<div class="modal-investidor">', unsafe_allow_html=True)
     
-    # Filtra e pega a primeira linha
     linha = df_consulta[df_consulta["Nome"] == nome].iloc[0]
             
     col1, col2, col3 = st.columns([3, 3, 2])
         
-    # --- COLUNA 1: DADOS CONTRATUAIS ---
+    # --- COLUNA 1 ---
     with col1:
         st.markdown("##### 📌 Profissional")
-        
         col_a, col_b = st.columns(2)
         col_a.text_input("BP", str(linha.get("BP", "")).replace(".0", ""), disabled=True)
         col_b.text_input("Matrícula", str(linha.get("Matrícula", "")).replace(".0", "").zfill(6), disabled=True)
@@ -147,7 +144,6 @@ def modal_consulta_investidor(df_consulta, nome, tipo_base="ativo"):
         c1.text_input("Data Contrato", linha.get("Data do contrato", ""), disabled=True)
         c2.text_input("Modelo", linha.get("Modelo de contrato", ""), disabled=True)
         
-        # Diferenciação para Desligados
         if tipo_base == "desligado":
             st.markdown("🔴 **Desligamento**")
             d1, d2 = st.columns(2)
@@ -163,17 +159,14 @@ def modal_consulta_investidor(df_consulta, nome, tipo_base="ativo"):
             st.caption(f"Tempo de casa: {tempo}")
 
         st.text_input("E-mail Corp", linha.get("E-mail corporativo", ""), disabled=True)
-        
         e1, e2 = st.columns(2)
         e1.text_input("CNPJ", formatar_cnpj(linha.get("CNPJ")), disabled=True)
         e2.text_input("Razão Social", linha.get("Razão social", ""), disabled=True)
-        
         st.text_input("Cargo", linha.get("Cargo", ""), disabled=True)
 
-    # --- COLUNA 2: PESSOAL / ADMIN ---
+    # --- COLUNA 2 ---
     with col2:
         st.markdown("##### 👤 Pessoal / Admin")
-        
         cc_code = str(linha.get("Código CC", "")).replace(".0", "")
         f1, f2 = st.columns([1, 2])
         f1.text_input("Cód CC", cc_code, disabled=True)
@@ -192,7 +185,7 @@ def modal_consulta_investidor(df_consulta, nome, tipo_base="ativo"):
         if linha.get("Link Drive Docs"):
             st.link_button("📂 Abrir Drive Docs", linha["Link Drive Docs"], use_container_width=True)
 
-    # --- COLUNA 3: FOTO / BENEFÍCIOS ---
+    # --- COLUNA 3 ---
     with col3:
         st.markdown("##### 🖼️ Foto")
         foto = linha.get("Foto", "")
@@ -214,7 +207,6 @@ def modal_consulta_investidor(df_consulta, nome, tipo_base="ativo"):
         i1.text_input("Operadora", linha.get("Operadora Odonto", ""), disabled=True, label_visibility="collapsed")
         i2.text_input("Cart.", str(linha.get("Carteirinha odonto", "")).replace(".0",""), disabled=True, label_visibility="collapsed")
         
-        # Alertas só aparecem para ativos
         if tipo_base == "ativo":
             st.markdown("---")
             st.markdown("##### ⚠️ Alertas")
@@ -231,7 +223,7 @@ def modal_consulta_investidor(df_consulta, nome, tipo_base="ativo"):
 
 
 # ==========================================
-# MODAIS DE AÇÃO (MANTIDOS)
+# MODAIS DE AÇÃO
 # ==========================================
 @st.dialog("📝 Título Doc Automação")
 def modal_titulo_doc(df):
@@ -273,12 +265,10 @@ def modal_vale_transporte(df):
 # ==========================================
 def render(df_ativos, df_desligados):
     
-    # 🔒 Segurança
     if "authenticated" not in st.session_state or not st.session_state.authenticated:
         st.warning("Faça login na tela inicial.")
         st.stop()
         
-    # CABEÇALHO
     c_logo, c_texto = st.columns([0.5, 6]) 
     with c_logo: st.image("LOGO VERMELHO.png", width=100) 
     with c_texto:
@@ -298,7 +288,6 @@ def render(df_ativos, df_desligados):
         for col in cols_data:
             if col in df.columns:
                 df[f"{col}_dt"] = parse_data_br(df[col])
-                # Atualiza a string para visualização bonita (DD/MM/YYYY)
                 df[col] = df[f"{col}_dt"].dt.strftime("%d/%m/%Y").fillna("")
         return df
 
@@ -309,40 +298,34 @@ def render(df_ativos, df_desligados):
     # ABA DASHBOARD
     # ----------------------------------------------------
     with aba_dashboard:
-        # Usa apenas ATIVOS para os KPIs
         st.markdown("<br>", unsafe_allow_html=True)
         
         col_k1, col_k2, col_k3, col_k4 = st.columns(4)
         col_k1.metric("Headcount Ativo", len(df_ativos_proc))
         
-        # Contratos vencendo em 30 dias
         hoje = pd.Timestamp.today().normalize()
         venc_prox = df_ativos_proc[
             (df_ativos_proc["Térm previsto_dt"].notna()) & 
             (df_ativos_proc["Térm previsto_dt"] > hoje) &
             (df_ativos_proc["Térm previsto_dt"] <= hoje + timedelta(days=30))
         ]
-        col_k2.metric("Contratos Vencendo (30d)", len(venc_prox), help="Contratos que vencem nos próximos 30 dias")
+        col_k2.metric("Contratos Vencendo (30d)", len(venc_prox))
         
-        # Média de idade
         if "Data de nascimento_dt" in df_ativos_proc.columns:
             idades = (hoje - df_ativos_proc["Data de nascimento_dt"]).dt.days / 365.25
             media_idade = idades.mean()
             col_k3.metric("Média de Idade", f"{media_idade:.1f} anos")
         
-        # Total Desligados (Histórico)
         col_k4.metric("Total Desligados", len(df_desligados_proc))
         
         st.markdown("---")
         
-        # Gráficos (COM CORES V4)
         g1, g2 = st.columns(2)
         with g1:
             st.subheader("📍 Por Unidade / Atuação")
             if "Unidade/Atuação" in df_ativos_proc.columns:
                 df_uni = df_ativos_proc["Unidade/Atuação"].value_counts().reset_index()
                 df_uni.columns = ["Unidade", "Qtd"]
-                # COR ALTERADA AQUI:
                 chart_uni = alt.Chart(df_uni).mark_bar(color="#E30613").encode(
                     x=alt.X("Unidade", sort="-y"), y="Qtd", tooltip=["Unidade", "Qtd"]
                 )
@@ -353,7 +336,6 @@ def render(df_ativos, df_desligados):
             if "Modelo de contrato" in df_ativos_proc.columns:
                 df_mod = df_ativos_proc["Modelo de contrato"].value_counts().reset_index()
                 df_mod.columns = ["Modelo", "Qtd"]
-                # CORES ALTERADAS AQUI (RANGE V4):
                 chart_mod = alt.Chart(df_mod).mark_arc(innerRadius=60).encode(
                     theta="Qtd", 
                     color=alt.Color("Modelo", scale=alt.Scale(range=CORES_V4)), 
@@ -362,15 +344,13 @@ def render(df_ativos, df_desligados):
                 st.altair_chart(chart_mod, use_container_width=True)
 
     # ----------------------------------------------------
-    # ABA ROLLING (TABELAS COMPLETAS COM COLUNAS OCULTAS)
+    # ABA ROLLING
     # ----------------------------------------------------
     with aba_rolling:
         tab_ativos, tab_desligados = st.tabs(["🟢 Base Ativa", "🔴 Base Desligados"])
         
-        # Função para configurar as colunas ocultas
         def get_column_config(df_cols):
             config = {}
-            # Lista de colunas para ocultar (mas deixar disponível)
             cols_to_hide = [
                 "Foto", "Solicitar documentação", "Enviar no EB", "Situação no plano", 
                 "Carteirinha médico", "Operadora Médico", "Carteirinha odonto", 
@@ -383,7 +363,7 @@ def render(df_ativos, df_desligados):
                     config[col] = st.column_config.TextColumn(hidden=True)
             return config
 
-        # --- ATIVOS ---
+        # ATIVOS
         with tab_ativos:
             st.markdown("<br>", unsafe_allow_html=True)
             c_sel, c_btn = st.columns([3, 1])
@@ -393,22 +373,14 @@ def render(df_ativos, df_desligados):
             
             st.markdown("---")
             st.markdown("### 📋 Base de investidores (Ativos)")
-            
-            # Filtro
             busca_a = st.text_input("Filtrar tabela ativa", placeholder="Digite para buscar...", key="busca_a")
             df_view_a = df_ativos_proc.copy()
             if busca_a:
                 df_view_a = df_view_a[df_view_a.astype(str).apply(lambda x: x.str.contains(busca_a, case=False).any(), axis=1)]
             
-            # EXIBIR TODAS AS COLUNAS (com configuração de ocultar)
-            st.dataframe(
-                df_view_a, 
-                use_container_width=True, 
-                hide_index=True,
-                column_config=get_column_config(df_view_a.columns)
-            )
+            st.dataframe(df_view_a, use_container_width=True, hide_index=True, column_config=get_column_config(df_view_a.columns))
 
-        # --- DESLIGADOS ---
+        # DESLIGADOS
         with tab_desligados:
             st.markdown("<br>", unsafe_allow_html=True)
             c_sel_d, c_btn_d = st.columns([3, 1])
@@ -418,45 +390,96 @@ def render(df_ativos, df_desligados):
             
             st.markdown("---")
             st.markdown("### 📋 Base de investidores (Desligados)")
-            
             busca_d = st.text_input("Filtrar tabela desligados", placeholder="Digite para buscar...", key="busca_d")
             df_view_d = df_desligados_proc.copy()
             if busca_d:
                 df_view_d = df_view_d[df_view_d.astype(str).apply(lambda x: x.str.contains(busca_d, case=False).any(), axis=1)]
             
-            # EXIBIR TODAS AS COLUNAS (com configuração de ocultar)
-            st.dataframe(
-                df_view_d, 
-                use_container_width=True, 
-                hide_index=True,
-                column_config=get_column_config(df_view_d.columns)
-            )
+            st.dataframe(df_view_d, use_container_width=True, hide_index=True, column_config=get_column_config(df_view_d.columns))
 
     # ----------------------------------------------------
-    # ABA ANALYTICS / AÇÕES (Mantido)
+    # ABA ANALYTICS (RESTAURADO)
     # ----------------------------------------------------
     with aba_analytics:
-        st.markdown("<br>", unsafe_allow_html=True)
-        col_rel, _, col_act = st.columns([2, 0.1, 1])
-        
-        with col_rel:
-            st.subheader("📊 Relatórios Rápidos")
-            with st.expander("🎉 Aniversariantes do Mês"):
-                mes_atual = datetime.now().month
-                anis = df_ativos_proc[df_ativos_proc["Data de nascimento_dt"].dt.month == mes_atual].copy()
-                if not anis.empty:
-                    anis["Dia"] = anis["Data de nascimento_dt"].dt.day
-                    st.dataframe(anis[["Dia", "Nome", "Área"]].sort_values("Dia"), hide_index=True)
+        st.markdown("<div style='height:20px'></div>", unsafe_allow_html=True)
+        col_relatorios, col_divisor, col_acoes = st.columns([7, 0.1, 3])
+        with col_divisor:
+            st.markdown("""<div style="height: 100%; border-left: 1px solid #e0e0e0; margin: 0 auto;"></div>""", unsafe_allow_html=True)
+            
+        with col_relatorios:
+            st.markdown("## 📊 Relatórios Principais")
+            
+            # 1. Aniversariantes
+            with st.expander("🎉 Aniversariantes do mês", expanded=False):
+                meses = {1: "Janeiro", 2: "Fevereiro", 3: "Março", 4: "Abril", 5: "Maio", 6: "Junho", 7: "Julho", 8: "Agosto", 9: "Setembro", 10: "Outubro", 11: "Novembro", 12: "Dezembro"}
+                mes_atual = datetime.today().month
+                mes_selecionado = st.selectbox("Mês", options=list(meses.keys()), format_func=lambda x: meses[x], index=mes_atual - 1)
+                
+                df_aniversario = df_ativos_proc[df_ativos_proc["Data de nascimento_dt"].dt.month == mes_selecionado].copy()
+                if df_aniversario.empty:
+                    st.info("Nenhum aniversariante neste mês 🎈")
                 else:
-                    st.info("Ninguém faz aniversário este mês.")
+                    df_aniversario["Dia"] = df_aniversario["Data de nascimento_dt"].dt.day
+                    df_final = df_aniversario[["Dia", "Nome", "Área", "E-mail corporativo"]].sort_values("Dia").reset_index(drop=True)
+                    st.dataframe(df_final, use_container_width=True, hide_index=True)
 
-        with col_act:
-            st.subheader("⚙️ Ações (Docs)")
-            if st.button("📝 Título Doc Padrão", use_container_width=True):
+            # 2. Contratos a vencer
+            with st.expander("⏰ Contratos a vencer", expanded=False):
+                c1, c2 = st.columns(2)
+                d_ini = c1.date_input("Data inicial", value=datetime.today().date(), format="DD/MM/YYYY")
+                d_fim = c2.date_input("Data final", value=datetime.today().date() + relativedelta(months=3), format="DD/MM/YYYY")
+                
+                ini_ts = pd.Timestamp(d_ini)
+                fim_ts = pd.Timestamp(d_fim)
+                
+                df_venc = df_ativos_proc[
+                    (df_ativos_proc["Térm previsto_dt"].notna()) & 
+                    (df_ativos_proc["Térm previsto_dt"] >= ini_ts) & 
+                    (df_ativos_proc["Térm previsto_dt"] <= fim_ts)
+                ].sort_values("Térm previsto_dt")
+                
+                if df_venc.empty:
+                    st.info("Nenhum contrato vencendo no período selecionado ⏳")
+                else:
+                    st.dataframe(df_venc[["Nome", "Térm previsto", "Modelo de contrato", "Liderança direta"]], use_container_width=True, hide_index=True)
+
+            # 3. MEI
+            with st.expander("💼 Investidores MEI", expanded=False):
+                if "Modalidade PJ" in df_ativos_proc.columns:
+                    df_mei = df_ativos_proc[df_ativos_proc["Modalidade PJ"].astype(str).str.upper().str.contains("MEI", na=False)]
+                    if df_mei.empty:
+                        st.info("Nenhum investidor MEI encontrado.")
+                    else:
+                        st.warning(f"⚠️ Temos **{len(df_mei)} investidores MEI**.")
+                        st.dataframe(df_mei[["Nome", "Modalidade PJ", "Início na V4"]], use_container_width=True, hide_index=True)
+
+            # 4. Tempo de Casa
+            with st.expander("⏳ Tempo de Casa", expanded=False):
+                if "Início na V4_dt" in df_ativos_proc.columns:
+                    min_anos = st.selectbox("Tempo mínimo de casa (anos)", [1, 2, 3, 4, 5, 10], index=0)
+                    hj = pd.Timestamp.today().normalize()
+                    
+                    df_tempo = df_ativos_proc[df_ativos_proc["Início na V4_dt"].notna()].copy()
+                    df_tempo["Anos"] = (hj - df_tempo["Início na V4_dt"]).dt.days / 365.25
+                    
+                    df_filtrado = df_tempo[df_tempo["Anos"] >= min_anos].sort_values("Anos", ascending=False)
+                    
+                    if df_filtrado.empty:
+                        st.info(f"Ninguém com mais de {min_anos} anos de casa ainda.")
+                    else:
+                        df_filtrado["Tempo"] = df_filtrado["Início na V4_dt"].apply(calcular_tempo_casa)
+                        st.dataframe(df_filtrado[["Nome", "Início na V4", "Tempo"]], use_container_width=True, hide_index=True)
+
+        with col_acoes:
+            st.markdown("## ⚙️ Ações")
+            if st.button("📝 Título de doc para automação", use_container_width=True):
                 modal_titulo_doc(df_ativos_proc)
-            if st.button("📄 Demissão Comum Acordo", use_container_width=True):
+
+            if st.button("📄 Demissão por comum acordo", use_container_width=True):
                 modal_comum(df_ativos_proc)
+
             if st.button("📄 Aviso Prévio Indenizado", use_container_width=True):
                 modal_aviso_previo_indenizado(df_ativos_proc)
-            if st.button("🚌 Vale Transporte", use_container_width=True):
+
+            if st.button("🚌 Atualização do Vale Transporte", use_container_width=True):
                 modal_vale_transporte(df_ativos_proc)
