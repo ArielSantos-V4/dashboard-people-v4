@@ -117,10 +117,16 @@ def gerar_docx_com_substituicoes(caminho_modelo, substituicoes):
 
 def substituir_runs_paragrafos(doc, mapa):
     for p in doc.paragraphs:
+        # TENTATIVA 1: Substituição suave
         for run in p.runs:
             for chave, valor in mapa.items():
                 if chave in run.text:
                     run.text = run.text.replace(chave, str(valor))
+        
+        # TENTATIVA 2: Substituição força bruta (caso o Word tenha quebrado o texto)
+        for chave, valor in mapa.items():
+            if chave in p.text and chave not in [r.text for r in p.runs]:
+                p.text = p.text.replace(chave, str(valor))
 
 def substituir_runs_tabelas(doc, mapa):
     for table in doc.tables:
@@ -145,7 +151,6 @@ def substituir_runs_header_footer(doc, mapa):
                     if chave in run.text:
                         run.text = run.text.replace(chave, str(valor))
 
-# --- FUNÇÃO QUE FALTAVA (CORREÇÃO AQUI) ---
 def substituir_texto_docx(doc, mapa):
     """Função wrapper para substituir em todo o documento"""
     substituir_runs_paragrafos(doc, mapa)
@@ -212,7 +217,7 @@ def gerar_alertas_investidor(linha):
     return alertas
 
 # ==========================================
-# MODAIS (MOVIMENTO PARA ESCOPO GLOBAL)
+# MODAIS (GLOBAL)
 # ==========================================
 
 @st.dialog(" ")
@@ -240,7 +245,6 @@ def modal_consulta_investidor(df_consulta, nome):
         a5.text_input("Término previsto", linha["Térm previsto"], disabled=True)
         a6.text_input("Modelo contrato", linha["Modelo de contrato"], disabled=True)
         
-        # CÁLCULO SEGURO DO TEMPO DE CASA
         tempo_casa = calcular_tempo_casa(linha["Início na V4_dt"])
         
         a7, a8 = st.columns([1, 2])
@@ -403,7 +407,7 @@ def modal_comum(df):
             "{cargo}": cargo,
             "{data}": data_desligamento.strftime("%d/%m/%Y")
         }
-        substituir_texto_docx(doc, mapa_substituicao) # <--- Agora esta função existe
+        substituir_texto_docx(doc, mapa_substituicao)
         buffer = BytesIO()
         doc.save(buffer)
         buffer.seek(0)
@@ -522,7 +526,7 @@ def modal_vale_transporte(df_pessoas):
             mapa[f"{{inte_{i}_tra}}"] = f"{it:.2f}"
 
         doc = Document("declaracao_vale_transporte_clt.docx")
-        substituir_texto_docx(doc, mapa) # <--- Usa o wrapper
+        substituir_texto_docx(doc, mapa)
         
         nome_arquivo = f"Declaração de Vale Transporte CLT - {nome_sel}.docx"
         doc.save(nome_arquivo)
@@ -551,10 +555,29 @@ def render(df):
             </div>
         """, unsafe_allow_html=True)
         
-    # ABAS
-    aba_dashboard, aba_relatorios = st.tabs(["📊 Dashboard", "📄 Relatórios"])
+    # ABAS (DASHBOARD, ROLLING, ANALYTICS)
+    aba_dashboard, aba_rolling, aba_analytics = st.tabs(["📊 Dashboard", "👥 Rolling", "📈 Analytics"])
     
-    # --- ABA DASHBOARD ---
+    # PREPARAÇÃO DADOS (GLOBAL PARA AS ABAS)
+    df["Início na V4_raw"] = df["Início na V4"]
+    df["Data de nascimento_raw"] = df["Data de nascimento"]
+    df["Data do contrato_raw"] = df.iloc[:, 12]
+    df["Térm previsto_raw"] = df.iloc[:, 6]
+    
+    df["Início na V4_dt"] = parse_data_br(df["Início na V4_raw"])
+    df["Data de nascimento_dt"] = parse_data_br(df["Data de nascimento_raw"])
+    df["Data do contrato_dt"] = parse_data_br(df["Data do contrato_raw"])
+    df["Térm previsto_dt"] = parse_data_br(df["Térm previsto_raw"])
+    
+    df["Início na V4"] = df["Início na V4_dt"].dt.strftime("%d/%m/%Y").fillna("")
+    df["Data de nascimento"] = df["Data de nascimento_dt"].dt.strftime("%d/%m/%Y").fillna("")
+    df["Data do contrato"] = df["Data do contrato_dt"].dt.strftime("%d/%m/%Y").fillna("")
+    df["Térm previsto"] = df["Térm previsto_raw"].where(
+        df["Térm previsto_dt"].isna(),
+        df["Térm previsto_dt"].dt.strftime("%d/%m/%Y")
+    )
+
+    # --- ABA DASHBOARD (KPIs e Gráficos) ---
     with aba_dashboard:
         # Estilos CSS
         st.markdown("""
@@ -571,77 +594,7 @@ def render(df):
         </style>
         """, unsafe_allow_html=True)
         
-        # PREPARAÇÃO DADOS (DATETIME)
-        df["Início na V4_raw"] = df["Início na V4"]
-        df["Data de nascimento_raw"] = df["Data de nascimento"]
-        df["Data do contrato_raw"] = df.iloc[:, 12]
-        df["Térm previsto_raw"] = df.iloc[:, 6]
-        
-        df["Início na V4_dt"] = parse_data_br(df["Início na V4_raw"])
-        df["Data de nascimento_dt"] = parse_data_br(df["Data de nascimento_raw"])
-        df["Data do contrato_dt"] = parse_data_br(df["Data do contrato_raw"])
-        df["Térm previsto_dt"] = parse_data_br(df["Térm previsto_raw"])
-        
-        df["Início na V4"] = df["Início na V4_dt"].dt.strftime("%d/%m/%Y").fillna("")
-        df["Data de nascimento"] = df["Data de nascimento_dt"].dt.strftime("%d/%m/%Y").fillna("")
-        df["Data do contrato"] = df["Data do contrato_dt"].dt.strftime("%d/%m/%Y").fillna("")
-        df["Térm previsto"] = df["Térm previsto_raw"].where(
-            df["Térm previsto_dt"].isna(),
-            df["Térm previsto_dt"].dt.strftime("%d/%m/%Y")
-        )
-
-        # SEÇÃO DE CONSULTA
-        st.subheader("🔎 Consulta individual do investidor")
-        df_consulta = df.fillna("")
-        lista_nomes = sorted(df_consulta["Nome"].unique())
-            
-        with st.form("form_consulta_investidor", clear_on_submit=False):
-            c1, c2, c3 = st.columns([6, 1, 1])
-            with c1:
-                nome = st.selectbox("Selecione o investidor", ["Selecione um investidor..."] + lista_nomes, key="investidor_selecionado", label_visibility="collapsed")
-            with c2:
-                consultar = st.form_submit_button("🔍 Consultar")
-            with c3:
-                limpar = st.form_submit_button("Limpar")
-            
-            if consultar and st.session_state.investidor_selecionado != "Selecione um investidor...":
-                linha = df_consulta[df_consulta["Nome"] == st.session_state.investidor_selecionado].iloc[0]
-                st.session_state.alertas_atuais = gerar_alertas_investidor(linha)
-                modal_consulta_investidor(df_consulta, st.session_state.investidor_selecionado)
-                
-            if limpar:
-                limpar_investidor()
-                st.session_state.abrir_modal_investidor = False
-
-        # SEÇÃO DE TABELA
-        st.markdown("---")
-        st.markdown("### 📋 Base de investidores")
-        busca = st.text_input("Buscar na tabela", placeholder="🔍 Buscar na tabela...", label_visibility="collapsed")
-        
-        df_tabela = df.copy()
-        # Tratamento para exibição
-        df_tabela["Término do contrato"] = df_tabela["Térm previsto"]
-        df_tabela["Data de início"] = df_tabela["Início na V4"]
-        
-        for col in ["BP", "Código CC", "Carteirinha médico", "Carteirinha odonto"]:
-            if col in df_tabela.columns:
-                df_tabela[col] = df_tabela[col].apply(limpar_numero)
-        df_tabela["Matrícula"] = df_tabela["Matrícula"].apply(formatar_matricula)
-        df_tabela["CPF"] = df_tabela["CPF"].apply(formatar_cpf)
-        df_tabela["CNPJ"] = df_tabela["CNPJ"].apply(formatar_cnpj)
-        
-        if busca:
-            df_tabela = df_tabela[df_tabela.astype(str).apply(lambda x: x.str.contains(busca, case=False).any(), axis=1)]
-            
-        df_tabela.insert(df_tabela.columns.get_loc("Nome") + 1, "Início na V4", df_tabela.pop("Início na V4"))
-        
-        st.dataframe(
-            df_tabela.drop(columns=[c for c in df_tabela.columns if c.endswith("_raw") or c.endswith("_dt")], errors="ignore"),
-            use_container_width=True, hide_index=True
-        )
-
         # KPIS
-        st.markdown("---")
         hoje_kpi = datetime.today()
         prox_30_dias = hoje_kpi + timedelta(days=30)
         
@@ -656,6 +609,7 @@ def render(df):
         df_adm = df[df["Início na V4_dt"].notna()]
         media_admissoes = df_adm.groupby(df_adm["Início na V4_dt"].dt.to_period("M")).size().mean() if not df_adm.empty else 0
         
+        st.markdown("<br>", unsafe_allow_html=True)
         c1, c2, c3, c4, c5 = st.columns(5)
         c1.metric("Headcount", headcount)
         c2.metric("Contratos vencendo (30 dias)", len(contratos_vencer))
@@ -688,8 +642,63 @@ def render(df):
             st.altair_chart(alt.Chart(adm_mes).mark_line(color="#E30613", point=True).encode(
                 x="Mes:N", y="Quantidade:Q", tooltip=["Mes", "Quantidade"]), use_container_width=True)
 
-    # --- ABA RELATÓRIOS ---
-    with aba_relatorios:
+    # --- ABA ROLLING (Consulta e Base) ---
+    with aba_rolling:
+        
+        # SEÇÃO DE CONSULTA INDIVIDUAL
+        st.markdown("<br>", unsafe_allow_html=True)
+        st.subheader("🔎 Consulta individual do investidor")
+        
+        df_consulta = df.fillna("")
+        lista_nomes = sorted(df_consulta["Nome"].unique())
+            
+        with st.form("form_consulta_investidor", clear_on_submit=False):
+            c1, c2, c3 = st.columns([6, 1, 1])
+            with c1:
+                nome = st.selectbox("Selecione o investidor", ["Selecione um investidor..."] + lista_nomes, key="investidor_selecionado", label_visibility="collapsed")
+            with c2:
+                consultar = st.form_submit_button("🔍 Consultar")
+            with c3:
+                limpar = st.form_submit_button("Limpar")
+            
+            if consultar and st.session_state.investidor_selecionado != "Selecione um investidor...":
+                linha = df_consulta[df_consulta["Nome"] == st.session_state.investidor_selecionado].iloc[0]
+                st.session_state.alertas_atuais = gerar_alertas_investidor(linha)
+                modal_consulta_investidor(df_consulta, st.session_state.investidor_selecionado)
+                
+            if limpar:
+                limpar_investidor()
+                st.session_state.abrir_modal_investidor = False
+
+        # SEÇÃO DE TABELA GERAL
+        st.markdown("---")
+        st.markdown("### 📋 Base de investidores")
+        busca = st.text_input("Buscar na tabela", placeholder="🔍 Buscar na tabela...", label_visibility="collapsed")
+        
+        df_tabela = df.copy()
+        # Tratamento para exibição
+        df_tabela["Término do contrato"] = df_tabela["Térm previsto"]
+        df_tabela["Data de início"] = df_tabela["Início na V4"]
+        
+        for col in ["BP", "Código CC", "Carteirinha médico", "Carteirinha odonto"]:
+            if col in df_tabela.columns:
+                df_tabela[col] = df_tabela[col].apply(limpar_numero)
+        df_tabela["Matrícula"] = df_tabela["Matrícula"].apply(formatar_matricula)
+        df_tabela["CPF"] = df_tabela["CPF"].apply(formatar_cpf)
+        df_tabela["CNPJ"] = df_tabela["CNPJ"].apply(formatar_cnpj)
+        
+        if busca:
+            df_tabela = df_tabela[df_tabela.astype(str).apply(lambda x: x.str.contains(busca, case=False).any(), axis=1)]
+            
+        df_tabela.insert(df_tabela.columns.get_loc("Nome") + 1, "Início na V4", df_tabela.pop("Início na V4"))
+        
+        st.dataframe(
+            df_tabela.drop(columns=[c for c in df_tabela.columns if c.endswith("_raw") or c.endswith("_dt")], errors="ignore"),
+            use_container_width=True, hide_index=True
+        )
+
+    # --- ABA ANALYTICS (Relatórios e Ações) ---
+    with aba_analytics:
         st.markdown("<div style='height:20px'></div>", unsafe_allow_html=True)
         col_relatorios, col_divisor, col_acoes = st.columns([7, 0.1, 3])
         with col_divisor:
@@ -745,7 +754,6 @@ def render(df):
             # Tempo de Casa
             with st.expander("⏳ Tempo de Casa", expanded=False):
                 df_tempo = df.copy()
-                # Tenta achar a coluna certa
                 col_inicio_found = next((col for col in df_tempo.columns if "início" in col.lower() or "inicio" in col.lower()), None)
                 
                 if col_inicio_found:
