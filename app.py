@@ -123,7 +123,6 @@ else:
         st.session_state.authenticated = False
         st.rerun()
 
-    st.sidebar.image("LOGO VERMELHO.png", width=50)
     # --------------------------------------------------
     # ROTEAMENTO DE PÁGINAS
     # --------------------------------------------------
