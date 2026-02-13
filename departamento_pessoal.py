@@ -123,9 +123,8 @@ def gerar_alertas_investidor(linha):
     return alertas
 
 # ==========================================
-# MODAL DE CONSULTA (HÍBRIDO - AJUSTADO PARA LARGO)
+# MODAL DE CONSULTA (HÍBRIDO - LARGO)
 # ==========================================
-# AQUI ESTÁ O AJUSTE: width="large" garante o modo paisagem
 @st.dialog(" ", width="large")
 def modal_consulta_investidor(df_consulta, nome, tipo_base="ativo"):
     st.markdown('<div class="modal-investidor">', unsafe_allow_html=True)
@@ -200,13 +199,15 @@ def modal_consulta_investidor(df_consulta, nome, tipo_base="ativo"):
         
         st.markdown("**Saúde**")
         h1, h2 = st.columns(2)
-        h1.text_input("Operadora", linha.get("Operadora Médico", ""), disabled=True, label_visibility="collapsed")
-        h2.text_input("Cart.", str(linha.get("Carteirinha médico", "")).replace(".0",""), disabled=True, label_visibility="collapsed")
+        # ADICIONADO key= PARA CORRIGIR ERRO DE DUPLICIDADE
+        h1.text_input("Operadora", linha.get("Operadora Médico", ""), disabled=True, label_visibility="collapsed", key="op_medico")
+        h2.text_input("Cart.", str(linha.get("Carteirinha médico", "")).replace(".0",""), disabled=True, label_visibility="collapsed", key="cart_medico")
 
         st.markdown("**Odonto**")
         i1, i2 = st.columns(2)
-        i1.text_input("Operadora", linha.get("Operadora Odonto", ""), disabled=True, label_visibility="collapsed")
-        i2.text_input("Cart.", str(linha.get("Carteirinha odonto", "")).replace(".0",""), disabled=True, label_visibility="collapsed")
+        # ADICIONADO key= PARA CORRIGIR ERRO DE DUPLICIDADE
+        i1.text_input("Operadora", linha.get("Operadora Odonto", ""), disabled=True, label_visibility="collapsed", key="op_odonto")
+        i2.text_input("Cart.", str(linha.get("Carteirinha odonto", "")).replace(".0",""), disabled=True, label_visibility="collapsed", key="cart_odonto")
         
         if tipo_base == "ativo":
             st.markdown("---")
@@ -369,7 +370,7 @@ def render(df_ativos, df_desligados):
         def get_column_config(df_cols):
             config = {}
             cols_to_hide = [
-                "Foto", "Solicitar documentação", "Enviar no EB", "Situação no plano", 
+                "Foto", "Nome completo com acentos", "Solicitar documentação", "Enviar no EB", "Situação no plano", 
                 "Carteirinha médico", "Operadora Médico", "Carteirinha odonto", 
                 "Operadora Odonto", "Link Drive Docs", "FotoView", 
                 "Início na V4_dt", "Data de nascimento_dt", "Data do contrato_dt", 
