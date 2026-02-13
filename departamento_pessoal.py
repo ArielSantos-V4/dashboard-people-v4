@@ -352,7 +352,7 @@ def render(df_ativos, df_desligados):
         def get_column_config(df_cols):
             config = {}
             cols_to_hide = [
-                "Foto", "Nome completo com acentos", "Solicitar documentação", "Enviar no EB", "Situação no plano", 
+                "Foto", "Solicitar documentação", "Enviar no EB", "Situação no plano", 
                 "Carteirinha médico", "Operadora Médico", "Carteirinha odonto", 
                 "Operadora Odonto", "Link Drive Docs", "FotoView", 
                 "Início na V4_dt", "Data de nascimento_dt", "Data do contrato_dt", 
