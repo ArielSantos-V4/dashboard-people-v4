@@ -302,7 +302,7 @@ def render(df_ativos, df_desligados):
         st.markdown("""
             <div style="background-color: #f9f9f9; padding: 12px; border-left: 5px solid #E30613; border-radius: 4px; margin-bottom: 20px;">
                 <span style="color: #404040; font-size: 14px;">
-                    <b>📊 Visão Geral:</b> Acompanhe abaixo os principais indicadores (KPIs) e gráficos demográficos referentes exclusivamente à <b>base de colaboradores ativos</b>.
+                    <b> Acompanhe abaixo os principais indicadores (KPIs) e gráficos demográficos referentes exclusivamente à <b>base de colaboradores ativos</b>.
                 </span>
             </div>
         """, unsafe_allow_html=True)
@@ -358,7 +358,7 @@ def render(df_ativos, df_desligados):
         st.markdown("""
             <div style="background-color: #f9f9f9; padding: 12px; border-left: 5px solid #E30613; border-radius: 4px; margin-bottom: 20px;">
                 <span style="color: #404040; font-size: 14px;">
-                    <b>👥 Gestão de Base:</b> Utilize esta área para <b>consultas individuais detalhadas</b> ou para visualizar a <b>tabela completa</b> de todos os investidores, separados entre abas de Ativos e Desligados.
+                    <b> Utilize esta área para <b>consultas individuais detalhadas</b> ou para visualizar a <b>tabela completa</b> de todos os investidores, incluindo ativos e desligados.
                 </span>
             </div>
         """, unsafe_allow_html=True)
@@ -421,7 +421,7 @@ def render(df_ativos, df_desligados):
         st.markdown("""
             <div style="background-color: #f9f9f9; padding: 12px; border-left: 5px solid #E30613; border-radius: 4px; margin-bottom: 20px;">
                 <span style="color: #404040; font-size: 14px;">
-                    <b>📈 Inteligência & Ações:</b> Consulte <b>relatórios operacionais</b> (Aniversariantes, Vencimentos, MEI) e utilize a Central de Ações para <b>gerar documentos</b> automaticamente.
+                    <b>Consulte <b>relatórios operacionais</b> (Aniversariantes, Vencimentos, MEI) e utilize a Central de Ações para <b>gerar documentos</b> automaticamente.
                 </span>
             </div>
         """, unsafe_allow_html=True)
