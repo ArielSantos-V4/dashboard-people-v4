@@ -64,7 +64,7 @@ if not st.session_state.authenticated:
     col1, col2, col3 = st.columns([1, 1, 1])
     with col2:
         st.markdown("<br><br>", unsafe_allow_html=True)
-        st.image("LOGO VERMELHO.png", width=150)
+        st.image("LOGO VERMELHO.png", width=100)
         st.markdown("### Acesso Restrito")
 
         usuario = st.text_input("Usuário")
