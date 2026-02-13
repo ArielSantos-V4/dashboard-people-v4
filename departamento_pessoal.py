@@ -9,12 +9,6 @@ import re
 import unicodedata
 
 # ==========================================
-# PALETA DE CORES V4
-# ==========================================
-# Vermelho V4, Vermelho Escuro, Vermelho Claro, Cinza Escuro, Cinza Claro
-CORES_V4 = ["#E30613", "#8B0000", "#FF4C4C", "#404040", "#D3D3D3"]
-
-# ==========================================
 # GESTÃO DE ESTADO
 # ==========================================
 if "investidor_selecionado" not in st.session_state:
@@ -335,14 +329,13 @@ def render(df_ativos, df_desligados):
         
         st.markdown("---")
         
-        # Gráficos (COM CORES V4)
+        # Gráficos
         g1, g2 = st.columns(2)
         with g1:
             st.subheader("📍 Por Unidade / Atuação")
             if "Unidade/Atuação" in df_ativos_proc.columns:
                 df_uni = df_ativos_proc["Unidade/Atuação"].value_counts().reset_index()
                 df_uni.columns = ["Unidade", "Qtd"]
-                # COR ALTERADA AQUI:
                 chart_uni = alt.Chart(df_uni).mark_bar(color="#E30613").encode(
                     x=alt.X("Unidade", sort="-y"), y="Qtd", tooltip=["Unidade", "Qtd"]
                 )
@@ -353,36 +346,17 @@ def render(df_ativos, df_desligados):
             if "Modelo de contrato" in df_ativos_proc.columns:
                 df_mod = df_ativos_proc["Modelo de contrato"].value_counts().reset_index()
                 df_mod.columns = ["Modelo", "Qtd"]
-                # CORES ALTERADAS AQUI (RANGE V4):
                 chart_mod = alt.Chart(df_mod).mark_arc(innerRadius=60).encode(
-                    theta="Qtd", 
-                    color=alt.Color("Modelo", scale=alt.Scale(range=CORES_V4)), 
-                    tooltip=["Modelo", "Qtd"]
+                    theta="Qtd", color="Modelo", tooltip=["Modelo", "Qtd"]
                 )
                 st.altair_chart(chart_mod, use_container_width=True)
 
     # ----------------------------------------------------
-    # ABA ROLLING (TABELAS COMPLETAS COM COLUNAS OCULTAS)
+    # ABA ROLLING (DUPLA)
     # ----------------------------------------------------
     with aba_rolling:
         tab_ativos, tab_desligados = st.tabs(["🟢 Base Ativa", "🔴 Base Desligados"])
         
-        # Função para configurar as colunas ocultas
-        def get_column_config(df_cols):
-            config = {}
-            # Lista de colunas para ocultar (mas deixar disponível)
-            cols_to_hide = [
-                "Foto", "Solicitar documentação", "Enviar no EB", "Situação no plano", 
-                "Carteirinha médico", "Operadora Médico", "Carteirinha odonto", 
-                "Operadora Odonto", "Link Drive Docs", "FotoView", 
-                "Início na V4_dt", "Data de nascimento_dt", "Data do contrato_dt", 
-                "Térm previsto_dt", "Data de rescisão_dt"
-            ]
-            for col in df_cols:
-                if col in cols_to_hide:
-                    config[col] = st.column_config.TextColumn(hidden=True)
-            return config
-
         # --- ATIVOS ---
         with tab_ativos:
             st.markdown("<br>", unsafe_allow_html=True)
@@ -392,21 +366,17 @@ def render(df_ativos, df_desligados):
                 modal_consulta_investidor(df_ativos_proc, sel_ativo, "ativo")
             
             st.markdown("---")
-            st.markdown("### 📋 Base de investidores (Ativos)")
+            st.markdown("### 📋 Tabela Geral (Ativos)")
             
-            # Filtro
-            busca_a = st.text_input("Filtrar tabela ativa", placeholder="Digite para buscar...", key="busca_a")
+            # Filtro rápido
+            busca_a = st.text_input("Filtrar tabela ativa", placeholder="Digite nome, cargo ou área...", key="busca_a")
             df_view_a = df_ativos_proc.copy()
             if busca_a:
                 df_view_a = df_view_a[df_view_a.astype(str).apply(lambda x: x.str.contains(busca_a, case=False).any(), axis=1)]
             
-            # EXIBIR TODAS AS COLUNAS (com configuração de ocultar)
-            st.dataframe(
-                df_view_a, 
-                use_container_width=True, 
-                hide_index=True,
-                column_config=get_column_config(df_view_a.columns)
-            )
+            cols_ativas = ["Nome", "Cargo", "Área", "Unidade/Atuação", "E-mail corporativo", "Início na V4", "Situação no plano"]
+            cols_fin_a = [c for c in cols_ativas if c in df_view_a.columns]
+            st.dataframe(df_view_a[cols_fin_a], use_container_width=True, hide_index=True)
 
         # --- DESLIGADOS ---
         with tab_desligados:
@@ -417,25 +387,23 @@ def render(df_ativos, df_desligados):
                 modal_consulta_investidor(df_desligados_proc, sel_deslig, "desligado")
             
             st.markdown("---")
-            st.markdown("### 📋 Base de investidores (Desligados)")
+            st.markdown("### 📋 Tabela Histórico (Desligados)")
             
-            busca_d = st.text_input("Filtrar tabela desligados", placeholder="Digite para buscar...", key="busca_d")
+            busca_d = st.text_input("Filtrar tabela desligados", placeholder="Digite nome...", key="busca_d")
             df_view_d = df_desligados_proc.copy()
             if busca_d:
                 df_view_d = df_view_d[df_view_d.astype(str).apply(lambda x: x.str.contains(busca_d, case=False).any(), axis=1)]
             
-            # EXIBIR TODAS AS COLUNAS (com configuração de ocultar)
-            st.dataframe(
-                df_view_d, 
-                use_container_width=True, 
-                hide_index=True,
-                column_config=get_column_config(df_view_d.columns)
-            )
+            # Colunas específicas de desligamento
+            cols_deslig = ["Nome", "Cargo", "Início na V4", "Data de rescisão", "Valor distrato", "Motivo"] # Motivo se tiver na planilha
+            cols_fin_d = [c for c in cols_deslig if c in df_view_d.columns]
+            st.dataframe(df_view_d[cols_fin_d], use_container_width=True, hide_index=True)
 
     # ----------------------------------------------------
-    # ABA ANALYTICS / AÇÕES (Mantido)
+    # ABA ANALYTICS / AÇÕES
     # ----------------------------------------------------
     with aba_analytics:
+        # Usa df_ativos_proc para gerar docs e relatórios
         st.markdown("<br>", unsafe_allow_html=True)
         col_rel, _, col_act = st.columns([2, 0.1, 1])
         
