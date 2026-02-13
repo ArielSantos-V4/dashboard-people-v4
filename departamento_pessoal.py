@@ -360,7 +360,8 @@ def render(df_ativos, df_desligados):
             ]
             for col in df_cols:
                 if col in cols_to_hide:
-                    config[col] = st.column_config.TextColumn(hidden=True)
+                    # CORREÇÃO AQUI: Em vez de TextColumn(hidden=True), usamos None
+                    config[col] = None
             return config
 
         # ATIVOS
