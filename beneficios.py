@@ -392,6 +392,7 @@ def render(df):
                 if "Carteirinha médico" in df.columns: colunas_view.append("Carteirinha médico")
                 if "Operadora Médico" in df.columns: colunas_view.append("Operadora Médico")
                 if "Carteirinha odonto" in df.columns: colunas_view.append("Carteirinha odonto")
+                if "Operadora Odonto" in df.columns: colunas_view.append("Operadora Odonto")
                 
                 # Formata para tirar .0 dos números
                 for col in ["Carteirinha médico", "Carteirinha odonto"]:
