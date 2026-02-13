@@ -123,9 +123,10 @@ def gerar_alertas_investidor(linha):
     return alertas
 
 # ==========================================
-# MODAL DE CONSULTA (HÍBRIDO)
+# MODAL DE CONSULTA (HÍBRIDO - AJUSTADO PARA LARGO)
 # ==========================================
-@st.dialog(" ")
+# AQUI ESTÁ O AJUSTE: width="large" garante o modo paisagem
+@st.dialog(" ", width="large")
 def modal_consulta_investidor(df_consulta, nome, tipo_base="ativo"):
     st.markdown('<div class="modal-investidor">', unsafe_allow_html=True)
     
@@ -302,7 +303,7 @@ def render(df_ativos, df_desligados):
         st.markdown("""
             <div style="background-color: #f9f9f9; padding: 12px; border-left: 5px solid #E30613; border-radius: 4px; margin-bottom: 20px;">
                 <span style="color: #404040; font-size: 14px;">
-                    <b> Acompanhe abaixo os principais indicadores (KPIs) e gráficos demográficos referentes exclusivamente à <b>base de colaboradores ativos</b>.
+                    <b>📊 Visão Geral:</b> Acompanhe abaixo os principais indicadores (KPIs) e gráficos demográficos referentes exclusivamente à <b>base de colaboradores ativos</b>.
                 </span>
             </div>
         """, unsafe_allow_html=True)
@@ -358,7 +359,7 @@ def render(df_ativos, df_desligados):
         st.markdown("""
             <div style="background-color: #f9f9f9; padding: 12px; border-left: 5px solid #E30613; border-radius: 4px; margin-bottom: 20px;">
                 <span style="color: #404040; font-size: 14px;">
-                    <b> Utilize esta área para <b>consultas individuais detalhadas</b> ou para visualizar a <b>tabela completa</b> de todos os investidores, incluindo ativos e desligados.
+                    <b>👥 Gestão de Base:</b> Utilize esta área para <b>consultas individuais detalhadas</b> ou para visualizar a <b>tabela completa</b> de todos os investidores, incluindo ativos e desligados.
                 </span>
             </div>
         """, unsafe_allow_html=True)
@@ -421,7 +422,7 @@ def render(df_ativos, df_desligados):
         st.markdown("""
             <div style="background-color: #f9f9f9; padding: 12px; border-left: 5px solid #E30613; border-radius: 4px; margin-bottom: 20px;">
                 <span style="color: #404040; font-size: 14px;">
-                    <b>Consulte <b>relatórios operacionais</b> (Aniversariantes, Vencimentos, MEI) e utilize a Central de Ações para <b>gerar documentos</b> automaticamente.
+                    <b>📈 Inteligência & Ações:</b> Consulte <b>relatórios operacionais</b> (Aniversariantes, Vencimentos, MEI) e utilize a Central de Ações para <b>gerar documentos</b> automaticamente.
                 </span>
             </div>
         """, unsafe_allow_html=True)
