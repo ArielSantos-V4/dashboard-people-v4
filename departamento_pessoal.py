@@ -298,7 +298,14 @@ def render(df_ativos, df_desligados):
     # ABA DASHBOARD
     # ----------------------------------------------------
     with aba_dashboard:
-        st.markdown("<br>", unsafe_allow_html=True)
+        # Texto Explicativo (NOVO)
+        st.markdown("""
+            <div style="background-color: #f9f9f9; padding: 12px; border-left: 5px solid #E30613; border-radius: 4px; margin-bottom: 20px;">
+                <span style="color: #404040; font-size: 14px;">
+                    <b>📊 Visão Geral:</b> Acompanhe abaixo os principais indicadores (KPIs) e gráficos demográficos referentes exclusivamente à <b>base de colaboradores ativos</b>.
+                </span>
+            </div>
+        """, unsafe_allow_html=True)
         
         col_k1, col_k2, col_k3, col_k4 = st.columns(4)
         col_k1.metric("Headcount Ativo", len(df_ativos_proc))
@@ -347,6 +354,15 @@ def render(df_ativos, df_desligados):
     # ABA ROLLING
     # ----------------------------------------------------
     with aba_rolling:
+        # Texto Explicativo (NOVO)
+        st.markdown("""
+            <div style="background-color: #f9f9f9; padding: 12px; border-left: 5px solid #E30613; border-radius: 4px; margin-bottom: 20px;">
+                <span style="color: #404040; font-size: 14px;">
+                    <b>👥 Gestão de Base:</b> Utilize esta área para <b>consultas individuais detalhadas</b> ou para visualizar a <b>tabela completa</b> de todos os investidores, separados entre abas de Ativos e Desligados.
+                </span>
+            </div>
+        """, unsafe_allow_html=True)
+
         tab_ativos, tab_desligados = st.tabs(["🟢 Base Ativa", "🔴 Base Desligados"])
         
         def get_column_config(df_cols):
@@ -360,7 +376,6 @@ def render(df_ativos, df_desligados):
             ]
             for col in df_cols:
                 if col in cols_to_hide:
-                    # CORREÇÃO AQUI: Em vez de TextColumn(hidden=True), usamos None
                     config[col] = None
             return config
 
@@ -402,6 +417,15 @@ def render(df_ativos, df_desligados):
     # ABA ANALYTICS (RESTAURADO)
     # ----------------------------------------------------
     with aba_analytics:
+        # Texto Explicativo (NOVO)
+        st.markdown("""
+            <div style="background-color: #f9f9f9; padding: 12px; border-left: 5px solid #E30613; border-radius: 4px; margin-bottom: 20px;">
+                <span style="color: #404040; font-size: 14px;">
+                    <b>📈 Inteligência & Ações:</b> Consulte <b>relatórios operacionais</b> (Aniversariantes, Vencimentos, MEI) e utilize a Central de Ações para <b>gerar documentos</b> automaticamente.
+                </span>
+            </div>
+        """, unsafe_allow_html=True)
+
         st.markdown("<div style='height:20px'></div>", unsafe_allow_html=True)
         col_relatorios, col_divisor, col_acoes = st.columns([7, 0.1, 3])
         with col_divisor:
