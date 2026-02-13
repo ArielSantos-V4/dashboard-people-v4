@@ -98,6 +98,7 @@ else:
     # --------------------------------------------------
     # SIDEBAR
     # --------------------------------------------------
+    st.sidebar.image("LOGO VERMELHO.png", width=160)
     st.sidebar.markdown("<br>", unsafe_allow_html=True)
     
     st.sidebar.success(f"Olá, {st.session_state.get('user_name', 'Gestor')}")
@@ -115,8 +116,8 @@ else:
     
     # --- BOTÃO DE ATUALIZAR DADOS ---
     if st.sidebar.button("🔄 Atualizar Dados"):
-        st.cache_data.clear()  # Limpa o cache
-        st.rerun()             # Recarrega a página
+        st.cache_data.clear()
+        st.rerun()
 
     # --- BOTÃO DE LOGOUT ---
     if st.sidebar.button("Sair"):
@@ -133,11 +134,13 @@ else:
         with c1: st.image("LOGO VERMELHO.png", width=80)
         with c2: st.title("V4 People Hub")
         
-        st.info("👋 Bem-vindo ao Sistema Operacional de People. Selecione um módulo ao lado.")
-        
-        col_kpi1, col_kpi2 = st.columns(2)
-        col_kpi1.metric("Colaboradores Ativos", len(df_ativos))
-        col_kpi2.metric("Base de Histórico (Desligados)", len(df_desligados))
+        # MENSAGEM DE BOAS-VINDAS CUSTOMIZADA (SEM AZUL)
+        st.markdown("""
+            <div style="background-color: #fff; padding: 20px; border-left: 6px solid #E30613; box-shadow: 2px 2px 10px rgba(0,0,0,0.1); border-radius: 5px;">
+                <h3 style="color: #333; margin: 0;">👋 Bem-vindo ao Sistema Operacional de People</h3>
+                <p style="color: #666; margin-top: 5px;">Selecione um módulo no menu lateral para iniciar.</p>
+            </div>
+        """, unsafe_allow_html=True)
                 
     elif pagina == "💼 Departamento Pessoal":
         departamento_pessoal.render(df_ativos, df_desligados)
