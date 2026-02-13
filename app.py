@@ -136,7 +136,7 @@ else:
         # MENSAGEM DE BOAS-VINDAS CUSTOMIZADA (SEM AZUL)
         st.markdown("""
             <div style="background-color: #fff; padding: 20px; border-left: 6px solid #E30613; box-shadow: 2px 2px 10px rgba(0,0,0,0.1); border-radius: 5px;">
-                <h3 style="color: #333; margin: 0;">👋 Bem-vindo ao Sistema Operacional de People</h3>
+                <h3 style="color: #333; margin: 0;">👋 Bem-vindo ao Sistema Operacional do time C&B</h3>
                 <p style="color: #666; margin-top: 5px;">Selecione um módulo no menu lateral para iniciar.</p>
             </div>
         """, unsafe_allow_html=True)
