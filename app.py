@@ -98,7 +98,6 @@ else:
     # --------------------------------------------------
     # SIDEBAR
     # --------------------------------------------------
-    st.sidebar.image("LOGO VERMELHO.png", width=160)
     st.sidebar.markdown("<br>", unsafe_allow_html=True)
     
     st.sidebar.success(f"Olá, {st.session_state.get('user_name', 'Gestor')}")
