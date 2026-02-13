@@ -362,8 +362,8 @@ def render(df_ativos, df_desligados):
                 </span>
             </div>
         """, unsafe_allow_html=True)
+        
         st.markdown("---")
-
         tab_ativos, tab_desligados = st.tabs(["🟢 Base Ativa", "🔴 Base Desligados"])
         
         def get_column_config(df_cols):
