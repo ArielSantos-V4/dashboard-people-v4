@@ -1192,7 +1192,7 @@ def render(df_ativos, df_desligados):
     with aba_conectividade:
         st.markdown("""
             <div style="background-color: #f1f3f5; padding: 12px; border-radius: 6px; border-left: 5px solid #404040; margin-bottom: 20px;">
-                <span style="color: #404040; font-size: 14px;">Acesso rápido aos links de plataformas mais utilizadas pelo time.</span>
+                <span style="color: #404040; font-size: 14px;">Acesso rápido a links de plataformas mais utilizadas pelo time.</span>
             </div>
         """, unsafe_allow_html=True)
         
