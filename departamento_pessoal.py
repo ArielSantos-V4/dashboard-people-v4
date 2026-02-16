@@ -346,42 +346,92 @@ def modal_consulta_investidor(df_consulta, nome, tipo_base="ativo"):
                         else: st.info(msg, icon="ℹ️")
                             
 # ==========================================
-# MODAIS DE AÇÃO
+# MODAIS DE AÇÃO (PADRONIZADOS E CENTRALIZADOS)
 # ==========================================
 @st.dialog("📝 Título Doc Automação")
 def modal_titulo_doc(df):
-    st.info("Gera o nome do arquivo padronizado para enviar no B4.")
+    st.markdown("""
+        <div style="background-color: #f9f9f9; padding: 12px; border-left: 5px solid #E30613; border-radius: 4px; margin-bottom: 20px;">
+            <span style="color: #404040; font-size: 14px;">
+                Gera o nome do arquivo padronizado para enviar no B4 com assinatura automatizada.
+            </span>
+        </div>
+    """, unsafe_allow_html=True)
+    
     nome = st.selectbox("Investidor", sorted(df["Nome"].unique()))
     titulo = st.text_input("Nome do Documento (ex: Contrato PJ)")
-    if st.button("Gerar Código"):
+    
+    st.markdown("<br>", unsafe_allow_html=True)
+    
+    # Centralizando o botão
+    c1, c2, c3 = st.columns([1, 2, 1])
+    if c2.button("Gerar Título", use_container_width=True):
         if nome and titulo:
             row = df[df["Nome"]==nome].iloc[0]
             cpf = re.sub(r"\D", "", str(row.get("CPF",""))).zfill(11)
             email = str(row.get("E-mail pessoal","")).lower()
             st.code(f"{nome} __ {cpf} __ {email} __ {titulo}")
+        else:
+            st.warning("Preencha todos os campos.")
 
 @st.dialog("📄 Demissão Comum Acordo")
 def modal_comum(df):
+    st.markdown("""
+        <div style="background-color: #f9f9f9; padding: 12px; border-left: 5px solid #E30613; border-radius: 4px; margin-bottom: 20px;">
+            <span style="color: #404040; font-size: 14px;">
+                Gera a minuta de acordo para formalização do desligamento consensual entre as partes.
+            </span>
+        </div>
+    """, unsafe_allow_html=True)
+    
     nome = st.selectbox("Investidor", sorted(df["Nome"].unique()))
     data = st.date_input("Data Desligamento")
-    if st.button("Gerar DOC"):
-        st.success("Simulação: Documento gerado!") 
+    
+    st.markdown("<br>", unsafe_allow_html=True)
+    
+    c1, c2, c3 = st.columns([1, 2, 1])
+    if c2.button("Gerar Documento", use_container_width=True):
+        st.success("Simulação: Documento gerado com sucesso!") 
 
 @st.dialog("📄 Aviso Prévio Indenizado")
 def modal_aviso_previo_indenizado(df):
+    st.markdown("""
+        <div style="background-color: #f9f9f9; padding: 12px; border-left: 5px solid #E30613; border-radius: 4px; margin-bottom: 20px;">
+            <span style="color: #404040; font-size: 14px;">
+                Emite o comunicado de dispensa com aviso prévio indenizado e datas de homologação.
+            </span>
+        </div>
+    """, unsafe_allow_html=True)
+    
     nome = st.selectbox("Investidor", sorted(df["Nome"].unique()))
-    data_des = st.date_input("Data Desligamento")
-    data_hom = st.date_input("Data Homologação")
-    if st.button("Gerar DOC"):
-        st.success("Simulação: Documento gerado!")
+    c_dat1, c_dat2 = st.columns(2)
+    data_des = c_dat1.date_input("Data Desligamento")
+    data_hom = c_dat2.date_input("Data Homologação")
+    
+    st.markdown("<br>", unsafe_allow_html=True)
+    
+    c1, c2, c3 = st.columns([1, 2, 1])
+    if c2.button("Gerar Documento", use_container_width=True):
+        st.success("Simulação: Documento gerado com sucesso!")
 
 @st.dialog("🚌 Vale Transporte")
 def modal_vale_transporte(df):
+    st.markdown("""
+        <div style="background-color: #f9f9f9; padding: 12px; border-left: 5px solid #E30613; border-radius: 4px; margin-bottom: 20px;">
+            <span style="color: #404040; font-size: 14px;">
+                Gera o termo de opção ou desistência do benefício de Vale Transporte.
+            </span>
+        </div>
+    """, unsafe_allow_html=True)
+    
     nome = st.selectbox("Investidor", sorted(df["Nome"].unique()))
-    st.info("Preencha os dados de transporte (Ônibus/Metrô)...")
-    if st.button("Gerar Declaração"):
-        st.success("Simulação: Declaração gerada!")
-
+    tipo = st.radio("Ação", ["Opção pelo VT", "Desistência do VT"], horizontal=True)
+    
+    st.markdown("<br>", unsafe_allow_html=True)
+    
+    c1, c2, c3 = st.columns([1, 2, 1])
+    if c2.button("Gerar Declaração", use_container_width=True):
+        st.success(f"Simulação: Declaração de {tipo} gerada!")
 
 # ==========================================
 # RENDER PRINCIPAL
