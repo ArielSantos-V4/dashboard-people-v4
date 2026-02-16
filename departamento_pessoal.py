@@ -773,36 +773,54 @@ def render(df_ativos, df_desligados):
                     st.warning("Coluna Modalidade PJ não encontrada.")
 
             # ==========================================
-            # 4. TEMPO DE CASA
+            # 4. TEMPO DE CASA (PROJEÇÃO FUTURA/PASSADA)
             # ==========================================
-            with st.expander("⏳ Tempo de Casa", expanded=False):
+            with st.expander("⏳ Tempo de Casa (Cálculo por Data)", expanded=False):
                 if "Início na V4_dt" in df_ativos_proc.columns:
-                    st.markdown("**Filtrar Tempo Mínimo:**")
-                    c_ano, c_mes = st.columns(2)
-                    min_anos = c_ano.number_input("Anos", min_value=0, value=1, step=1)
-                    min_meses = c_mes.number_input("Meses", min_value=0, max_value=11, value=0, step=1)
+                    st.markdown("**Configurações do Relatório:**")
+                    
+                    # Cria 3 colunas para os filtros
+                    c_ano, c_mes, c_ref = st.columns([1, 1, 1.5])
+                    min_anos = c_ano.number_input("Mín. Anos", min_value=0, value=1, step=1)
+                    min_meses = c_mes.number_input("Mín. Meses", min_value=0, max_value=11, value=0, step=1)
+                    
+                    # Campo para escolher a data base do cálculo
+                    data_ref_input = c_ref.date_input("Data de Referência", value=datetime.today())
+                    data_ref = pd.Timestamp(data_ref_input).normalize()
                     
                     # Cálculo em dias totais para o filtro
                     dias_minimos = (min_anos * 365) + (min_meses * 30)
-                    hj = pd.Timestamp.today().normalize()
                     
+                    # Pega apenas quem tem data de início preenchida
                     df_tempo = df_ativos_proc[df_ativos_proc["Início na V4_dt"].notna()].copy()
-                    df_tempo["Dias_Casa"] = (hj - df_tempo["Início na V4_dt"]).dt.days
                     
-                    # Aplica o filtro
-                    df_filtrado = df_tempo[df_tempo["Dias_Casa"] >= dias_minimos].sort_values("Dias_Casa", ascending=False)
+                    # Calcula a diferença com base na DATA ESCOLHIDA (não mais hoje)
+                    df_tempo["Dias_Casa"] = (data_ref - df_tempo["Início na V4_dt"]).dt.days
+                    
+                    # Filtra:
+                    # 1. Quem atinge o tempo mínimo
+                    # 2. Quem já tinha sido admitido naquela data (Dias > 0)
+                    df_filtrado = df_tempo[
+                        (df_tempo["Dias_Casa"] >= dias_minimos) & 
+                        (df_tempo["Dias_Casa"] > 0)
+                    ].sort_values("Dias_Casa", ascending=False)
                     
                     if df_filtrado.empty:
-                        st.info(f"Ninguém com mais de {min_anos} anos e {min_meses} meses de casa ainda.")
+                        st.info(f"Ninguém com mais de {min_anos} anos e {min_meses} meses na data de {data_ref.strftime('%d/%m/%Y')}.")
                     else:
-                        # Calcula texto amigável
-                        df_filtrado["Tempo de Casa"] = df_filtrado["Início na V4_dt"].apply(calcular_tempo_casa)
+                        # Função interna para formatar o texto usando a Data de Referência
+                        def texto_tempo_dinamico(inicio):
+                            if pd.isna(inicio) or inicio > data_ref: return "-"
+                            d = relativedelta(data_ref, inicio)
+                            return f"{d.years} anos, {d.months} meses e {d.days} dias"
+
+                        df_filtrado["Tempo de Casa"] = df_filtrado["Início na V4_dt"].apply(texto_tempo_dinamico)
                         
-                        # Colunas solicitadas: Nome, Remuneração, Início, Tempo Descritivo
+                        # Colunas finais
                         cols_tempo = ["Nome", "Remuneração", "Início na V4", "Tempo de Casa"]
                         cols_final = [c for c in cols_tempo if c in df_filtrado.columns]
                         
-                        st.markdown(f"Encontrados: **{len(df_filtrado)} investidores**")
+                        st.markdown(f"Em **{data_ref.strftime('%d/%m/%Y')}**, teremos **{len(df_filtrado)} investidores** com esse tempo de casa:")
                         st.dataframe(df_filtrado[cols_final], use_container_width=True, hide_index=True)
                 else:
                     st.warning("Coluna Início na V4 não encontrada.")
