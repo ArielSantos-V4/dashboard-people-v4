@@ -602,7 +602,7 @@ def render(df_ativos, df_desligados):
                 st.altair_chart(chart_mod, use_container_width=True)
                 
     # ----------------------------------------------------
-    # ABA ROLLING (DESIGN LIMPO - SEM SUB-ABAS)
+    # ABA ROLLING (CORRIGIDA)
     # ----------------------------------------------------
     with aba_rolling:
         # Texto Explicativo
@@ -614,12 +614,12 @@ def render(df_ativos, df_desligados):
             </div>
         """, unsafe_allow_html=True)
         
-        # --- SELETOR DE VISUALIZAÇÃO (SUBSTITUI AS ABAS) ---
+        # --- SELETOR DE VISUALIZAÇÃO ---
         modo_visualizacao = st.radio(
             "Selecione a base:",
-            ["Investidores Ativos", "Investidores Desligados"],
+            ["Investidores Ativos", "Investidores Desligados"], # Você removeu os emojis aqui (Correto)
             horizontal=True,
-            label_visibility="collapsed" # Esconde o título para ficar mais limpo
+            label_visibility="collapsed" 
         )
         
         st.markdown("---")
@@ -639,8 +639,9 @@ def render(df_ativos, df_desligados):
                     config[col] = None
             return config
 
-        # --- LÓGICA DINÂMICA ---
-        if modo_visualizacao == "🟢 Investidores Ativos":
+        # --- LÓGICA DINÂMICA (CORRIGIDA) ---
+        # Ajustei o IF para verificar o texto exato SEM o emoji
+        if modo_visualizacao == "Investidores Ativos":
             df_atual = df_ativos_proc
             tipo_base = "ativo"
             key_suffix = "_ativo"
@@ -651,7 +652,7 @@ def render(df_ativos, df_desligados):
             key_suffix = "_deslig"
             cor_titulo = "red"
 
-        # --- ÁREA DE CONSULTA E TABELA (CÓDIGO ÚNICO) ---
+        # --- ÁREA DE CONSULTA E TABELA ---
         c_sel, c_btn = st.columns([3, 1])
         
         with c_sel:
@@ -669,8 +670,10 @@ def render(df_ativos, df_desligados):
         
         st.markdown("<br>", unsafe_allow_html=True)
         
-        # Título da Tabela
-        st.markdown(f"### 📋 Base Completa :{cor_titulo}[{modo_visualizacao.split(' ')[2]}]")
+        # Título da Tabela (CORRIGIDO)
+        # Usei [-1] para pegar sempre a ÚLTIMA palavra ('Ativos' ou 'Desligados')
+        # independente de quantos emojis ou palavras tenham antes.
+        st.markdown(f"### 📋 Base Completa :{cor_titulo}[{modo_visualizacao.split(' ')[-1]}]")
         
         busca = st.text_input(f"Filtrar tabela", placeholder="Digite nome, cargo ou área...", key=f"busca{key_suffix}")
         
