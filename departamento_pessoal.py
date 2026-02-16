@@ -300,6 +300,7 @@ def render(df_ativos, df_desligados):
     # ABA DASHBOARD
     # ----------------------------------------------------
     with aba_dashboard:
+        st.write("Colunas encontradas:", df_ativos_proc.columns.tolist())
         # Texto Explicativo
         st.markdown("""
             <div style="background-color: #f9f9f9; padding: 12px; border-left: 5px solid #E30613; border-radius: 4px; margin-bottom: 20px;">
