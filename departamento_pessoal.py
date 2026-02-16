@@ -1170,7 +1170,7 @@ def render(df_ativos, df_desligados):
         a_adm, a_desl, a_ciclo = st.tabs(["🌱 Admissão", "🚪 Desligamento", "🔄 Jornada & Ciclo"])
         
         with a_adm:
-        c1, c2, c3 = st.columns(3)
+            c1, c2, c3 = st.columns(3)
             
             with c1:
                 st.markdown("##### 📝 Gerar Formulários")
@@ -1188,7 +1188,7 @@ def render(df_ativos, df_desligados):
                 
         
         with a_desl:    
-        c1, c2, c3 = st.columns(3)
+            c1, c2, c3 = st.columns(3)
             
             with c1:
                 st.markdown("##### 📝 Gerar Formulários")
@@ -1208,7 +1208,7 @@ def render(df_ativos, df_desligados):
                 
                 
         with a_ciclo:
-        c1, c2, c3 = st.columns(3)
+            c1, c2, c3 = st.columns(3)
             
             with c1:
                 st.markdown("##### 📝 Gerar Formulários")
