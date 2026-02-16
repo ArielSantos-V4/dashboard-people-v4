@@ -666,6 +666,16 @@ def render(df_ativos, df_desligados):
     # ABA ANALYTICS (RESTAURADO)
     # ----------------------------------------------------
     with aba_analytics:
+        # --- DEPURADOR TEMPORÁRIO (Pode apagar depois) ---
+        st.markdown("### 🕵️ Debug de Alertas")
+        nome_teste = st.selectbox("Selecione para auditar:", [""] + sorted(df_ativos_proc["Nome"].unique()))
+        if nome_teste:
+            row = df_ativos_proc[df_ativos_proc["Nome"] == nome_teste].iloc[0]
+            st.write("Status lido:", f"'{row.get('Situação no plano')}'")
+            st.write("Data lida (Texto):", row.get("Solicitar documentação"))
+            st.write("Data entendida (Sistema):", pd.to_datetime(row.get("Solicitar documentação"), dayfirst=True, errors="coerce"))
+            st.write("Hoje:", pd.Timestamp.today().normalize())
+        
         # Texto Explicativo (NOVO)
         st.markdown("""
             <div style="background-color: #f9f9f9; padding: 12px; border-left: 5px solid #E30613; border-radius: 4px; margin-bottom: 20px;">
