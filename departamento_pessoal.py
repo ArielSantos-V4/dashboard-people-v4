@@ -77,6 +77,21 @@ def gerar_docx_com_substituicoes(caminho, mapa):
     buf.seek(0)
     return buf
 
+def calcular_idade(dt_nasc):
+    if pd.isna(dt_nasc) or dt_nasc == "": return ""
+    try:
+        # Se for string, tenta converter, se já for timestamp, usa direto
+        if not isinstance(dt_nasc, pd.Timestamp):
+            dt_nasc = pd.to_datetime(dt_nasc, dayfirst=True, errors='coerce')
+        
+        if pd.isna(dt_nasc): return ""
+        
+        hoje = pd.Timestamp.today()
+        idade = hoje.year - dt_nasc.year - ((hoje.month, hoje.day) < (dt_nasc.month, dt_nasc.day))
+        return f"{idade} anos"
+    except:
+        return ""
+        
 # ==========================================
 # LÓGICA DE ALERTAS (ATIVOS)
 # ==========================================
@@ -123,105 +138,147 @@ def gerar_alertas_investidor(linha):
     return alertas
 
 # ==========================================
-# MODAL DE CONSULTA (HÍBRIDO - LARGO)
+# MODAL DE CONSULTA (HÍBRIDO - REFORMULADO)
 # ==========================================
-@st.dialog(" ", width="large")
+@st.dialog("Ficha do Investidor", width="large")
 def modal_consulta_investidor(df_consulta, nome, tipo_base="ativo"):
-    st.markdown('<div class="modal-investidor">', unsafe_allow_html=True)
+    # Título com o nome da pessoa (Visualmente funciona como título do modal)
+    st.header(nome, divider="red")
     
+    # Busca a linha do investidor
     linha = df_consulta[df_consulta["Nome"] == nome].iloc[0]
             
-    col1, col2, col3 = st.columns([3, 3, 2])
+    # Layout de 3 Colunas (Ajustei as proporções para caber tudo)
+    col1, col2, col3 = st.columns([1.2, 1.2, 0.8])
         
-    # --- COLUNA 1 ---
+    # --- COLUNA 1: PROFISSIONAL ---
     with col1:
-        st.markdown("##### 📌 Profissional")
-        col_a, col_b = st.columns(2)
-        col_a.text_input("BP", str(linha.get("BP", "")).replace(".0", ""), disabled=True)
-        col_b.text_input("Matrícula", str(linha.get("Matrícula", "")).replace(".0", "").zfill(6), disabled=True)
+        st.markdown("### 👔 Profissional")
         
-        c1, c2 = st.columns(2)
-        c1.text_input("Data Contrato", linha.get("Data do contrato", ""), disabled=True)
-        c2.text_input("Modelo", linha.get("Modelo de contrato", ""), disabled=True)
+        c1a, c1b = st.columns(2)
+        c1a.text_input("BP", str(linha.get("BP", "")).replace(".0", ""), disabled=True)
+        c1b.text_input("Matrícula", str(linha.get("Matrícula", "")).replace(".0", "").zfill(6), disabled=True)
         
+        c2a, c2b = st.columns(2)
+        c2a.text_input("Data Contrato", linha.get("Data do contrato", ""), disabled=True)
+        # Lógica para mostrar Data Rescisão se for desligado no lugar do término, ou manter término
         if tipo_base == "desligado":
-            st.markdown("🔴 **Desligamento**")
-            d1, d2 = st.columns(2)
-            d1.text_input("Data Rescisão", linha.get("Data de rescisão", ""), disabled=True)
-            d2.text_input("Valor Distrato", linha.get("Valor distrato", ""), disabled=True)
-            st.text_input("Término Previsto (Orig)", linha.get("Térm previsto", ""), disabled=True)
+             c2b.text_input("Data Rescisão", linha.get("Data de rescisão", ""), disabled=True)
         else:
-            st.text_input("Término Previsto", linha.get("Térm previsto", ""), disabled=True)
-        
+             c2b.text_input("Término Previsto", linha.get("Térm previsto", ""), disabled=True)
+
+        c3a, c3b = st.columns(2)
+        c3a.text_input("Unidade", linha.get("Unidade/Atuação", ""), disabled=True)
+        c3b.text_input("Modelo Contrato", linha.get("Modelo de contrato", ""), disabled=True)
+
+        c4a, c4b = st.columns(2)
+        c4a.text_input("E-mail Corp", linha.get("E-mail corporativo", ""), disabled=True)
+        c4b.text_input("Modalidade PJ", linha.get("Modalidade PJ", ""), disabled=True)
+
         tempo = calcular_tempo_casa(linha.get("Início na V4_dt"))
-        st.text_input("Início na V4", linha.get("Início na V4", ""), disabled=True)
-        if tipo_base == "ativo":
-            st.caption(f"Tempo de casa: {tempo}")
+        c5a, c5b = st.columns(2)
+        c5a.text_input("Início na V4", linha.get("Início na V4", ""), disabled=True)
+        c5b.text_input("Tempo de Casa", tempo, disabled=True)
 
-        st.text_input("E-mail Corp", linha.get("E-mail corporativo", ""), disabled=True)
-        e1, e2 = st.columns(2)
-        e1.text_input("CNPJ", formatar_cnpj(linha.get("CNPJ")), disabled=True)
-        e2.text_input("Razão Social", linha.get("Razão social", ""), disabled=True)
-        st.text_input("Cargo", linha.get("Cargo", ""), disabled=True)
+        c6a, c6b = st.columns(2)
+        c6a.text_input("CNPJ", formatar_cnpj(linha.get("CNPJ")), disabled=True)
+        c6b.text_input("Razão Social", linha.get("Razão social", ""), disabled=True)
 
-    # --- COLUNA 2 ---
+        c7a, c7b = st.columns(2)
+        c7a.text_input("Cargo", linha.get("Cargo", ""), disabled=True)
+        # Formata remuneração se possível
+        remuneracao = str(linha.get("Remuneração", ""))
+        c7b.text_input("Remuneração", remuneracao, disabled=True)
+
+        c8a, c8b = st.columns(2)
+        c8a.text_input("CBO", str(linha.get("CBO", "")).replace(".0",""), disabled=True)
+        c8b.text_input("Descrição CBO", linha.get("Descrição CBO", ""), disabled=True)
+
+    # --- COLUNA 2: CENTRO DE CUSTO & PESSOAL ---
     with col2:
-        st.markdown("##### 👤 Pessoal / Admin")
+        # > BLOCO 1: CENTRO DE CUSTO
+        st.markdown("### 🏢 Centro de Custo")
+        
+        d1a, d1b = st.columns([1, 2])
         cc_code = str(linha.get("Código CC", "")).replace(".0", "")
-        f1, f2 = st.columns([1, 2])
-        f1.text_input("Cód CC", cc_code, disabled=True)
-        f2.text_input("Centro de Custo", linha.get("Descrição CC", ""), disabled=True)
+        d1a.text_input("Cód. CC", cc_code, disabled=True)
+        d1b.text_input("Descrição CC", linha.get("Descrição CC", ""), disabled=True)
         
-        st.text_input("Liderança", linha.get("Liderança direta", ""), disabled=True)
-        st.text_input("Conta Contábil", linha.get("Conta contábil", ""), disabled=True)
+        d2a, d2b, d2c = st.columns([1, 1, 1])
+        d2a.text_input("ID Vaga", str(linha.get("ID Vaga", "")).replace(".0",""), disabled=True)
+        d2b.text_input("Conta Contábil", str(linha.get("Conta contábil", "")).replace(".0",""), disabled=True)
+        d2c.text_input("Área", linha.get("Área", ""), disabled=True)
 
-        g1, g2 = st.columns(2)
-        g1.text_input("CPF", formatar_cpf(linha.get("CPF")), disabled=True)
-        g2.text_input("Nascimento", linha.get("Data de nascimento", ""), disabled=True)
-        
+        d3a, d3b = st.columns(2)
+        d3a.text_input("Senioridade", linha.get("Senioridade", ""), disabled=True)
+        d3b.text_input("Liderança Direta", linha.get("Liderança direta", ""), disabled=True)
+
+        st.divider()
+
+        # > BLOCO 2: DADOS PESSOAIS
+        st.markdown("### 👤 Dados Pessoais")
+
+        e1a, e1b, e1c = st.columns([1.2, 1, 0.8])
+        e1a.text_input("CPF", formatar_cpf(linha.get("CPF")), disabled=True)
+        e1b.text_input("Nascimento", linha.get("Data de nascimento", ""), disabled=True)
+        # Calcula idade
+        idade_str = calcular_idade(linha.get("Data de nascimento_dt"))
+        e1c.text_input("Idade", idade_str, disabled=True)
+
+        e2a, e2b = st.columns([1, 2])
+        e2a.text_input("CEP", str(linha.get("CEP", "")).replace(".0",""), disabled=True)
+        e2b.text_input("Escolaridade", linha.get("Escolaridade", ""), disabled=True)
+
         st.text_input("E-mail Pessoal", linha.get("E-mail pessoal", ""), disabled=True)
         st.text_input("Telefone", linha.get("Telefone pessoal", ""), disabled=True)
         
+        st.markdown("<br>", unsafe_allow_html=True)
         if linha.get("Link Drive Docs"):
-            st.link_button("📂 Abrir Drive Docs", linha["Link Drive Docs"], use_container_width=True)
+            st.link_button("📂 Abrir documentação do investidor", linha["Link Drive Docs"], use_container_width=True)
+        else:
+            st.button("📂 Sem documentação vinculada", disabled=True, use_container_width=True)
 
-    # --- COLUNA 3 ---
+    # --- COLUNA 3: FOTO, BENEFÍCIOS & ALERTAS ---
     with col3:
-        st.markdown("##### 🖼️ Foto")
+        # AVISO DE DESLIGADO (Vermelho acima da foto)
+        if tipo_base == "desligado":
+            dt_rescisao = linha.get("Data de rescisão", "Data n/d")
+            st.error(f"🚨 **INVESTIDOR DESLIGADO**\n\nData: {dt_rescisao}", icon="🚫")
+
+        st.markdown("### 🖼️ Foto")
         foto = linha.get("Foto", "")
         if foto and str(foto).startswith("http"):
-            st.markdown(f'<div style="display:flex; justify-content:center; margin-bottom:20px"><img src="{foto}" width="150" style="border-radius:10px"></div>', unsafe_allow_html=True)
+            st.markdown(f'<div style="display:flex; justify-content:center; margin-bottom:20px"><img src="{foto}" width="180" style="border-radius:10px; box-shadow: 0px 4px 10px rgba(0,0,0,0.1);"></div>', unsafe_allow_html=True)
         else:
             st.info("Sem foto disponível")
 
-        st.markdown("##### 🎁 Benefícios")
-        st.text_input("Status Plano", linha.get("Situação no plano", ""), disabled=True)
+        st.divider()
+        st.markdown("### 🎁 Benefícios")
+        
+        st.text_input("Situação Plano", linha.get("Situação no plano", ""), disabled=True)
         
         st.markdown("**Saúde**")
-        h1, h2 = st.columns(2)
-        # ADICIONADO key= PARA CORRIGIR ERRO DE DUPLICIDADE
-        h1.text_input("Operadora", linha.get("Operadora Médico", ""), disabled=True, label_visibility="collapsed", key="op_medico")
-        h2.text_input("Cart.", str(linha.get("Carteirinha médico", "")).replace(".0",""), disabled=True, label_visibility="collapsed", key="cart_medico")
+        f1a, f1b = st.columns(2)
+        f1a.text_input("Op. Méd", linha.get("Operadora Médico", ""), disabled=True, label_visibility="collapsed", key="k_op_med")
+        f1b.text_input("Cart. Méd", str(linha.get("Carteirinha médico", "")).replace(".0",""), disabled=True, label_visibility="collapsed", key="k_crt_med")
 
-        st.markdown("**Odonto**")
-        i1, i2 = st.columns(2)
-        # ADICIONADO key= PARA CORRIGIR ERRO DE DUPLICIDADE
-        i1.text_input("Operadora", linha.get("Operadora Odonto", ""), disabled=True, label_visibility="collapsed", key="op_odonto")
-        i2.text_input("Cart.", str(linha.get("Carteirinha odonto", "")).replace(".0",""), disabled=True, label_visibility="collapsed", key="cart_odonto")
+        st.markdown("**Dental**")
+        f2a, f2b = st.columns(2)
+        f2a.text_input("Op. Dent", linha.get("Operadora Odonto", ""), disabled=True, label_visibility="collapsed", key="k_op_dent")
+        f2b.text_input("Cart. Dent", str(linha.get("Carteirinha odonto", "")).replace(".0",""), disabled=True, label_visibility="collapsed", key="k_crt_dent")
         
+        # Alertas só para ativos (normalmente), mas se quiser mostrar para desligados, tire o if
         if tipo_base == "ativo":
-            st.markdown("---")
-            st.markdown("##### ⚠️ Alertas")
+            st.divider()
+            st.markdown("### ⚠️ Alertas")
             alertas = gerar_alertas_investidor(linha)
             if alertas:
-                with st.container(height=120, border=True):
+                with st.container(height=200, border=True):
                     for tipo, msg in alertas:
                         if tipo == "error": st.error(msg, icon="🚨")
                         elif tipo == "warning": st.warning(msg, icon="⚠️")
                         elif tipo == "success": st.success(msg, icon="🎉")
                         else: st.info(msg, icon="ℹ️")
-
-    st.markdown('</div>', unsafe_allow_html=True)
 
 
 # ==========================================
