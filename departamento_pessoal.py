@@ -1176,10 +1176,10 @@ def render(df_ativos, df_desligados):
                     modal_vale_transporte(df_ativos_proc)
             with c2:
                 st.markdown("##### ✉️ E-mail / Mensagens")
-                st.info("Rascunhos em breve")
+                st.caption("Em breve")
             with c3:
                 st.markdown("##### 📂 Diversos")
-                st.caption("Apoio aos processos")
+                st.caption("Em breve")
 
         with a_desl:
             c1, c2, c3 = st.columns(3)
@@ -1191,19 +1191,19 @@ def render(df_ativos, df_desligados):
                     modal_aviso_previo_indenizado(df_ativos_proc)
             with c2:
                 st.markdown("##### ✉️ E-mail / Mensagens")
-                st.info("Rascunhos em breve")
+                st.caption("Em breve")
             with c3:
                 st.markdown("##### 📂 Diversos")
-                st.caption("Apoio aos processos")
+                st.caption("Em breve")
 
         with a_ciclo:
             c1, c2, c3 = st.columns(3)
             with c1:
                 st.markdown("##### 📝 Gerar Formulários")
-                st.info("Formulários de ciclo")
+                st.caption("Em breve")
             with c2:
                 st.markdown("##### ✉️ E-mail / Mensagens")
-                st.info("Rascunhos em breve")
+                st.caption("Em breve")
             with c3:
                 st.markdown("##### 📂 Diversos")
                 if st.button("📝 Título Doc (Automação)", use_container_width=True, type="primary"): 
