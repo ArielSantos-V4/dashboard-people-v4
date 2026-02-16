@@ -669,6 +669,8 @@ def render(df_ativos, df_desligados):
                 modal_consulta_investidor(df_atual, sel_investidor, tipo_base)
         
         st.markdown("<br>", unsafe_allow_html=True)
+
+        st.markdown("---")
         
         # Título da Tabela (CORRIGIDO)
         # Usei [-1] para pegar sempre a ÚLTIMA palavra ('Ativos' ou 'Desligados')
