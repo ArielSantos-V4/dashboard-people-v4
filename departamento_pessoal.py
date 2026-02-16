@@ -916,7 +916,7 @@ def render(df_ativos, df_desligados):
             return dot
 
         # 2. Interface no Streamlit
-        with st.expander("🌳 Explorador de Estrutura Organizacional", expanded=False):
+        with st.expander("Visualizar organograma", expanded=False):
             df_org_base = df_ativos_proc.copy()
             
             # Filtro de Liderança
