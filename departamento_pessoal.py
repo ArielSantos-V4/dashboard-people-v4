@@ -882,17 +882,15 @@ def render(df_ativos, df_desligados):
 
             dot = graphviz.Digraph()
             
-            # --- O PULO DO GATO ---
-            # dpi='300': Aumenta a resolução e escala tudo
-            # ranksep e nodesep em valores altos para forçar o distanciamento
-            # Mude o DPI de 300 para algo entre 150 e 200
-            # Reduza o width (largura) das caixas para 2.8 ou 3.0
-            dot.attr(rankdir='LR', ranksep='1.5', nodesep='0.8', dpi='175', bgcolor='transparent')
+            # Mude o DPI para 140 (nitidez sem exagero)
+            # Reduza o ranksep para 1.0 (menos espaço vazio entre colunas)
+            dot.attr(rankdir='LR', ranksep='1.0', nodesep='0.5', dpi='140', bgcolor='transparent')
             
+            # Ajuste o tamanho da caixa para 2.2 de largura (confortável para ler nomes)
             dot.attr('node', shape='rectangle', style='filled, rounded', 
                      fillcolor='#404040', color='#2E2E2E', fontcolor='white', 
-                     fontname='Arial Bold', fontsize='12', # Reduzi um pouco a fonte também
-                     width='2.8', height='0.8')
+                     fontname='Arial Bold', fontsize='11', 
+                     width='2.2', height='0.6')
 
             cargos = pd.Series(df_base["Cargo"].values, index=df_base["Nome"]).to_dict()
 
@@ -914,12 +912,16 @@ def render(df_ativos, df_desligados):
             # Injetando CSS para garantir que o container aceite scroll gigante
             st.markdown("""
                 <style>
-                    [data-testid="stExpander"] div[role="listitem"] { overflow-x: auto !important; }
-                    .stGraphvizChart { overflow: auto !important; }
+                    /* Permite o scroll apenas se o gráfico realmente não couber */
+                    .stGraphvizChart { 
+                        overflow: auto !important; 
+                        display: flex;
+                        justify-content: center; /* Centraliza se for pequeno */
+                    }
                     .stGraphvizChart svg { 
                         width: auto !important; 
                         height: auto !important; 
-                        min-width: 1200px !important; /* Reduzi de 2500px para 1200px */
+                        max-width: 100%; /* Impede que ele exploda para fora sem necessidade */
                     }
                 </style>
             """, unsafe_allow_html=True)
