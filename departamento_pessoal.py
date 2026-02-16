@@ -172,6 +172,56 @@ def validar_clt(row):
     return eh_clt, tipo_encontrado
 
 # ==========================================
+# MODAIS DE RELATÓRIO MASTER
+# ==========================================
+@st.dialog("📥 Exportar Relatório Master", width="large")
+def modal_exportar_excel(df_master):
+    st.markdown("""
+        <div style="padding: 10px; border-radius: 5px; border: 1px solid #dcdfe6; background-color: #f8f9fa; color: #606266; font-size: 14px; margin-bottom: 15px;">
+            🗄️ Selecione abaixo as colunas que deseja incluir no seu arquivo Excel.
+        </div>
+    """, unsafe_allow_html=True)
+
+    # Pega todas as colunas disponíveis no dataframe unificado
+    todas_colunas = sorted(df_master.columns.tolist())
+    
+    # Multiselect para o usuário escolher o que quer levar para o Excel
+    colunas_escolhidas = st.multiselect(
+        "Selecione as colunas para o relatório:",
+        options=todas_colunas,
+        default=["Nome", "E-mail corporativo", "Cargo", "Remuneração", "Modelo de contrato"] # Sugestão de padrão
+    )
+
+    st.markdown("---")
+    
+    if not colunas_escolhidas:
+        st.warning("Selecione ao menos uma coluna para gerar o arquivo.")
+    else:
+        # Lógica para gerar o Excel em memória
+        output = BytesIO()
+        # Filtra o dataframe com as colunas escolhidas
+        df_export = df_master[colunas_escolhidas].copy()
+        
+        try:
+            with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
+                df_export.to_excel(writer, index=False, sheet_name='Relatório Master')
+            
+            data_excel = output.getvalue()
+            
+            c1, c2, c3 = st.columns([1, 2, 1])
+            with c2:
+                st.download_button(
+                    label="📗 Baixar Relatório em Excel",
+                    data=data_excel,
+                    file_name=f"Relatorio_Master_{datetime.now().strftime('%d_%m_%Y')}.xlsx",
+                    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                    use_container_width=True,
+                    type="primary"
+                )
+        except Exception as e:
+            st.error(f"Erro ao gerar Excel: {e}")
+            
+# ==========================================
 # MODAIS DE AÇÃO (VERSÃO FINAL UNIFICADA)
 # ==========================================
 
@@ -909,25 +959,54 @@ def render(df_ativos, df_desligados):
         st.dataframe(df_view, use_container_width=True, hide_index=True, column_config=get_column_config(df_view.columns))
         
     # ----------------------------------------------------
-    # ABA ANALYTICS (AJUSTADO E REFINADO)
+    # ABA ANALYTICS (REESTRUTURADA)
     # ----------------------------------------------------
     with aba_analytics:
-        # Texto Explicativo
-        st.markdown("""
-            <div style="background-color: #f9f9f9; padding: 12px; border-left: 5px solid #E30613; border-radius: 4px; margin-bottom: 20px;">
-                <span style="color: #404040; font-size: 14px;">
-                    Consulte <b>relatórios operacionais</b> detalhados e utilize a Central de Ações para <b>gerar documentos</b> automaticamente.
-                </span>
-            </div>
-        """, unsafe_allow_html=True)
+        sub_master, sub_demo, sub_estat, sub_finan = st.tabs([
+            "📋 Master", 
+            "👥 Demográfico", 
+            "📊 Estatístico", 
+            "💰 Financeiro"
+        ])
 
-        st.markdown("<div style='height:20px'></div>", unsafe_allow_html=True)
-        col_relatorios, col_divisor, col_acoes = st.columns([7, 0.1, 3])
-        with col_divisor:
-            st.markdown("""<div style="height: 100%; border-left: 1px solid #e0e0e0; margin: 0 auto;"></div>""", unsafe_allow_html=True)
+        # --- SUB-ABA: MASTER ---
+        with sub_master:
+            st.markdown("### 📋 Relatório Master")
             
-        with col_relatorios:
-            st.markdown("## 📊 Relatórios Principais")
+            # Filtro de Status
+            filtro_status = st.multiselect(
+                "Filtrar por Status:",
+                ["Ativos", "Desligados"],
+                default=["Ativos"]
+            )
+            
+            # Construção da Base Master baseada no filtro
+            bases_selecionadas = []
+            if "Ativos" in filtro_status: bases_selecionadas.append(df_ativos_proc)
+            if "Desligados" in filtro_status: bases_selecionadas.append(df_desligados_proc)
+            
+            if not bases_selecionadas:
+                st.warning("Selecione ao menos um status para visualizar os dados.")
+            else:
+                df_master_completo = pd.concat(bases_selecionadas, ignore_index=True)
+                
+                # Colunas fixas para visualização na tela (conforme solicitado)
+                cols_view = ["Nome", "E-mail corporativo", "BP", "Modelo de contrato", "Cargo", "Remuneração", "Senioridade", "Área", "CPF"]
+                # Filtra apenas as colunas que realmente existem no DF
+                cols_disponiveis = [c for c in cols_view if c in df_master_completo.columns]
+                
+                st.dataframe(df_master_completo[cols_disponiveis], use_container_width=True, hide_index=True)
+                
+                st.markdown("<br>", unsafe_allow_html=True)
+                # Botão para abrir o modal de exportação
+                c1, c2, c3 = st.columns([1, 1, 1])
+                if c2.button("📥 Gerar Relatório Customizado", use_container_width=True, type="primary"):
+                    modal_exportar_excel(df_master_completo)
+
+        # --- SUB-ABA: DEMOGRÁFICO ---
+        with sub_demo:
+            # MOVA PARA CÁ: Bloco de Aniversariantes e Tempo de Casa (sem alterar o código interno deles)
+            st.markdown("### 👥 Relatórios Demográficos")
             
             # ==========================================
             # 1. ANIVERSARIANTES DO MÊS
@@ -958,51 +1037,6 @@ def render(df_ativos, df_desligados):
                         st.dataframe(df_aniversario[cols_final], use_container_width=True, hide_index=True)
                 else:
                     st.warning("Coluna de Data de Nascimento não encontrada.")
-
-            # ==========================================
-            # 2. CONTRATOS A VENCER
-            # ==========================================
-            with st.expander("⏰ Contratos a vencer", expanded=False):
-                c1, c2 = st.columns(2)
-                d_ini = c1.date_input("Data inicial", value=datetime.today().date(), format="DD/MM/YYYY")
-                d_fim = c2.date_input("Data final", value=datetime.today().date() + relativedelta(months=3), format="DD/MM/YYYY")
-                
-                if "Térm previsto_dt" in df_ativos_proc.columns:
-                    ini_ts = pd.Timestamp(d_ini)
-                    fim_ts = pd.Timestamp(d_fim)
-                    
-                    df_venc = df_ativos_proc[
-                        (df_ativos_proc["Térm previsto_dt"].notna()) & 
-                        (df_ativos_proc["Térm previsto_dt"] >= ini_ts) & 
-                        (df_ativos_proc["Térm previsto_dt"] <= fim_ts)
-                    ].sort_values("Térm previsto_dt")
-                    
-                    if df_venc.empty:
-                        st.info("Nenhum contrato vencendo no período selecionado ⏳")
-                    else:
-                        # Colunas solicitadas: Nome, Cargo, Modelo, Término, Email, Liderança
-                        cols_venc = ["Nome", "Cargo", "Modelo de contrato", "Térm previsto", "E-mail corporativo", "Liderança direta"]
-                        cols_final = [c for c in cols_venc if c in df_venc.columns]
-                        st.dataframe(df_venc[cols_final], use_container_width=True, hide_index=True)
-                else:
-                    st.warning("Coluna de Término Previsto não encontrada.")
-
-            # ==========================================
-            # 3. INVESTIDORES MEI
-            # ==========================================
-            with st.expander("💼 Investidores MEI", expanded=False):
-                if "Modalidade PJ" in df_ativos_proc.columns:
-                    df_mei = df_ativos_proc[df_ativos_proc["Modalidade PJ"].astype(str).str.upper().str.contains("MEI", na=False)]
-                    if df_mei.empty:
-                        st.info("Nenhum investidor MEI encontrado.")
-                    else:
-                        st.warning(f"⚠️ Temos **{len(df_mei)} investidores MEI**.")
-                        # Colunas solicitadas: Nome, Email, Cargo, Modalidade
-                        cols_mei = ["Nome", "E-mail corporativo", "Cargo", "Modalidade PJ"]
-                        cols_final = [c for c in cols_mei if c in df_mei.columns]
-                        st.dataframe(df_mei[cols_final], use_container_width=True, hide_index=True)
-                else:
-                    st.warning("Coluna Modalidade PJ não encontrada.")
 
             # ==========================================
             # 4. TEMPO DE CASA (CÁLCULO EXATO DE CALENDÁRIO)
@@ -1054,16 +1088,83 @@ def render(df_ativos, df_desligados):
                 else:
                     st.warning("Coluna Início na V4 não encontrada.")
 
-        with col_acoes:
-            st.markdown("## ⚙️ Ações")
-            if st.button("📝 Título de doc para automação", use_container_width=True):
+            pass
+
+        # --- SUB-ABA: ESTATÍSTICO ---
+        with sub_estat:
+            # MOVA PARA CÁ: Bloco de Contratos a vencer e Investidores MEI
+            st.markdown("### 📊 Relatórios Estatísticos")
+            
+            # ==========================================
+            # 2. CONTRATOS A VENCER
+            # ==========================================
+            with st.expander("⏰ Contratos a vencer", expanded=False):
+                c1, c2 = st.columns(2)
+                d_ini = c1.date_input("Data inicial", value=datetime.today().date(), format="DD/MM/YYYY")
+                d_fim = c2.date_input("Data final", value=datetime.today().date() + relativedelta(months=3), format="DD/MM/YYYY")
+                
+                if "Térm previsto_dt" in df_ativos_proc.columns:
+                    ini_ts = pd.Timestamp(d_ini)
+                    fim_ts = pd.Timestamp(d_fim)
+                    
+                    df_venc = df_ativos_proc[
+                        (df_ativos_proc["Térm previsto_dt"].notna()) & 
+                        (df_ativos_proc["Térm previsto_dt"] >= ini_ts) & 
+                        (df_ativos_proc["Térm previsto_dt"] <= fim_ts)
+                    ].sort_values("Térm previsto_dt")
+                    
+                    if df_venc.empty:
+                        st.info("Nenhum contrato vencendo no período selecionado ⏳")
+                    else:
+                        # Colunas solicitadas: Nome, Cargo, Modelo, Término, Email, Liderança
+                        cols_venc = ["Nome", "Cargo", "Modelo de contrato", "Térm previsto", "E-mail corporativo", "Liderança direta"]
+                        cols_final = [c for c in cols_venc if c in df_venc.columns]
+                        st.dataframe(df_venc[cols_final], use_container_width=True, hide_index=True)
+                else:
+                    st.warning("Coluna de Término Previsto não encontrada.")
+                    
+            # ==========================================
+            # 3. INVESTIDORES MEI
+            # ==========================================
+            with st.expander("💼 Investidores MEI", expanded=False):
+                if "Modalidade PJ" in df_ativos_proc.columns:
+                    df_mei = df_ativos_proc[df_ativos_proc["Modalidade PJ"].astype(str).str.upper().str.contains("MEI", na=False)]
+                    if df_mei.empty:
+                        st.info("Nenhum investidor MEI encontrado.")
+                    else:
+                        st.warning(f"⚠️ Temos **{len(df_mei)} investidores MEI**.")
+                        # Colunas solicitadas: Nome, Email, Cargo, Modalidade
+                        cols_mei = ["Nome", "E-mail corporativo", "Cargo", "Modalidade PJ"]
+                        cols_final = [c for c in cols_mei if c in df_mei.columns]
+                        st.dataframe(df_mei[cols_final], use_container_width=True, hide_index=True)
+                else:
+                    st.warning("Coluna Modalidade PJ não encontrada.")
+
+            pass
+
+        # --- SUB-ABA: FINANCEIRO ---
+        with sub_finan:
+            st.markdown("### 💰 Relatórios Financeiros")
+            st.markdown("""
+                <div style="padding: 20px; border-radius: 5px; border: 1px solid #dcdfe6; background-color: #f8f9fa; color: #606266; text-align: center;">
+                    ⚙️ Esta seção está sendo preparada e será configurada futuramente.
+                </div>
+            """, unsafe_allow_html=True)
+
+    with aba_acoes:
+        st.markdown("## ⚡ Central de Ações")
+        st.markdown("Selecione uma ferramenta abaixo para gerar documentos padronizados.")
+        
+        c_acoes1, c_acoes2 = st.columns([1, 1]) # Opcional: dividir em duas colunas
+        
+        with c_acoes1:
+            if st.button("📝 Título de doc para automação", use_container_width=True, type="primary"):
                 modal_titulo_doc(df_ativos_proc)
-
-            if st.button("📄 Demissão por comum acordo", use_container_width=True):
+            if st.button("📄 Demissão por comum acordo", use_container_width=True, type="primary"):
                 modal_comum(df_ativos_proc)
-
-            if st.button("📄 Aviso Prévio Indenizado", use_container_width=True):
+                
+        with c_acoes2:
+            if st.button("📄 Aviso Prévio Indenizado", use_container_width=True, type="primary"):
                 modal_aviso_previo_indenizado(df_ativos_proc)
-
-            if st.button("🚌 Atualização do Vale Transporte", use_container_width=True):
+            if st.button("🚌 Atualização do Vale Transporte", use_container_width=True, type="primary"):
                 modal_vale_transporte(df_ativos_proc)
