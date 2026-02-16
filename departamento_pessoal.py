@@ -304,12 +304,12 @@ def render(df_ativos, df_desligados):
         st.markdown("""
             <div style="background-color: #f9f9f9; padding: 10px; border-left: 5px solid #E30613; border-radius: 4px; margin-bottom: 10px;">
                 <span style="color: #404040; font-size: 14px;">
-                    <b>📊 Visão Geral:</b> Utilize os filtros abaixo para segmentar os dados. Os gráficos atualizarão automaticamente.
+                    Acompanhe abaixo os principais indicadores (KPIs) e gráficos demográficos referentes exclusivamente à <b>base de investidores</b>.
                 </span>
             </div>
         """, unsafe_allow_html=True)
 
-        with st.expander("🔍 Filtros Dinâmicos (Clique para abrir)", expanded=False):
+        with st.expander("🔍 Filtros Dinâmicos", expanded=False):
             col_f1, col_f2, col_f3 = st.columns(3)
             
             # Opções de Filtro (Ordenadas e Únicas)
