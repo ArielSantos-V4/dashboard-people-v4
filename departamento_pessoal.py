@@ -100,43 +100,57 @@ def gerar_alertas_investidor(linha):
     hoje = pd.Timestamp.today().normalize()
     status = str(linha.get("Situação no plano", "")).strip()
 
-    # Docs Plano
-    data_solicitar = pd.to_datetime(linha.get("Solicitar documentação"), errors="coerce")
+    # --- AJUSTE AQUI OS DIAS DE AVISO ---
+    DIAS_AVISO_PREVIO = 15  # Voltei para 15 dias conforme seu fluxo original
+    
+    # 1. Docs Plano (CORREÇÃO: dayfirst=True)
+    data_solicitar = pd.to_datetime(linha.get("Solicitar documentação"), dayfirst=True, errors="coerce")
     if status == "Pendente" and pd.notna(data_solicitar):
+        data_solicitar = data_solicitar.normalize() # Remove horas para comparar apenas datas
         dias = (data_solicitar - hoje).days
-        if dias < 0: alertas.append(("error", "Docs Plano: Atrasado!"))
-        elif dias <= 15: alertas.append(("info", f"Docs Plano: Faltam {dias} dias"))
+        
+        if dias < 0: 
+            alertas.append(("error", "Docs Plano: Atrasado!"))
+        elif dias <= DIAS_AVISO_PREVIO: 
+            alertas.append(("info", f"Docs Plano: Faltam {dias} dias"))
 
-    # Envio EB
-    data_enviar_eb = pd.to_datetime(linha.get("Enviar no EB"), errors="coerce")
+    # 2. Envio EB (CORREÇÃO: dayfirst=True)
+    data_enviar_eb = pd.to_datetime(linha.get("Enviar no EB"), dayfirst=True, errors="coerce")
     if status == "Aguardando docs" and pd.notna(data_enviar_eb):
+        data_enviar_eb = data_enviar_eb.normalize()
         dias = (data_enviar_eb - hoje).days
-        if dias < 0: alertas.append(("error", "Envio EB: Atrasado!"))
-        elif dias <= 15: alertas.append(("info", f"Envio EB: Faltam {dias} dias"))
+        
+        if dias < 0: 
+            alertas.append(("error", "Envio EB: Atrasado!"))
+        elif dias <= DIAS_AVISO_PREVIO: 
+            alertas.append(("info", f"Envio EB: Faltam {dias} dias"))
 
-    # Aniversário
-    nascimento = pd.to_datetime(linha.get("Data de nascimento"), errors="coerce", dayfirst=True)
+    # 3. Aniversário (CORREÇÃO: dayfirst=True)
+    nascimento = pd.to_datetime(linha.get("Data de nascimento"), dayfirst=True, errors="coerce")
     if pd.notna(nascimento):
-        nascimento = pd.Timestamp(nascimento).normalize()
+        nascimento = nascimento.normalize()
         if nascimento.month == hoje.month:
             if nascimento.day == hoje.day:
                 alertas.append(("success", "Feliz Aniversário! Hoje! 🎂"))
             else:
                 alertas.append(("info", f"Aniversariante do mês (Dia {nascimento.day}) 🎉"))
 
-    # Contrato
-    fim_contrato = pd.to_datetime(linha.get("Térm previsto"), errors="coerce", dayfirst=True)
+    # 4. Contrato (CORREÇÃO: dayfirst=True)
+    fim_contrato = pd.to_datetime(linha.get("Térm previsto"), dayfirst=True, errors="coerce")
     if pd.notna(fim_contrato):
-        fim_contrato = pd.Timestamp(fim_contrato).normalize()
+        fim_contrato = fim_contrato.normalize()
         dias = (fim_contrato - hoje).days
-        if dias < 0: alertas.append(("error", "Contrato Vencido! 🚨"))
-        elif dias <= 30: alertas.append(("warning", f"Contrato vence em {dias} dias"))
+        
+        if dias < 0: 
+            alertas.append(("error", "Contrato Vencido! 🚨"))
+        elif dias <= 30: 
+            alertas.append(("warning", f"Contrato vence em {dias} dias"))
 
-    if linha.get("Modalidade PJ", "") == "MEI":
+    if str(linha.get("Modalidade PJ", "")).strip().upper() == "MEI":
         alertas.append(("warning", "Investidor MEI ⚠️"))
 
     return alertas
-
+    
 # ==========================================
 # MODAL DE CONSULTA (HÍBRIDO - REFORMULADO V3)
 # ==========================================
@@ -666,16 +680,7 @@ def render(df_ativos, df_desligados):
     # ABA ANALYTICS (RESTAURADO)
     # ----------------------------------------------------
     with aba_analytics:
-        # --- DEPURADOR TEMPORÁRIO (Pode apagar depois) ---
-        st.markdown("### 🕵️ Debug de Alertas")
-        nome_teste = st.selectbox("Selecione para auditar:", [""] + sorted(df_ativos_proc["Nome"].unique()))
-        if nome_teste:
-            row = df_ativos_proc[df_ativos_proc["Nome"] == nome_teste].iloc[0]
-            st.write("Status lido:", f"'{row.get('Situação no plano')}'")
-            st.write("Data lida (Texto):", row.get("Solicitar documentação"))
-            st.write("Data entendida (Sistema):", pd.to_datetime(row.get("Solicitar documentação"), dayfirst=True, errors="coerce"))
-            st.write("Hoje:", pd.Timestamp.today().normalize())
-        
+                
         # Texto Explicativo (NOVO)
         st.markdown("""
             <div style="background-color: #f9f9f9; padding: 12px; border-left: 5px solid #E30613; border-radius: 4px; margin-bottom: 20px;">
