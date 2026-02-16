@@ -513,9 +513,15 @@ def render(df_ativos, df_desligados):
         with tab_ativos:
             st.markdown("<br>", unsafe_allow_html=True)
             c_sel, c_btn = st.columns([3, 1])
-            sel_ativo = c_sel.selectbox("Consultar Investidor Ativo", [""] + sorted(df_ativos_proc["Nome"].unique()), key="sel_rol_ativo")
-            if c_btn.button("🔍 Ver Detalhes", key="btn_rol_ativo") and sel_ativo:
-                modal_consulta_investidor(df_ativos_proc, sel_ativo, "ativo")
+            
+            with c_sel:
+                sel_ativo = st.selectbox("Consultar Investidor Ativo", [""] + sorted(df_ativos_proc["Nome"].unique()), key="sel_rol_ativo")
+            
+            with c_btn:
+                # ESPAÇADOR PARA ALINHAR O BOTÃO
+                st.markdown('<div style="height: 28px;"></div>', unsafe_allow_html=True)
+                if st.button("🔍 Ver Detalhes", key="btn_rol_ativo") and sel_ativo:
+                    modal_consulta_investidor(df_ativos_proc, sel_ativo, "ativo")
             
             st.markdown("---")
             st.markdown("### 📋 Base de investidores (Ativos)")
@@ -530,10 +536,16 @@ def render(df_ativos, df_desligados):
         with tab_desligados:
             st.markdown("<br>", unsafe_allow_html=True)
             c_sel_d, c_btn_d = st.columns([3, 1])
-            sel_deslig = c_sel_d.selectbox("Consultar Investidor Desligado", [""] + sorted(df_desligados_proc["Nome"].unique()), key="sel_rol_deslig")
-            if c_btn_d.button("🔍 Ver Detalhes", key="btn_rol_deslig") and sel_deslig:
-                modal_consulta_investidor(df_desligados_proc, sel_deslig, "desligado")
             
+            with c_sel_d:
+                sel_deslig = st.selectbox("Consultar Investidor Desligado", [""] + sorted(df_desligados_proc["Nome"].unique()), key="sel_rol_deslig")
+            
+            with c_btn_d:
+                # ESPAÇADOR PARA ALINHAR O BOTÃO
+                st.markdown('<div style="height: 28px;"></div>', unsafe_allow_html=True)
+                if st.button("🔍 Ver Detalhes", key="btn_rol_deslig") and sel_deslig:
+                    modal_consulta_investidor(df_desligados_proc, sel_deslig, "desligado")
+                    
             st.markdown("---")
             st.markdown("### 📋 Base de investidores (Desligados)")
             busca_d = st.text_input("Filtrar tabela desligados", placeholder="Digite para buscar...", key="busca_d")
