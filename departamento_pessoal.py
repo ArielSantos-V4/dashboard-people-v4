@@ -1149,7 +1149,7 @@ def render(df_ativos, df_desligados):
     with aba_acoes:
         st.markdown("""
             <div style="background-color: #fff5f5; padding: 12px; border-radius: 6px; border-left: 5px solid #E30613; margin-bottom: 20px;">
-                <span style="color: #404040; font-size: 14px;">Gere formulários, contratos e declarações pré-preenchidas com os dados da base Master.</span>
+                <span style="color: #404040; font-size: 14px;">Gere formulários, contratos e declarações pré-preenchidas.</span>
             </div>
         """, unsafe_allow_html=True)
         
