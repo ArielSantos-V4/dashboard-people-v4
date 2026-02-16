@@ -888,17 +888,17 @@ def render(df_ativos, df_desligados):
             
         df_grafico = df_grafico[df_grafico["Liderança direta"].notna() & (df_grafico["Liderança direta"] != "")]
 
-        # 3. Construção com Estilo Cinza
+        # 3. Construção com Estilo Cinza e Layout Horizontal
         dot = graphviz.Digraph(comment='Organograma V4')
-        # ranksep aumenta a distância entre os níveis (vertical)
-        # nodesep aumenta a distância entre as caixas (horizontal)
-        dot.attr(rankdir='TB', ranksep='0.8', nodesep='0.5') 
         
-        # Nós em tons de cinza e texto escuro para melhor leitura
+        # rankdir='LR' muda para Esquerda -> Direita (melhor para listas grandes)
+        # nodesep e ranksep controlam o respiro entre as caixas
+        dot.attr(rankdir='LR', ranksep='1.0', nodesep='0.5') 
+        
         dot.attr('node', shape='rectangle', style='filled, rounded', 
-                 fillcolor='#F1F3F5', color='#D3D3D3', 
-                 fontcolor='#404040', fontname='Arial', fontsize='11',
-                 width='2.2', height='0.8') # Força um tamanho mínimo para a caixa
+                 fillcolor='#F1F3F5', color='#404040', 
+                 fontcolor='#404040', fontname='Arial', fontsize='12',
+                 width='2.5', height='0.6') # Caixas maiores e consistentes
 
         for _, row in df_grafico.iterrows():
             lider = str(row["Liderança direta"]).strip()
@@ -907,13 +907,11 @@ def render(df_ativos, df_desligados):
             label_liderado = f"{liderado}\n({cargo})" if cargo else liderado
             dot.edge(lider, label_liderado, color='#B0B0B0')
 
-        # 4. Renderização com Barra de Rolagem
+        # 4. Renderização com Container de Scroll
         if not df_grafico.empty:
-            # st.container com height cria a barra de rolagem automática se o conteúdo for maior
-            with st.container(height=600, border=True):
-                st.graphviz_chart(dot, use_container_width=False) # False permite que ele cresça além da largura
-        else:
-            st.info("Selecione uma unidade para visualizar.")
+            # Aumentamos a altura do container para 800px
+            with st.container(height=800, border=True):
+                st.graphviz_chart(dot, use_container_width=False)
                 
     # ----------------------------------------------------
     # ABA ROLLING (TÍTULOS PADRONIZADOS)
