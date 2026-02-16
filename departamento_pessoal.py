@@ -188,7 +188,11 @@ def modal_titulo_doc(df):
     nome = st.selectbox("Investidor", lista_nomes, index=0)
     
     if not nome:
-        st.info("Selecione um investidor para gerar o título.")
+        st.markdown("""
+            <div style="padding: 10px; border-radius: 5px; border: 1px solid #dcdfe6; background-color: #f8f9fa; color: #606266; font-size: 14px;">
+                🔍 Selecione um investidor para gerar o título padronizado.
+            </div>
+        """, unsafe_allow_html=True)
         return
 
     titulo = st.text_input("Nome do Documento (ex: Contrato PJ)")
