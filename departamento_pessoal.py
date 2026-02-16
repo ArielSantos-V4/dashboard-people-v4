@@ -882,15 +882,15 @@ def render(df_ativos, df_desligados):
 
             dot = graphviz.Digraph()
             
-            # Mude o DPI para 140 (nitidez sem exagero)
-            # Reduza o ranksep para 1.0 (menos espaço vazio entre colunas)
-            dot.attr(rankdir='LR', ranksep='1.0', nodesep='0.5', dpi='140', bgcolor='transparent')
+            # Removemos o DPI fixo para o navegador controlar a escala
+            # Reduzimos o ranksep (espaço entre níveis) para 0.6
+            dot.attr(rankdir='LR', ranksep='0.6', nodesep='0.3', bgcolor='transparent')
             
-            # Ajuste o tamanho da caixa para 2.2 de largura (confortável para ler nomes)
+            # Width 1.8 e Height 0.4 são o tamanho ideal para 2 linhas de texto
             dot.attr('node', shape='rectangle', style='filled, rounded', 
                      fillcolor='#404040', color='#2E2E2E', fontcolor='white', 
-                     fontname='Arial Bold', fontsize='11', 
-                     width='2.2', height='0.6')
+                     fontname='Arial', fontsize='10', 
+                     width='1.8', height='0.4')
 
             cargos = pd.Series(df_base["Cargo"].values, index=df_base["Nome"]).to_dict()
 
@@ -912,16 +912,15 @@ def render(df_ativos, df_desligados):
             # Injetando CSS para garantir que o container aceite scroll gigante
             st.markdown("""
                 <style>
-                    /* Permite o scroll apenas se o gráfico realmente não couber */
                     .stGraphvizChart { 
                         overflow: auto !important; 
                         display: flex;
-                        justify-content: center; /* Centraliza se for pequeno */
+                        justify-content: flex-start;
                     }
                     .stGraphvizChart svg { 
                         width: auto !important; 
                         height: auto !important; 
-                        max-width: 100%; /* Impede que ele exploda para fora sem necessidade */
+                        /* Removemos o min-width e max-width fixos */
                     }
                 </style>
             """, unsafe_allow_html=True)
