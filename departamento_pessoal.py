@@ -864,26 +864,21 @@ def render(df_ativos, df_desligados):
         st.markdown("---")
         st.subheader("🌳 Estrutura Organizacional")
         
-        # 1. Importação e Preparação
         import graphviz
         
-        # Criamos uma base apenas com quem tem nome (evitar erros de nulos)
+        # 1. Auditoria de dados
         df_org_base = df_ativos_proc[df_ativos_proc["Nome"].notna() & (df_ativos_proc["Nome"] != "")].copy()
-        
-        # 2. Lógica para contar quem está sem liderança
         sem_lider = df_org_base[df_org_base["Liderança direta"].isna() | (df_org_base["Liderança direta"] == "")]
         qtd_sem_lider = len(sem_lider)
         
         if qtd_sem_lider > 0:
             st.markdown(f"""
-                <div style="background-color: #fff5f5; padding: 10px; border-radius: 6px; border-left: 5px solid #E30613; margin-bottom: 15px;">
-                    <span style="color: #404040; font-size: 13px;">⚠️ Existem <b>{qtd_sem_lider}</b> investidores ativos sem liderança direta cadastrada na planilha.</span>
+                <div style="background-color: #f8f9fa; padding: 10px; border-radius: 6px; border-left: 5px solid #404040; margin-bottom: 15px;">
+                    <span style="color: #404040; font-size: 13px;">ℹ️ Existem <b>{qtd_sem_lider}</b> investidores ativos sem liderança cadastrada.</span>
                 </div>
             """, unsafe_allow_html=True)
-        else:
-            st.success("✅ Todos os investidores ativos possuem liderança cadastrada!")
 
-        # 3. Filtro por Unidade para o gráfico não ficar gigante
+        # 2. Filtro
         unidades_org = ["Todas"] + sorted(df_org_base["Unidade/Atuação"].unique().tolist())
         sel_uni_org = st.selectbox("Visualizar árvore da unidade:", unidades_org, key="uni_org")
         
@@ -891,33 +886,34 @@ def render(df_ativos, df_desligados):
         if sel_uni_org != "Todas":
             df_grafico = df_grafico[df_grafico["Unidade/Atuação"] == sel_uni_org]
             
-        # Removemos quem não tem líder apenas para o desenho do gráfico não dar erro
         df_grafico = df_grafico[df_grafico["Liderança direta"].notna() & (df_grafico["Liderança direta"] != "")]
 
-        # 4. Construção do Gráfico
+        # 3. Construção com Estilo Cinza
         dot = graphviz.Digraph(comment='Organograma V4')
-        dot.attr(rankdir='TB', size='20,20')
+        # ranksep aumenta a distância entre os níveis (vertical)
+        # nodesep aumenta a distância entre as caixas (horizontal)
+        dot.attr(rankdir='TB', ranksep='0.8', nodesep='0.5') 
         
-        # Estilo das Caixinhas
-        dot.attr('node', shape='box', style='filled, rounded', 
-                 color='#E30613', fontcolor='white', fontname='Arial', fontsize='10')
+        # Nós em tons de cinza e texto escuro para melhor leitura
+        dot.attr('node', shape='rectangle', style='filled, rounded', 
+                 fillcolor='#F1F3F5', color='#D3D3D3', 
+                 fontcolor='#404040', fontname='Arial', fontsize='11',
+                 width='2.2', height='0.8') # Força um tamanho mínimo para a caixa
 
-        # Criando as conexões (Setas)
         for _, row in df_grafico.iterrows():
             lider = str(row["Liderança direta"]).strip()
             liderado = str(row["Nome"]).strip()
             cargo = str(row.get("Cargo", ""))
-            
-            # Label: Nome em Negrito + Cargo embaixo
-            label_liderado = f"{liderado}\n{cargo}" if cargo else liderado
-            
-            dot.edge(lider, label_liderado, color='#404040')
+            label_liderado = f"{liderado}\n({cargo})" if cargo else liderado
+            dot.edge(lider, label_liderado, color='#B0B0B0')
 
-        # 5. Renderização
+        # 4. Renderização com Barra de Rolagem
         if not df_grafico.empty:
-            st.graphviz_chart(dot, use_container_width=True)
+            # st.container com height cria a barra de rolagem automática se o conteúdo for maior
+            with st.container(height=600, border=True):
+                st.graphviz_chart(dot, use_container_width=False) # False permite que ele cresça além da largura
         else:
-            st.info("Selecione uma unidade com lideranças mapeadas para visualizar o organograma.")
+            st.info("Selecione uma unidade para visualizar.")
                 
     # ----------------------------------------------------
     # ABA ROLLING (TÍTULOS PADRONIZADOS)
