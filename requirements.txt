@@ -8,3 +8,4 @@ pyyaml
 geopy
 python-docx
 reportlab
+xlsxwriter
