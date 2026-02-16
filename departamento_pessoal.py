@@ -960,11 +960,12 @@ def render(df_ativos, df_desligados):
         """, unsafe_allow_html=True)
         # ... aqui seguem as suas sub-abas m, d, e, f
         
-        sub_master, sub_demo, sub_estat, sub_finan = st.tabs([
+        sub_master, sub_demo, sub_estat, sub_finan, sub_oper = st.tabs([
             "📋 Master", 
             "👥 Demográfico", 
             "📊 Estatístico", 
-            "💰 Financeiro"
+            "💰 Financeiro",
+            "🔨 Operacional"
         ])
 
         # --- SUB-ABA: MASTER ---
@@ -1146,6 +1147,15 @@ def render(df_ativos, df_desligados):
             st.markdown("""
                 <div style="padding: 20px; border-radius: 5px; border: 1px solid #dcdfe6; background-color: #f8f9fa; color: #606266; text-align: center;">
                     ⚙️ Esta seção está sendo preparada e será configurada futuramente.
+                </div>
+            """, unsafe_allow_html=True)
+
+        # --- SUB-ABA: OPERACIONAL ---
+        with sub_oper:
+            st.markdown("### 🔨 Relatórios Operacionais")
+            st.markdown("""
+                <div style="padding: 20px; border-radius: 5px; border: 1px solid #dcdfe6; background-color: #f8f9fa; color: #606266; text-align: center;">
+                    ⚙️ Esta seção está sendo preparada e será configurada futuramente. Serão incluídos relatórios operacionais do dia a dia que devem ser configurados na parte de alertas da Landing page, como investidores que estão cumprindo aviso, ex-investidores para receber distrato no dia 15, entre outros.
                 </div>
             """, unsafe_allow_html=True)
 
