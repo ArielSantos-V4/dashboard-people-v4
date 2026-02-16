@@ -909,7 +909,7 @@ def render(df_ativos, df_desligados):
             return dot
 
         with st.expander("Visualizar organograma", expanded=False):
-            # Injetando CSS para garantir que o container aceite scroll gigante
+            # 1. Manter o seu CSS de scroll
             st.markdown("""
                 <style>
                     .stGraphvizChart { 
@@ -920,7 +920,6 @@ def render(df_ativos, df_desligados):
                     .stGraphvizChart svg { 
                         width: auto !important; 
                         height: auto !important; 
-                        /* Removemos o min-width e max-width fixos */
                     }
                 </style>
             """, unsafe_allow_html=True)
@@ -929,10 +928,33 @@ def render(df_ativos, df_desligados):
             lista_lideres = ["Ver Tudo"] + sorted([l for l in df_org_base["Liderança direta"].unique() if str(l) != 'nan' and l != ""])
             sel_lider = st.selectbox("Selecione um Líder:", lista_lideres, key="filtro_v5")
 
+            # --- NOVO BLOCO: CARD DE DESTAQUE DO LÍDER ---
+            if sel_lider != "Ver Tudo":
+                # Busca os dados desse líder na base
+                dados_lider = df_org_base[df_org_base["Nome"] == sel_lider]
+                
+                if not dados_lider.empty:
+                    lider_info = dados_lider.iloc[0]
+                    col_foto, col_info = st.columns([1, 5]) # Coluna da foto e coluna do texto
+                    
+                    with col_foto:
+                        foto_url = lider_info.get("Foto", "")
+                        if foto_url and str(foto_url).startswith("http"):
+                            # Foto redonda com borda vermelha V4
+                            st.markdown(f'<img src="{foto_url}" style="width:70px; height:70px; border-radius:50%; object-fit:cover; border: 2px solid #E30613;">', unsafe_allow_html=True)
+                        else:
+                            st.markdown('<div style="width:70px; height:70px; border-radius:50%; background-color:#f1f3f5; display:flex; align-items:center; justify-content:center; border: 2px solid #d3d3d3; color:#999; font-size:30px;">👤</div>', unsafe_allow_html=True)
+                    
+                    with col_info:
+                        st.markdown(f"**{lider_info['Nome']}**")
+                        st.caption(f"{lider_info.get('Cargo', 'Cargo não informado')} • {lider_info.get('Unidade/Atuação', '')}")
+                st.markdown("---") # Linha divisória antes do gráfico
+            # --------------------------------------------
+
+            # 2. Roda o gráfico normalmente
             grafo = gerar_grafo_lideranca_v5(df_org_base, sel_lider)
 
             if grafo:
-                # Container com altura fixa, mas largura livre para scroll lateral
                 with st.container(height=800, border=True):
                     st.graphviz_chart(grafo, use_container_width=False)
                 
