@@ -885,13 +885,14 @@ def render(df_ativos, df_desligados):
             # --- O PULO DO GATO ---
             # dpi='300': Aumenta a resolução e escala tudo
             # ranksep e nodesep em valores altos para forçar o distanciamento
-            dot.attr(rankdir='LR', ranksep='2.5', nodesep='1.2', dpi='300', bgcolor='transparent')
+            # Mude o DPI de 300 para algo entre 150 e 200
+            # Reduza o width (largura) das caixas para 2.8 ou 3.0
+            dot.attr(rankdir='LR', ranksep='1.5', nodesep='0.8', dpi='175', bgcolor='transparent')
             
-            # Caixas gigantes (width e height em polegadas, mas escaladas pelo DPI)
             dot.attr('node', shape='rectangle', style='filled, rounded', 
                      fillcolor='#404040', color='#2E2E2E', fontcolor='white', 
-                     fontname='Arial Bold', fontsize='16', # Fonte muito maior
-                     width='4.0', height='1.2') # Caixas bem largas
+                     fontname='Arial Bold', fontsize='12', # Reduzi um pouco a fonte também
+                     width='2.8', height='0.8')
 
             cargos = pd.Series(df_base["Cargo"].values, index=df_base["Nome"]).to_dict()
 
