@@ -1170,29 +1170,82 @@ def render(df_ativos, df_desligados):
         a_adm, a_desl, a_ciclo = st.tabs(["🌱 Admissão", "🚪 Desligamento", "🔄 Jornada & Ciclo"])
         
         with a_adm:
-            st.markdown("##### Documentos de Admissão")
-            c1, c2 = st.columns(2)
-            if c1.button("🚌 Vale Transporte", use_container_width=True, type="primary"): 
-                modal_vale_transporte(df_ativos_proc)
-            # Adicione outros de admissão aqui
+        c1, c2, c3 = st.columns(3)
             
-        with a_desl:
-            st.markdown("##### Documentos de Desligamento")
-            c1, c2 = st.columns(2)
-            if c1.button("📄 Demissão Comum", use_container_width=True, type="primary"): 
-                modal_comum(df_ativos_proc)
-            if c2.button("📄 Aviso Prévio", use_container_width=True, type="primary"): 
-                modal_aviso_previo_indenizado(df_ativos_proc)
+            with c1:
+                st.markdown("##### 📝 Gerar Formulários")
+                if c1.button("🚌 Vale Transporte", use_container_width=True, type="primary"): 
+                    modal_vale_transporte(df_ativos_proc)
+            
+            with c2:
+                st.markdown("##### ✉️ E-mail / Mensagens")
+                st.info("Espaço para rascunhos automáticos")
+                # Ex: if st.button("Copiar E-mail de Desligamento"): ...
+
+            with c3:
+                st.markdown("##### 📂 Diversos")
+                st.caption("Apoio aos processos")
+                
+        
+        with a_desl:    
+        c1, c2, c3 = st.columns(3)
+            
+            with c1:
+                st.markdown("##### 📝 Gerar Formulários")
+                if st.button("📄 Demissão Comum", use_container_width=True, type="primary"): 
+                    modal_comum(df_ativos_proc)
+                if st.button("📄 Aviso Prévio", use_container_width=True, type="primary"): 
+                    modal_aviso_previo_indenizado(df_ativos_proc)
+            
+            with c2:
+                st.markdown("##### ✉️ E-mail / Mensagens")
+                st.info("Espaço para rascunhos automáticos")
+                # Ex: if st.button("Copiar E-mail de Desligamento"): ...
+
+            with c3:
+                st.markdown("##### 📂 Diversos")
+                st.caption("Apoio aos processos")
+                
                 
         with a_ciclo:
-            st.markdown("##### Ciclo de Vida e Ferramentas")
-            if st.button("📝 Título Doc (Automação)", use_container_width=True, type="primary"): 
-                modal_titulo_doc(df_ativos_proc)
+        c1, c2, c3 = st.columns(3)
+            
+            with c1:
+                st.markdown("##### 📝 Gerar Formulários")
+                st.info("Espaço para botões de formulários automatizados")
+            
+            with c2:
+                st.markdown("##### ✉️ E-mail / Mensagens")
+                st.info("Espaço para rascunhos automáticos")
+                # Ex: if st.button("Copiar E-mail de Desligamento"): ...
 
+            with c3:
+                st.markdown("##### 📂 Diversos")
+                if st.button("📝 Título Doc (Automação)", use_container_width=True, type="primary"): 
+                    modal_titulo_doc(df_ativos_proc)
+                
+    # Se a Conectividade for uma nova aba principal, adicione-a no st.tabs lá em cima
     with aba_conectividade:
         st.markdown("""
             <div style="background-color: #f1f3f5; padding: 12px; border-radius: 6px; border-left: 5px solid #404040; margin-bottom: 20px;">
-                <span style="color: #404040; font-size: 14px;">Acesso rápido a links de plataformas mais utilizadas pelo time.</span>
+                <span style="color: #404040; font-size: 14px;">Acesso rápido aos sistemas e ferramentas da rede V4 Company.</span>
             </div>
         """, unsafe_allow_html=True)
+
+        col_v4, col_ext, col_apoio = st.columns(3)
+
+        with col_v4:
+            st.markdown("##### 🔴 Plataformas V4")
+            # Aqui entrarão os links que você vai me passar
+            st.caption("Links em breve...")
+
+        with col_ext:
+            st.markdown("##### 🌐 Plataformas Externas")
+            # Aqui entrarão os links externos
+            st.caption("Links em breve...")
+
+        with col_apoio:
+            st.markdown("##### 🛠️ Ferramentas de Apoio")
+            # Aqui entrarão calculadoras, conversores, etc.
+            st.caption("Links em breve...")
         
