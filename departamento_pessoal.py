@@ -299,7 +299,7 @@ def modal_vale_transporte(df_pessoas):
     cep = c_end1.text_input("CEP")
     endereco = c_end2.text_input("Endereço (Rua/Av)")
     
-    c_end3, c_end4, c_end5, c_end6 = st.columns([0.8, 2, 1, 0.8])
+    c_end3, c_end4, c_end5, c_end6 = st.columns([0.5, 1.4, 1.2, 0.3])
     numero = c_end3.text_input("Número")
     bairro = c_end4.text_input("Bairro")
     cidade = c_end5.text_input("Cidade", key="cid_vt")
