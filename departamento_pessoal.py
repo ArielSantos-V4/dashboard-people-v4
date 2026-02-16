@@ -862,6 +862,7 @@ def render(df_ativos, df_desligados):
                 st.altair_chart(chart_mod, use_container_width=True)
         
         st.markdown("---")
+        st.subheader("🌳 Estrutura Organizacional")
         
         import graphviz
 
@@ -901,7 +902,7 @@ def render(df_ativos, df_desligados):
             return dot
 
         # 2. O Expander com o Gráfico Master
-        with st.expander("🌳 Visualizar Organograma Completo", expanded=False):
+        with st.expander("Visualizar Organograma Completo", expanded=False):
             df_org_base = df_ativos_proc.copy()
             
             # Auditoria de dados (Informativo discreto)
