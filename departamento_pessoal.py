@@ -602,7 +602,7 @@ def render(df_ativos, df_desligados):
                 st.altair_chart(chart_mod, use_container_width=True)
                 
     # ----------------------------------------------------
-    # ABA ROLLING (CORRIGIDA)
+    # ABA ROLLING (TÍTULOS PADRONIZADOS)
     # ----------------------------------------------------
     with aba_rolling:
         # Texto Explicativo
@@ -617,7 +617,7 @@ def render(df_ativos, df_desligados):
         # --- SELETOR DE VISUALIZAÇÃO ---
         modo_visualizacao = st.radio(
             "Selecione a base:",
-            ["Investidores Ativos", "Investidores Desligados"], # Você removeu os emojis aqui (Correto)
+            ["Investidores Ativos", "Investidores Desligados"], 
             horizontal=True,
             label_visibility="collapsed" 
         )
@@ -639,8 +639,7 @@ def render(df_ativos, df_desligados):
                     config[col] = None
             return config
 
-        # --- LÓGICA DINÂMICA (CORRIGIDA) ---
-        # Ajustei o IF para verificar o texto exato SEM o emoji
+        # --- LÓGICA DINÂMICA ---
         if modo_visualizacao == "Investidores Ativos":
             df_atual = df_ativos_proc
             tipo_base = "ativo"
@@ -652,19 +651,26 @@ def render(df_ativos, df_desligados):
             key_suffix = "_deslig"
             cor_titulo = "red"
 
-        # --- ÁREA DE CONSULTA E TABELA ---
+        # Pega a última palavra (Ativos/Desligados) para usar no título
+        texto_base = modo_visualizacao.split(' ')[-1]
+
+        # --- TÍTULO DA CONSULTA (PADRONIZADO) ---
+        st.markdown(f"### 🔍 Consultar Investidor :{cor_titulo}[{texto_base}]")
+
+        # --- ÁREA DE SELEÇÃO ---
         c_sel, c_btn = st.columns([3, 1])
         
         with c_sel:
+            # Selectbox sem rótulo visível (o título H3 acima faz esse papel)
             sel_investidor = st.selectbox(
-                f"Consultar Investidor ({tipo_base.capitalize()})", 
+                "label_oculto", 
                 [""] + sorted(df_atual["Nome"].unique()), 
-                key=f"sel_rol{key_suffix}"
+                key=f"sel_rol{key_suffix}",
+                label_visibility="collapsed"
             )
         
         with c_btn:
-            # Espaçador para alinhar botão
-            st.markdown('<div style="height: 28px;"></div>', unsafe_allow_html=True)
+            # Como tiramos o label do selectbox, o botão alinha naturalmente sem espaçador extra
             if st.button("🔍 Ver Detalhes", key=f"btn_rol{key_suffix}") and sel_investidor:
                 modal_consulta_investidor(df_atual, sel_investidor, tipo_base)
         
@@ -672,10 +678,8 @@ def render(df_ativos, df_desligados):
 
         st.markdown("---")
         
-        # Título da Tabela (CORRIGIDO)
-        # Usei [-1] para pegar sempre a ÚLTIMA palavra ('Ativos' ou 'Desligados')
-        # independente de quantos emojis ou palavras tenham antes.
-        st.markdown(f"### 📋 Base Completa :{cor_titulo}[{modo_visualizacao.split(' ')[-1]}]")
+        # --- TÍTULO DA TABELA (PADRONIZADO) ---
+        st.markdown(f"### 📋 Base Completa :{cor_titulo}[{texto_base}]")
         
         busca = st.text_input(f"Filtrar tabela", placeholder="Digite nome, cargo ou área...", key=f"busca{key_suffix}")
         
@@ -684,7 +688,7 @@ def render(df_ativos, df_desligados):
             df_view = df_view[df_view.astype(str).apply(lambda x: x.str.contains(busca, case=False).any(), axis=1)]
         
         st.dataframe(df_view, use_container_width=True, hide_index=True, column_config=get_column_config(df_view.columns))
-
+        
     # ----------------------------------------------------
     # ABA ANALYTICS (AJUSTADO E REFINADO)
     # ----------------------------------------------------
