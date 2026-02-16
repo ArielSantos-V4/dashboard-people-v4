@@ -138,51 +138,60 @@ def gerar_alertas_investidor(linha):
     return alertas
 
 # ==========================================
-# MODAL DE CONSULTA (HÍBRIDO - REFORMULADO V2)
+# MODAL DE CONSULTA (HÍBRIDO - REFORMULADO V3)
 # ==========================================
 @st.dialog(" ", width="large")
 def modal_consulta_investidor(df_consulta, nome, tipo_base="ativo"):
-    # --- CSS INJETADO PARA CORRIGIR COR E ESPAÇAMENTO ---
+    # --- CSS INJETADO ---
     st.markdown("""
         <style>
-        /* Aumenta contraste do texto em inputs desabilitados */
         .stTextInput input[disabled] {
             color: #333333 !important;
             -webkit-text-fill-color: #333333 !important;
             font-weight: 500 !important;
             opacity: 1 !important;
         }
-        /* Reduz espaçamento entre os widgets */
         .stElementContainer {
             margin-bottom: -15px;
         }
-        /* Título do modal mais compacto */
         h2 {
             padding-top: 0rem !important;
             padding-bottom: 0.5rem !important;
         }
-        /* Títulos das seções menores */
         h5 {
             font-size: 16px !important;
             margin-bottom: 5px !important;
-            color: #E30613 !important; /* Vermelho V4 para destaque sutil */
+            color: #E30613 !important;
         }
         </style>
     """, unsafe_allow_html=True)
 
-    # Função auxiliar para limpar nulos visualmente
+    # Função auxiliar
     def safe_val(val):
         if pd.isna(val) or str(val).lower() in ['nan', 'nat', 'none', '']:
             return ""
         return str(val)
 
-    # Título apenas com o nome
-    st.markdown(f"## {nome}")
-    st.markdown("---")
-    
     linha = df_consulta[df_consulta["Nome"] == nome].iloc[0]
+
+    # --- CABEÇALHO PERSONALIZADO ---
+    if tipo_base == "desligado":
+        dt_rescisao = safe_val(linha.get("Data de rescisão", ""))
+        # HTML para alinhar Nome à esquerda e Status à direita na mesma linha
+        st.markdown(f"""
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
+                <h2 style="margin: 0;">{nome}</h2>
+                <span style="color: #E30613; font-weight: bold; font-size: 16px;">
+                    Desligado em {dt_rescisao}
+                </span>
+            </div>
+            <hr style="margin-top: 0px; margin-bottom: 20px; border-top: 1px solid #ff4b4b;">
+        """, unsafe_allow_html=True)
+    else:
+        st.markdown(f"## {nome}")
+        st.markdown("---")
             
-    # Layout de 3 Colunas Principais
+    # Layout de 3 Colunas
     col1, col2, col3 = st.columns([1.3, 1.3, 0.8])
         
     # ==========================================
@@ -190,7 +199,7 @@ def modal_consulta_investidor(df_consulta, nome, tipo_base="ativo"):
     # ==========================================
     with col1:
         st.markdown("##### 👔 Profissional")
-        st.markdown("<br>", unsafe_allow_html=True) # Pequeno respiro
+        st.markdown("<br>", unsafe_allow_html=True)
 
         # Linha 1: BP | Matrícula | Data Contrato
         c1_1, c1_2, c1_3 = st.columns(3)
@@ -203,18 +212,17 @@ def modal_consulta_investidor(df_consulta, nome, tipo_base="ativo"):
         c2_1.text_input("Modelo", safe_val(linha.get("Modelo de contrato")), disabled=True)
         c2_2.text_input("Modalidade PJ", safe_val(linha.get("Modalidade PJ")), disabled=True)
         
-        # Define qual data mostrar no terceiro campo
         lbl_term = "Data Rescisão" if tipo_base == "desligado" else "Término Prev."
         val_term = linha.get("Data de rescisão") if tipo_base == "desligado" else linha.get("Térm previsto")
         c2_3.text_input(lbl_term, safe_val(val_term), disabled=True)
 
-        # Linha 3: Unidade | Email Corp
-        c3_1, c3_2 = st.columns([1, 1.5])
+        # Linha 3: Unidade (Pequeno) | Email (Grande) -> Proporção 1:2
+        c3_1, c3_2 = st.columns([1, 2])
         c3_1.text_input("Unidade", safe_val(linha.get("Unidade/Atuação")), disabled=True)
         c3_2.text_input("E-mail Corporativo", safe_val(linha.get("E-mail corporativo")), disabled=True)
 
-        # Linha 4: Início | Tempo de Casa
-        c4_1, c4_2 = st.columns(2)
+        # Linha 4: Início (Pequeno) | Tempo (Grande) -> Proporção 1:2
+        c4_1, c4_2 = st.columns([1, 2])
         tempo = calcular_tempo_casa(linha.get("Início na V4_dt"))
         c4_1.text_input("Início na V4", safe_val(linha.get("Início na V4")), disabled=True)
         c4_2.text_input("Tempo de Casa", safe_val(tempo), disabled=True)
@@ -224,8 +232,8 @@ def modal_consulta_investidor(df_consulta, nome, tipo_base="ativo"):
         c5_1.text_input("CNPJ", formatar_cnpj(safe_val(linha.get("CNPJ"))), disabled=True)
         c5_2.text_input("Razão Social", safe_val(linha.get("Razão social")), disabled=True)
 
-        # Linha 6: Cargo | Remuneração
-        c6_1, c6_2 = st.columns(2)
+        # Linha 6: Cargo (Grande) | Remuneração (Pequeno - tam BP) -> Proporção 2:1
+        c6_1, c6_2 = st.columns([2, 1])
         c6_1.text_input("Cargo", safe_val(linha.get("Cargo")), disabled=True)
         c6_2.text_input("Remuneração", safe_val(linha.get("Remuneração")), disabled=True)
 
@@ -234,11 +242,17 @@ def modal_consulta_investidor(df_consulta, nome, tipo_base="ativo"):
         c7_1.text_input("CBO", safe_val(str(linha.get("CBO", "")).replace(".0","")), disabled=True)
         c7_2.text_input("Descrição CBO", safe_val(linha.get("Descrição CBO")), disabled=True)
 
+        # Link Drive (Movido para cá)
+        st.markdown("<br>", unsafe_allow_html=True)
+        if linha.get("Link Drive Docs"):
+            st.link_button("📂 Abrir documentação do investidor", linha["Link Drive Docs"], use_container_width=True)
+        else:
+            st.button("📂 Sem documentação", disabled=True, use_container_width=True)
+
     # ==========================================
     # COLUNA 2: CENTRO DE CUSTO & PESSOAL
     # ==========================================
     with col2:
-        # > BLOCO 1: CENTRO DE CUSTO
         st.markdown("##### 🏢 Centro de Custo")
         st.markdown("<br>", unsafe_allow_html=True)
 
@@ -246,21 +260,18 @@ def modal_consulta_investidor(df_consulta, nome, tipo_base="ativo"):
         d1_1.text_input("Cód. CC", safe_val(str(linha.get("Código CC", "")).replace(".0", "")), disabled=True)
         d1_2.text_input("Descrição CC", safe_val(linha.get("Descrição CC")), disabled=True)
         
-        # ID Vaga | Conta | Área (Mantido alinhamento original de 3 cols)
         d2_1, d2_2, d2_3 = st.columns([1, 1, 1])
         d2_1.text_input("ID Vaga", safe_val(str(linha.get("ID Vaga", "")).replace(".0","")), disabled=True)
         d2_2.text_input("Conta Contábil", safe_val(str(linha.get("Conta contábil", "")).replace(".0","")), disabled=True)
         d2_3.text_input("Área", safe_val(linha.get("Área")), disabled=True)
 
-        # Senioridade (Tamanho do ID Vaga - col 1 acima) | Liderança (Resto)
         d3_1, d3_2 = st.columns([1, 2]) 
         d3_1.text_input("Senioridade", safe_val(linha.get("Senioridade")), disabled=True)
         d3_2.text_input("Liderança Direta", safe_val(linha.get("Liderança direta")), disabled=True)
 
-        st.markdown("<br>", unsafe_allow_html=True) # Espaço extra entre seções
+        st.markdown("<br>", unsafe_allow_html=True)
         st.divider()
 
-        # > BLOCO 2: DADOS PESSOAIS
         st.markdown("##### 👤 Dados Pessoais")
         st.markdown("<br>", unsafe_allow_html=True)
 
@@ -274,32 +285,21 @@ def modal_consulta_investidor(df_consulta, nome, tipo_base="ativo"):
         e2_1.text_input("CEP", safe_val(str(linha.get("CEP", "")).replace(".0","")), disabled=True)
         e2_2.text_input("Escolaridade", safe_val(linha.get("Escolaridade")), disabled=True)
 
-        # Email Pessoal e Telefone lado a lado
-        e3_1, e3_2 = st.columns(2)
+        # Email Pessoal (Grande) | Telefone (Pequeno - tam Área) -> Proporção 2:1
+        e3_1, e3_2 = st.columns([2, 1])
         e3_1.text_input("E-mail Pessoal", safe_val(linha.get("E-mail pessoal")), disabled=True)
         e3_2.text_input("Telefone", safe_val(linha.get("Telefone pessoal")), disabled=True)
-        
-        st.markdown("<br>", unsafe_allow_html=True)
-        if linha.get("Link Drive Docs"):
-            st.link_button("📂 Abrir documentação do investidor", linha["Link Drive Docs"], use_container_width=True)
-        else:
-            st.button("📂 Sem documentação vinculada", disabled=True, use_container_width=True)
 
     # ==========================================
     # COLUNA 3: FOTO, BENEFÍCIOS & ALERTAS
     # ==========================================
     with col3:
-        # AVISO DE DESLIGADO
-        if tipo_base == "desligado":
-            dt_rescisao = safe_val(linha.get("Data de rescisão", "Data n/d"))
-            st.error(f"🚨 **DESLIGADO**\n\nEm: {dt_rescisao}", icon="🚫")
-
-        st.markdown("##### 🖼️ Foto")
-        st.markdown("<br>", unsafe_allow_html=True)
+        # Foto (Sem título, apenas a imagem)
         foto = linha.get("Foto", "")
         if foto and str(foto).startswith("http"):
-            st.markdown(f'<div style="display:flex; justify-content:center; margin-bottom:20px"><img src="{foto}" width="160" style="border-radius:8px; box-shadow: 0px 2px 5px rgba(0,0,0,0.1);"></div>', unsafe_allow_html=True)
+            st.markdown(f'<div style="display:flex; justify-content:center; margin-bottom:20px; margin-top: 25px;"><img src="{foto}" width="160" style="border-radius:8px; box-shadow: 0px 2px 5px rgba(0,0,0,0.1);"></div>', unsafe_allow_html=True)
         else:
+            st.markdown("<br><br>", unsafe_allow_html=True) # Espaço vazio para alinhar se não tiver foto
             st.info("Sem foto")
 
         st.divider()
@@ -323,6 +323,7 @@ def modal_consulta_investidor(df_consulta, nome, tipo_base="ativo"):
             st.markdown("##### ⚠️ Alertas")
             alertas = gerar_alertas_investidor(linha)
             if alertas:
+                # Altura fixa com rolagem automática se passar do tamanho
                 with st.container(height=200, border=True):
                     for tipo, msg in alertas:
                         if tipo == "error": st.error(msg, icon="🚨")
