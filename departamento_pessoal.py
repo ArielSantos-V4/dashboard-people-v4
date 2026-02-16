@@ -715,8 +715,12 @@ def render(df_ativos, df_desligados):
                         df_aniversario["Dia_Sort"] = df_aniversario["Data de nascimento_dt"].dt.day
                         df_aniversario = df_aniversario.sort_values("Dia_Sort")
                         
-                        # Colunas solicitadas: Nome, Email, Área, Data Nascimento
-                        cols_niver = ["Nome", "E-mail corporativo", "Área", "Data de nascimento"]
+                        # Calcula a idade que a pessoa faz NESTE ano
+                        ano_atual = datetime.today().year
+                        df_aniversario["Idade"] = (ano_atual - df_aniversario["Data de nascimento_dt"].dt.year).astype(str) + " anos"
+                        
+                        # Colunas solicitadas: Nome, Email, Área, Data Nascimento, Idade
+                        cols_niver = ["Nome", "E-mail corporativo", "Área", "Data de nascimento", "Idade"]
                         cols_final = [c for c in cols_niver if c in df_aniversario.columns]
                         
                         st.dataframe(df_aniversario[cols_final], use_container_width=True, hide_index=True)
