@@ -683,7 +683,7 @@ def render(df_ativos, df_desligados):
     with aba_dashboard:
         # --- SEÇÃO DE FILTROS ---
         st.markdown("""
-            <div style="background-color: #f1f3f5; padding: 10px; border-left: 5px solid #E30613; border-radius: 4px; margin-bottom: 10px;">
+            <div style="background-color: #f1f3f5; padding: 10px; border-left: 5px solid #404040; border-radius: 4px; margin-bottom: 10px;">
                 <span style="color: #404040; font-size: 14px;">
                     Acompanhe abaixo os principais indicadores (KPIs) e gráficos demográficos referentes exclusivamente à <b>base de investidores</b>.
                 </span>
@@ -867,7 +867,7 @@ def render(df_ativos, df_desligados):
     with aba_rolling:
         # Texto Explicativo
         st.markdown("""
-            <div style="background-color: #f1f3f5; padding: 12px; border-left: 5px solid #E30613; border-radius: 4px; margin-bottom: 20px;">
+            <div style="background-color: #f1f3f5; padding: 12px; border-left: 5px solid #404040; border-radius: 4px; margin-bottom: 20px;">
                 <span style="color: #404040; font-size: 14px;">
                     Utilize os controles abaixo para alternar entre a base de <b>Ativos</b> e <b>Desligados</b>.
                 </span>
@@ -1151,7 +1151,7 @@ def render(df_ativos, df_desligados):
 
     with aba_acoes:
         st.markdown("""
-            <div style="background-color: #f1f3f5; padding: 12px; border-radius: 6px; border-left: 5px solid #E30613; margin-bottom: 20px;">
+            <div style="background-color: #f1f3f5; padding: 12px; border-radius: 6px; border-left: 5px solid #404040; margin-bottom: 20px;">
                 <span style="color: #404040; font-size: 14px;">Gere formulários, contratos e declarações pré-preenchidas.</span>
             </div>
         """, unsafe_allow_html=True)
