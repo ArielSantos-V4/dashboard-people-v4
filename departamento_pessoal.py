@@ -214,12 +214,12 @@ def modal_comum(df):
     """, unsafe_allow_html=True)
 
     lista_nomes = [""] + sorted(df["Nome"].dropna().unique())
-    nome_selecionado = st.selectbox("Nome do colaborador", lista_nomes, index=0, key="sel_comum")
+    nome_selecionado = st.selectbox("Nome do investidor", lista_nomes, index=0, key="sel_comum")
     
     if not nome_selecionado:
         st.markdown("""
             <div style="padding: 10px; border-radius: 5px; border: 1px solid #dcdfe6; background-color: #f8f9fa; color: #606266; font-size: 14px;">
-                👤 Selecione um colaborador para preparar a minuta de demissão.
+                Selecione um investidor para preparar a minuta de demissão.
             </div>
         """, unsafe_allow_html=True)
         return
@@ -256,7 +256,7 @@ def modal_aviso_previo_indenizado(df):
     if not nome:
         st.markdown("""
             <div style="padding: 10px; border-radius: 5px; border: 1px solid #dcdfe6; background-color: #f8f9fa; color: #606266; font-size: 14px;">
-                Selecione um investidor para gerar o título padronizado.
+                Selecione um investidor para gerar o aviso prévio.
             </div>
         """, unsafe_allow_html=True)
         return
@@ -296,7 +296,7 @@ def modal_vale_transporte(df_pessoas):
     if not nome_sel:
         st.markdown("""
             <div style="padding: 10px; border-radius: 5px; border: 1px solid #dcdfe6; background-color: #f8f9fa; color: #606266; font-size: 14px;">
-                🚌 Selecione um investidor para configurar a adesão ao VT.
+                Selecione um investidor para configurar a adesão ao VT.
             </div>
         """, unsafe_allow_html=True)
         return
