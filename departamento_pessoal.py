@@ -1254,3 +1254,5 @@ def render(df_ativos, df_desligados):
             st.markdown("##### 📚 Material de Consulta")
             st.link_button("Mapa de salas V4", "https://docs.google.com/spreadsheets/d/12Cy5eO-CLvv-Od29CyFI7Fyhd4uYsQsaKL8cIOQ59T0/edit?gid=0#gid=0", use_container_width=True)
             st.link_button("Datas Onboarding Experience", "https://docs.google.com/spreadsheets/d/1ZGxHYq4L9ZLPlDXu4sQF8Fe_JFSf7hUm6zNXUyCAbus/edit?gid=1644549870#gid=1644549870", use_container_width=True)
+            st.link_button("Workflow de processos", "https://drive.google.com/drive/folders/1tWMG88qzdRANGA3ZwIgp81JfLawvpss-", use_container_width=True)
+            st.link_button("Manuais para o investidor", "https://drive.google.com/drive/folders/1OEaBbXRXyDaHq-njmM-MP1LZkktp3rR5", use_container_width=True)
