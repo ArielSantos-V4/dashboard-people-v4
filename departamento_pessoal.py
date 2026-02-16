@@ -864,43 +864,60 @@ def render(df_ativos, df_desligados):
         st.markdown("---")
         st.subheader("🌳 Estrutura Organizacional")
         
-        # Criando o gráfico do Organograma
+        # 1. Importação e Preparação
         import graphviz
         
-        # Filtro para não bugar o gráfico com nomes vazios
-        df_org = df_ativos_proc[df_ativos_proc["Liderança direta"].notna() & (df_ativos_proc["Liderança direta"] != "")].copy()
+        # Criamos uma base apenas com quem tem nome (evitar erros de nulos)
+        df_org_base = df_ativos_proc[df_ativos_proc["Nome"].notna() & (df_ativos_proc["Nome"] != "")].copy()
         
-        # Opcional: Filtro por Unidade para o organograma não ficar gigante e ilegível
-        unidades_org = ["Todas"] + sorted(df_org["Unidade/Atuação"].unique().tolist())
-        sel_uni_org = st.selectbox("Filtrar árvore por Unidade:", unidades_org, key="uni_org")
+        # 2. Lógica para contar quem está sem liderança
+        sem_lider = df_org_base[df_org_base["Liderança direta"].isna() | (df_org_base["Liderança direta"] == "")]
+        qtd_sem_lider = len(sem_lider)
         
-        if sel_uni_org != "Todas":
-            df_org = df_org[df_org["Unidade/Atuação"] == sel_uni_org]
+        if qtd_sem_lider > 0:
+            st.markdown(f"""
+                <div style="background-color: #fff5f5; padding: 10px; border-radius: 6px; border-left: 5px solid #E30613; margin-bottom: 15px;">
+                    <span style="color: #404040; font-size: 13px;">⚠️ Existem <b>{qtd_sem_lider}</b> investidores ativos sem liderança direta cadastrada na planilha.</span>
+                </div>
+            """, unsafe_allow_html=True)
+        else:
+            st.success("✅ Todos os investidores ativos possuem liderança cadastrada!")
 
-        # Configuração do Gráfico
-        dot = graphviz.Digraph(comment='Organograma V4')
-        dot.attr(rankdir='TB', size='10,10') # TB = Top to Bottom (Cima para baixo)
+        # 3. Filtro por Unidade para o gráfico não ficar gigante
+        unidades_org = ["Todas"] + sorted(df_org_base["Unidade/Atuação"].unique().tolist())
+        sel_uni_org = st.selectbox("Visualizar árvore da unidade:", unidades_org, key="uni_org")
         
-        # Estilo dos nós (caixinhas)
-        dot.attr('node', shape='rectangle', style='filled, rounded', 
+        df_grafico = df_org_base.copy()
+        if sel_uni_org != "Todas":
+            df_grafico = df_grafico[df_grafico["Unidade/Atuação"] == sel_uni_org]
+            
+        # Removemos quem não tem líder apenas para o desenho do gráfico não dar erro
+        df_grafico = df_grafico[df_grafico["Liderança direta"].notna() & (df_grafico["Liderança direta"] != "")]
+
+        # 4. Construção do Gráfico
+        dot = graphviz.Digraph(comment='Organograma V4')
+        dot.attr(rankdir='TB', size='20,20')
+        
+        # Estilo das Caixinhas
+        dot.attr('node', shape='box', style='filled, rounded', 
                  color='#E30613', fontcolor='white', fontname='Arial', fontsize='10')
 
-        # Criando as conexões
-        for index, row in df_org.iterrows():
+        # Criando as conexões (Setas)
+        for _, row in df_grafico.iterrows():
             lider = str(row["Liderança direta"]).strip()
             liderado = str(row["Nome"]).strip()
             cargo = str(row.get("Cargo", ""))
             
-            # Formatação da caixinha (Nome + Cargo embaixo)
-            label_liderado = f"{liderado}\n({cargo})" if cargo else liderado
+            # Label: Nome em Negrito + Cargo embaixo
+            label_liderado = f"{liderado}\n{cargo}" if cargo else liderado
             
             dot.edge(lider, label_liderado, color='#404040')
 
-        # Renderização
-        if not df_org.empty:
+        # 5. Renderização
+        if not df_grafico.empty:
             st.graphviz_chart(dot, use_container_width=True)
         else:
-            st.info("Sem dados de liderança para gerar o organograma nesta unidade.")
+            st.info("Selecione uma unidade com lideranças mapeadas para visualizar o organograma.")
                 
     # ----------------------------------------------------
     # ABA ROLLING (TÍTULOS PADRONIZADOS)
