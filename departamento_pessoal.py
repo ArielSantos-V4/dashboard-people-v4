@@ -178,48 +178,36 @@ def validar_clt(row):
 def modal_exportar_excel(df_master):
     st.markdown("""
         <div style="padding: 10px; border-radius: 5px; border: 1px solid #dcdfe6; background-color: #f8f9fa; color: #606266; font-size: 14px; margin-bottom: 15px;">
-            🗄️ Selecione abaixo as colunas que deseja incluir no seu arquivo Excel.
+            🗄️ Selecione as colunas que deseja incluir no arquivo final.
         </div>
     """, unsafe_allow_html=True)
 
-    # Pega todas as colunas disponíveis no dataframe unificado
     todas_colunas = sorted(df_master.columns.tolist())
-    
-    # Multiselect para o usuário escolher o que quer levar para o Excel
     colunas_escolhidas = st.multiselect(
-        "Selecione as colunas para o relatório:",
+        "Colunas do relatório:",
         options=todas_colunas,
-        default=["Nome", "E-mail corporativo", "Cargo", "Remuneração", "Modelo de contrato"] # Sugestão de padrão
+        default=["Nome", "Cargo", "Área"]
     )
 
-    st.markdown("---")
-    
-    if not colunas_escolhidas:
-        st.warning("Selecione ao menos uma coluna para gerar o arquivo.")
-    else:
-        # Lógica para gerar o Excel em memória
+    if colunas_escolhidas:
         output = BytesIO()
-        # Filtra o dataframe com as colunas escolhidas
-        df_export = df_master[colunas_escolhidas].copy()
+        # Aqui usamos o engine 'xlsxwriter' que você vai adicionar ao requirements
+        with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
+            df_master[colunas_escolhidas].to_excel(writer, index=False, sheet_name='Master')
         
-        try:
-            with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
-                df_export.to_excel(writer, index=False, sheet_name='Relatório Master')
-            
-            data_excel = output.getvalue()
-            
-            c1, c2, c3 = st.columns([1, 2, 1])
-            with c2:
-                st.download_button(
-                    label="📗 Baixar Relatório em Excel",
-                    data=data_excel,
-                    file_name=f"Relatorio_Master_{datetime.now().strftime('%d_%m_%Y')}.xlsx",
-                    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                    use_container_width=True,
-                    type="primary"
-                )
-        except Exception as e:
-            st.error(f"Erro ao gerar Excel: {e}")
+        st.markdown("---")
+        c1, c2, c3 = st.columns([1, 2, 1])
+        with c2:
+            st.download_button(
+                label="📗 Baixar Arquivo Excel",
+                data=output.getvalue(),
+                file_name=f"Relatorio_V4_{datetime.now().strftime('%d_%m_%Y')}.xlsx",
+                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                type="primary",
+                use_container_width=True
+            )
+    else:
+        st.warning("Selecione ao menos uma coluna.")
             
 # ==========================================
 # MODAIS DE AÇÃO (VERSÃO FINAL UNIFICADA)
@@ -980,36 +968,36 @@ def render(df_ativos, df_desligados):
         with sub_master:
             st.markdown("### 📋 Relatório Master")
             
-            # Filtro de Status
-            filtro_status = st.multiselect(
-                "Filtrar por Status:",
-                ["Ativos", "Desligados"],
-                default=["Ativos"]
-            )
+            # Criamos duas colunas: uma para o filtro e outra para o botão lateral
+            c_filtro, c_gerar = st.columns([3, 1])
             
-            # Construção da Base Master baseada no filtro
-            bases_selecionadas = []
-            if "Ativos" in filtro_status: bases_selecionadas.append(df_ativos_proc)
-            if "Desligados" in filtro_status: bases_selecionadas.append(df_desligados_proc)
+            with c_filtro:
+                status_master = st.radio(
+                    "Exibir base de:",
+                    ["Ativos", "Desligados", "Todos"],
+                    horizontal=True,
+                    key="radio_master"
+                )
             
-            if not bases_selecionadas:
-                st.warning("Selecione ao menos um status para visualizar os dados.")
+            # Lógica de seleção da base
+            if status_master == "Ativos":
+                df_m = df_ativos_proc
+            elif status_master == "Desligados":
+                df_m = df_desligados_proc
             else:
-                df_master_completo = pd.concat(bases_selecionadas, ignore_index=True)
-                
-                # Colunas fixas para visualização na tela (conforme solicitado)
-                cols_view = ["Nome", "E-mail corporativo", "BP", "Modelo de contrato", "Cargo", "Remuneração", "Senioridade", "Área", "CPF"]
-                # Filtra apenas as colunas que realmente existem no DF
-                cols_disponiveis = [c for c in cols_view if c in df_master_completo.columns]
-                
-                st.dataframe(df_master_completo[cols_disponiveis], use_container_width=True, hide_index=True)
-                
-                st.markdown("<br>", unsafe_allow_html=True)
-                # Botão para abrir o modal de exportação
-                c1, c2, c3 = st.columns([1, 1, 1])
-                if c2.button("📥 Gerar Relatório Customizado", use_container_width=True, type="primary"):
-                    modal_exportar_excel(df_master_completo)
+                df_m = pd.concat([df_ativos_proc, df_desligados_proc], ignore_index=True)
+            
+            with c_gerar:
+                st.markdown("<br>", unsafe_allow_html=True) # Alinha o botão com o radio
+                if st.button("📥 Exportar Excel", type="primary", use_container_width=True):
+                    modal_exportar_excel(df_m)
 
+            # Tabela Master com colunas filtradas
+            cols_master = ["Nome", "E-mail corporativo", "BP", "Modelo de contrato", "Cargo", "Remuneração", "Senioridade", "Área", "CPF"]
+            cols_existentes = [c for c in cols_master if c in df_m.columns]
+            
+            st.dataframe(df_m[cols_existentes], use_container_width=True, hide_index=True)
+            
         # --- SUB-ABA: DEMOGRÁFICO ---
         with sub_demo:
             # MOVA PARA CÁ: Bloco de Aniversariantes e Tempo de Casa (sem alterar o código interno deles)
