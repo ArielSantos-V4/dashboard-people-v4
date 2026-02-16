@@ -677,15 +677,14 @@ def render(df_ativos, df_desligados):
             st.dataframe(df_view_d, use_container_width=True, hide_index=True, column_config=get_column_config(df_view_d.columns))
 
     # ----------------------------------------------------
-    # ABA ANALYTICS (RESTAURADO)
+    # ABA ANALYTICS (AJUSTADO E REFINADO)
     # ----------------------------------------------------
     with aba_analytics:
-                
-        # Texto Explicativo (NOVO)
+        # Texto Explicativo
         st.markdown("""
             <div style="background-color: #f9f9f9; padding: 12px; border-left: 5px solid #E30613; border-radius: 4px; margin-bottom: 20px;">
                 <span style="color: #404040; font-size: 14px;">
-                    Consulte <b>relatórios operacionais</b> (Aniversariantes, Vencimentos, MEI) e utilize a Central de Ações para <b>gerar documentos</b> automaticamente.
+                    Consulte <b>relatórios operacionais</b> detalhados e utilize a Central de Ações para <b>gerar documentos</b> automaticamente.
                 </span>
             </div>
         """, unsafe_allow_html=True)
@@ -698,41 +697,63 @@ def render(df_ativos, df_desligados):
         with col_relatorios:
             st.markdown("## 📊 Relatórios Principais")
             
-            # 1. Aniversariantes
+            # ==========================================
+            # 1. ANIVERSARIANTES DO MÊS
+            # ==========================================
             with st.expander("🎉 Aniversariantes do mês", expanded=False):
                 meses = {1: "Janeiro", 2: "Fevereiro", 3: "Março", 4: "Abril", 5: "Maio", 6: "Junho", 7: "Julho", 8: "Agosto", 9: "Setembro", 10: "Outubro", 11: "Novembro", 12: "Dezembro"}
                 mes_atual = datetime.today().month
                 mes_selecionado = st.selectbox("Mês", options=list(meses.keys()), format_func=lambda x: meses[x], index=mes_atual - 1)
                 
-                df_aniversario = df_ativos_proc[df_ativos_proc["Data de nascimento_dt"].dt.month == mes_selecionado].copy()
-                if df_aniversario.empty:
-                    st.info("Nenhum aniversariante neste mês 🎈")
+                if "Data de nascimento_dt" in df_ativos_proc.columns:
+                    df_aniversario = df_ativos_proc[df_ativos_proc["Data de nascimento_dt"].dt.month == mes_selecionado].copy()
+                    
+                    if df_aniversario.empty:
+                        st.info("Nenhum aniversariante neste mês 🎈")
+                    else:
+                        # Ordena pelo dia
+                        df_aniversario["Dia_Sort"] = df_aniversario["Data de nascimento_dt"].dt.day
+                        df_aniversario = df_aniversario.sort_values("Dia_Sort")
+                        
+                        # Colunas solicitadas: Nome, Email, Área, Data Nascimento
+                        cols_niver = ["Nome", "E-mail corporativo", "Área", "Data de nascimento"]
+                        cols_final = [c for c in cols_niver if c in df_aniversario.columns]
+                        
+                        st.dataframe(df_aniversario[cols_final], use_container_width=True, hide_index=True)
                 else:
-                    df_aniversario["Dia"] = df_aniversario["Data de nascimento_dt"].dt.day
-                    df_final = df_aniversario[["Dia", "Nome", "Área", "E-mail corporativo"]].sort_values("Dia").reset_index(drop=True)
-                    st.dataframe(df_final, use_container_width=True, hide_index=True)
+                    st.warning("Coluna de Data de Nascimento não encontrada.")
 
-            # 2. Contratos a vencer
+            # ==========================================
+            # 2. CONTRATOS A VENCER
+            # ==========================================
             with st.expander("⏰ Contratos a vencer", expanded=False):
                 c1, c2 = st.columns(2)
                 d_ini = c1.date_input("Data inicial", value=datetime.today().date(), format="DD/MM/YYYY")
                 d_fim = c2.date_input("Data final", value=datetime.today().date() + relativedelta(months=3), format="DD/MM/YYYY")
                 
-                ini_ts = pd.Timestamp(d_ini)
-                fim_ts = pd.Timestamp(d_fim)
-                
-                df_venc = df_ativos_proc[
-                    (df_ativos_proc["Térm previsto_dt"].notna()) & 
-                    (df_ativos_proc["Térm previsto_dt"] >= ini_ts) & 
-                    (df_ativos_proc["Térm previsto_dt"] <= fim_ts)
-                ].sort_values("Térm previsto_dt")
-                
-                if df_venc.empty:
-                    st.info("Nenhum contrato vencendo no período selecionado ⏳")
+                if "Térm previsto_dt" in df_ativos_proc.columns:
+                    ini_ts = pd.Timestamp(d_ini)
+                    fim_ts = pd.Timestamp(d_fim)
+                    
+                    df_venc = df_ativos_proc[
+                        (df_ativos_proc["Térm previsto_dt"].notna()) & 
+                        (df_ativos_proc["Térm previsto_dt"] >= ini_ts) & 
+                        (df_ativos_proc["Térm previsto_dt"] <= fim_ts)
+                    ].sort_values("Térm previsto_dt")
+                    
+                    if df_venc.empty:
+                        st.info("Nenhum contrato vencendo no período selecionado ⏳")
+                    else:
+                        # Colunas solicitadas: Nome, Cargo, Modelo, Término, Email, Liderança
+                        cols_venc = ["Nome", "Cargo", "Modelo de contrato", "Térm previsto", "E-mail corporativo", "Liderança direta"]
+                        cols_final = [c for c in cols_venc if c in df_venc.columns]
+                        st.dataframe(df_venc[cols_final], use_container_width=True, hide_index=True)
                 else:
-                    st.dataframe(df_venc[["Nome", "Térm previsto", "Modelo de contrato", "Liderança direta"]], use_container_width=True, hide_index=True)
+                    st.warning("Coluna de Término Previsto não encontrada.")
 
-            # 3. MEI
+            # ==========================================
+            # 3. INVESTIDORES MEI
+            # ==========================================
             with st.expander("💼 Investidores MEI", expanded=False):
                 if "Modalidade PJ" in df_ativos_proc.columns:
                     df_mei = df_ativos_proc[df_ativos_proc["Modalidade PJ"].astype(str).str.upper().str.contains("MEI", na=False)]
@@ -740,24 +761,47 @@ def render(df_ativos, df_desligados):
                         st.info("Nenhum investidor MEI encontrado.")
                     else:
                         st.warning(f"⚠️ Temos **{len(df_mei)} investidores MEI**.")
-                        st.dataframe(df_mei[["Nome", "Modalidade PJ", "Início na V4"]], use_container_width=True, hide_index=True)
+                        # Colunas solicitadas: Nome, Email, Cargo, Modalidade
+                        cols_mei = ["Nome", "E-mail corporativo", "Cargo", "Modalidade PJ"]
+                        cols_final = [c for c in cols_mei if c in df_mei.columns]
+                        st.dataframe(df_mei[cols_final], use_container_width=True, hide_index=True)
+                else:
+                    st.warning("Coluna Modalidade PJ não encontrada.")
 
-            # 4. Tempo de Casa
+            # ==========================================
+            # 4. TEMPO DE CASA
+            # ==========================================
             with st.expander("⏳ Tempo de Casa", expanded=False):
                 if "Início na V4_dt" in df_ativos_proc.columns:
-                    min_anos = st.selectbox("Tempo mínimo de casa (anos)", [1, 2, 3, 4, 5, 10], index=0)
+                    st.markdown("**Filtrar Tempo Mínimo:**")
+                    c_ano, c_mes = st.columns(2)
+                    min_anos = c_ano.number_input("Anos", min_value=0, value=1, step=1)
+                    min_meses = c_mes.number_input("Meses", min_value=0, max_value=11, value=0, step=1)
+                    
+                    # Cálculo em dias totais para o filtro
+                    dias_minimos = (min_anos * 365) + (min_meses * 30)
                     hj = pd.Timestamp.today().normalize()
                     
                     df_tempo = df_ativos_proc[df_ativos_proc["Início na V4_dt"].notna()].copy()
-                    df_tempo["Anos"] = (hj - df_tempo["Início na V4_dt"]).dt.days / 365.25
+                    df_tempo["Dias_Casa"] = (hj - df_tempo["Início na V4_dt"]).dt.days
                     
-                    df_filtrado = df_tempo[df_tempo["Anos"] >= min_anos].sort_values("Anos", ascending=False)
+                    # Aplica o filtro
+                    df_filtrado = df_tempo[df_tempo["Dias_Casa"] >= dias_minimos].sort_values("Dias_Casa", ascending=False)
                     
                     if df_filtrado.empty:
-                        st.info(f"Ninguém com mais de {min_anos} anos de casa ainda.")
+                        st.info(f"Ninguém com mais de {min_anos} anos e {min_meses} meses de casa ainda.")
                     else:
-                        df_filtrado["Tempo"] = df_filtrado["Início na V4_dt"].apply(calcular_tempo_casa)
-                        st.dataframe(df_filtrado[["Nome", "Início na V4", "Tempo"]], use_container_width=True, hide_index=True)
+                        # Calcula texto amigável
+                        df_filtrado["Tempo de Casa"] = df_filtrado["Início na V4_dt"].apply(calcular_tempo_casa)
+                        
+                        # Colunas solicitadas: Nome, Remuneração, Início, Tempo Descritivo
+                        cols_tempo = ["Nome", "Remuneração", "Início na V4", "Tempo de Casa"]
+                        cols_final = [c for c in cols_tempo if c in df_filtrado.columns]
+                        
+                        st.markdown(f"Encontrados: **{len(df_filtrado)} investidores**")
+                        st.dataframe(df_filtrado[cols_final], use_container_width=True, hide_index=True)
+                else:
+                    st.warning("Coluna Início na V4 não encontrada.")
 
         with col_acoes:
             st.markdown("## ⚙️ Ações")
