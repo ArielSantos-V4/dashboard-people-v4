@@ -297,48 +297,89 @@ def render(df_ativos, df_desligados):
     df_desligados_proc = preparar_dataframe(df_desligados)
 
     # ----------------------------------------------------
-    # ABA DASHBOARD (ATUALIZADO E BLINDADO)
+    # ABA DASHBOARD (COM FILTROS DINÂMICOS)
     # ----------------------------------------------------
     with aba_dashboard:
-        # Texto Explicativo
+        # --- SEÇÃO DE FILTROS ---
         st.markdown("""
-            <div style="background-color: #f9f9f9; padding: 12px; border-left: 5px solid #E30613; border-radius: 4px; margin-bottom: 20px;">
+            <div style="background-color: #f9f9f9; padding: 10px; border-left: 5px solid #E30613; border-radius: 4px; margin-bottom: 10px;">
                 <span style="color: #404040; font-size: 14px;">
-                    Acompanhe abaixo os principais indicadores (KPIs) e gráficos demográficos referentes exclusivamente à <b>base de investidores ativos</b>.
+                    <b>📊 Visão Geral:</b> Utilize os filtros abaixo para segmentar os dados. Os gráficos atualizarão automaticamente.
                 </span>
             </div>
         """, unsafe_allow_html=True)
+
+        with st.expander("🔍 Filtros Dinâmicos (Clique para abrir)", expanded=False):
+            col_f1, col_f2, col_f3 = st.columns(3)
+            
+            # Opções de Filtro (Ordenadas e Únicas)
+            opts_unidade = sorted(list(df_ativos_proc["Unidade/Atuação"].dropna().unique()))
+            opts_area = sorted(list(df_ativos_proc["Área"].dropna().unique())) if "Área" in df_ativos_proc.columns else []
+            opts_lider = sorted(list(df_ativos_proc["Liderança direta"].dropna().unique())) if "Liderança direta" in df_ativos_proc.columns else []
+
+            sel_unidade = col_f1.multiselect("Filtrar por Unidade", opts_unidade)
+            sel_area = col_f2.multiselect("Filtrar por Área", opts_area)
+            sel_lider = col_f3.multiselect("Filtrar por Liderança", opts_lider)
+
+        # --- APLICAÇÃO DOS FILTROS ---
+        # Cria cópias para não alterar os dados originais das outras abas
+        df_dash_ativos = df_ativos_proc.copy()
+        df_dash_deslig = df_desligados_proc.copy()
+
+        # Filtro Unidade
+        if sel_unidade:
+            df_dash_ativos = df_dash_ativos[df_dash_ativos["Unidade/Atuação"].isin(sel_unidade)]
+            if "Unidade/Atuação" in df_dash_deslig.columns:
+                df_dash_deslig = df_dash_deslig[df_dash_deslig["Unidade/Atuação"].isin(sel_unidade)]
+
+        # Filtro Área
+        if sel_area and "Área" in df_dash_ativos.columns:
+            df_dash_ativos = df_dash_ativos[df_dash_ativos["Área"].isin(sel_area)]
+            if "Área" in df_dash_deslig.columns:
+                df_dash_deslig = df_dash_deslig[df_dash_deslig["Área"].isin(sel_area)]
+
+        # Filtro Liderança
+        if sel_lider and "Liderança direta" in df_dash_ativos.columns:
+            df_dash_ativos = df_dash_ativos[df_dash_ativos["Liderança direta"].isin(sel_lider)]
+            # Nota: Desligados podem não ter líder preenchido ou o líder mudou, mas aplicamos se existir
+            if "Liderança direta" in df_dash_deslig.columns:
+                df_dash_deslig = df_dash_deslig[df_dash_deslig["Liderança direta"].isin(sel_lider)]
+
+        # --- LINHA 1: KPIs (Baseados nos dados FILTRADOS) ---
+        st.markdown("<br>", unsafe_allow_html=True)
+        col_k1, col_k2, col_k3, col_k4, col_k5 = st.columns(5)
         
-        # --- LINHA 1: KPIs ---
-        col_k1, col_k2, col_k3, col_k4 = st.columns(4)
-        col_k1.metric("Headcount Ativo", len(df_ativos_proc))
+        col_k1.metric("Headcount (Filtro)", len(df_dash_ativos))
         
-        # KPI: Admissões no Ano Atual (Cálculo Seguro)
+        # KPI: Admissões no Ano
         ano_atual = datetime.now().year
-        # Garante que a coluna de data não tem erro
-        if "Início na V4_dt" in df_ativos_proc.columns:
-            # Filtra apenas datas válidas
-            df_admissoes = df_ativos_proc[df_ativos_proc["Início na V4_dt"].notna()].copy()
-            # Conta quantos entraram neste ano
-            qtd_ano = len(df_admissoes[df_admissoes["Início na V4_dt"].dt.year == ano_atual])
-            col_k2.metric(f"Admissões em {ano_atual}", qtd_ano)
+        if "Início na V4_dt" in df_dash_ativos.columns:
+            df_adm_kpi = df_dash_ativos[df_dash_ativos["Início na V4_dt"].notna()]
+            qtd_ano = len(df_adm_kpi[df_adm_kpi["Início na V4_dt"].dt.year == ano_atual])
+            col_k2.metric(f"Entradas {ano_atual}", qtd_ano)
         else:
-            col_k2.metric(f"Admissões em {ano_atual}", 0)
+            col_k2.metric(f"Entradas {ano_atual}", 0)
         
-        # KPI: Média de Idade
-        if "Data de nascimento_dt" in df_ativos_proc.columns:
-            # Pega apenas quem tem data de nascimento válida
-            df_nasc = df_ativos_proc[df_ativos_proc["Data de nascimento_dt"].notna()]
-            if not df_nasc.empty:
-                idades = (pd.Timestamp.today() - df_nasc["Data de nascimento_dt"]).dt.days / 365.25
-                media_idade = idades.mean()
-                col_k3.metric("Média de Idade", f"{media_idade:.1f} anos")
+        # KPI: Tempo Médio
+        if "Início na V4_dt" in df_dash_ativos.columns:
+            hj = pd.Timestamp.today().normalize()
+            datas_inicio = df_dash_ativos[df_dash_ativos["Início na V4_dt"].notna()]["Início na V4_dt"]
+            if not datas_inicio.empty:
+                anos_medios = (hj - datas_inicio).dt.days.mean() / 365.25
+                col_k3.metric("Tempo Médio (Anos)", f"{anos_medios:.1f}")
             else:
-                col_k3.metric("Média de Idade", "-")
-        else:
-            col_k3.metric("Média de Idade", "-")
+                col_k3.metric("Tempo Médio", "-")
         
-        col_k4.metric("Total Desligados (Histórico)", len(df_desligados_proc))
+        # KPI: Idade Média
+        if "Data de nascimento_dt" in df_dash_ativos.columns:
+            df_nasc = df_dash_ativos[df_dash_ativos["Data de nascimento_dt"].notna()]
+            if not df_nasc.empty:
+                media_idade = ((pd.Timestamp.today() - df_nasc["Data de nascimento_dt"]).dt.days / 365.25).mean()
+                col_k4.metric("Idade Média", f"{media_idade:.1f}")
+            else:
+                col_k4.metric("Idade Média", "-")
+        
+        col_k5.metric("Desligados (Filtro)", len(df_dash_deslig))
         
         st.markdown("---")
         
@@ -346,83 +387,91 @@ def render(df_ativos, df_desligados):
         g1, g2 = st.columns(2)
         with g1:
             st.subheader("📍 Por Unidade / Atuação")
-            if "Unidade/Atuação" in df_ativos_proc.columns:
-                df_uni = df_ativos_proc["Unidade/Atuação"].fillna("Não Inf.").value_counts().reset_index()
+            if "Unidade/Atuação" in df_dash_ativos.columns and not df_dash_ativos.empty:
+                df_uni = df_dash_ativos["Unidade/Atuação"].fillna("Não Inf.").value_counts().reset_index()
                 df_uni.columns = ["Unidade", "Qtd"]
                 chart_uni = alt.Chart(df_uni).mark_bar(color="#E30613").encode(
                     x=alt.X("Unidade", sort="-y"), y="Qtd", tooltip=["Unidade", "Qtd"]
                 )
                 st.altair_chart(chart_uni, use_container_width=True)
             else:
-                st.warning("Coluna 'Unidade/Atuação' não encontrada.")
+                st.info("Sem dados para exibir com os filtros atuais.")
                 
         with g2:
             st.subheader("🏆 Por Senioridade")
-            if "Senioridade" in df_ativos_proc.columns:
-                # Preenche vazios para garantir que o gráfico apareça mesmo se tiver dados faltando
-                df_sen = df_ativos_proc["Senioridade"].fillna("Não Informado").replace("", "Não Informado").value_counts().reset_index()
+            if "Senioridade" in df_dash_ativos.columns and not df_dash_ativos.empty:
+                df_sen = df_dash_ativos["Senioridade"].fillna("Não Informado").replace("", "Não Informado").value_counts().reset_index()
                 df_sen.columns = ["Senioridade", "Qtd"]
-                
-                chart_sen = alt.Chart(df_sen).mark_bar(color="#404040").encode( # Cinza V4
-                    x=alt.X("Qtd", title="Qtd"), 
-                    y=alt.Y("Senioridade", sort="-x"), 
-                    tooltip=["Senioridade", "Qtd"]
+                chart_sen = alt.Chart(df_sen).mark_bar(color="#404040").encode(
+                    x=alt.X("Qtd", title="Qtd"), y=alt.Y("Senioridade", sort="-x"), tooltip=["Senioridade", "Qtd"]
                 )
                 st.altair_chart(chart_sen, use_container_width=True)
             else:
-                st.warning("Coluna 'Senioridade' não encontrada.")
+                st.info("Sem dados para exibir com os filtros atuais.")
 
         st.markdown("<br>", unsafe_allow_html=True)
 
-        # --- LINHA 3: EVOLUÇÃO E MODELO ---
+        # --- LINHA 3: EVOLUÇÃO E LIDERANÇA ---
         g3, g4 = st.columns(2)
         
         with g3:
-            st.subheader("📈 Evolução de Admissões (Histórico Completo)")
-            
-            # Verifica se a coluna de data existe nas duas bases
+            st.subheader("📈 Evolução de Admissões")
             col_data = "Início na V4_dt"
-            has_ativos = col_data in df_ativos_proc.columns
-            has_deslig = col_data in df_desligados_proc.columns
-            
-            if has_ativos:
-                # 1. Pega datas dos ativos
-                series_ativos = df_ativos_proc[col_data]
-                
-                # 2. Pega datas dos desligados (se tiver)
-                if has_deslig:
-                    series_deslig = df_desligados_proc[col_data]
-                    # Junta tudo numa lista só
-                    series_total = pd.concat([series_ativos, series_deslig])
+            # Junta ativos e desligados (já filtrados) para o gráfico
+            if col_data in df_dash_ativos.columns:
+                series_ativos = df_dash_ativos[col_data]
+                if col_data in df_dash_deslig.columns:
+                    series_total = pd.concat([series_ativos, df_dash_deslig[col_data]])
                 else:
                     series_total = series_ativos
                 
-                # 3. Cria dataframe temporário para o gráfico
-                df_evo = pd.DataFrame({"Data": series_total})
-                df_evo = df_evo.dropna() # Remove vazios
+                df_evo = pd.DataFrame({"Data": series_total}).dropna()
                 
                 if not df_evo.empty:
                     df_evo["Ano"] = df_evo["Data"].dt.year
                     df_evo_count = df_evo["Ano"].value_counts().reset_index()
                     df_evo_count.columns = ["Ano", "Investidores"]
-                    df_evo_count = df_evo_count.sort_values("Ano")
-                    
-                    # 4. Gráfico na cor PRETA (#000000)
                     chart_evo = alt.Chart(df_evo_count).mark_line(point=True, color="#000000").encode(
-                        x=alt.X("Ano:O", title="Ano"), 
-                        y="Investidores",
-                        tooltip=["Ano", "Investidores"]
+                        x=alt.X("Ano:O"), y="Investidores", tooltip=["Ano", "Investidores"]
                     )
                     st.altair_chart(chart_evo, use_container_width=True)
                 else:
-                    st.info("Sem dados de data de início válidos.")
-            else:
-                st.warning("Coluna 'Início na V4' não encontrada.")
+                    st.info("Sem dados históricos para os filtros selecionados.")
 
         with g4:
+            st.subheader("👥 Span of Control (Top 10)")
+            if "Liderança direta" in df_dash_ativos.columns and not df_dash_ativos.empty:
+                df_lider = df_dash_ativos["Liderança direta"].replace("", pd.NA).dropna().value_counts().head(10).reset_index()
+                df_lider.columns = ["Líder", "Liderados"]
+                if not df_lider.empty:
+                    chart_lider = alt.Chart(df_lider).mark_bar(color="#8B0000").encode(
+                        x=alt.X("Liderados", title="Qtd"), y=alt.Y("Líder", sort="-x"), tooltip=["Líder", "Liderados"]
+                    )
+                    st.altair_chart(chart_lider, use_container_width=True)
+                else:
+                    st.info("Sem dados de liderança.")
+            else:
+                st.info("Sem dados para exibir.")
+
+        st.markdown("<br>", unsafe_allow_html=True)
+
+        # --- LINHA 4: ÁREA E MODELO ---
+        g5, g6 = st.columns(2)
+
+        with g5:
+            st.subheader("🏢 Distribuição por Área")
+            if "Área" in df_dash_ativos.columns and not df_dash_ativos.empty:
+                df_area = df_dash_ativos["Área"].fillna("Não Inf.").value_counts().reset_index()
+                df_area.columns = ["Área", "Qtd"]
+                chart_area = alt.Chart(df_area).mark_bar(color="#E30613").encode(
+                    x=alt.X("Qtd"), y=alt.Y("Área", sort="-x"), tooltip=["Área", "Qtd"]
+                )
+                st.altair_chart(chart_area, use_container_width=True)
+
+        with g6:
             st.subheader("📃 Modelo de Contrato")
-            if "Modelo de contrato" in df_ativos_proc.columns:
-                df_mod = df_ativos_proc["Modelo de contrato"].fillna("Outros").value_counts().reset_index()
+            if "Modelo de contrato" in df_dash_ativos.columns and not df_dash_ativos.empty:
+                df_mod = df_dash_ativos["Modelo de contrato"].fillna("Outros").value_counts().reset_index()
                 df_mod.columns = ["Modelo", "Qtd"]
                 chart_mod = alt.Chart(df_mod).mark_arc(innerRadius=60).encode(
                     theta="Qtd", 
@@ -430,8 +479,6 @@ def render(df_ativos, df_desligados):
                     tooltip=["Modelo", "Qtd"]
                 )
                 st.altair_chart(chart_mod, use_container_width=True)
-            else:
-                st.warning("Coluna 'Modelo de contrato' não encontrada.")
                 
     # ----------------------------------------------------
     # ABA ROLLING
