@@ -150,7 +150,319 @@ def gerar_alertas_investidor(linha):
         alertas.append(("warning", "Investidor MEI ⚠️"))
 
     return alertas
+
+# ==========================================
+# FUNÇÕES AUXILIARES DE AÇÃO
+# ==========================================
+def validar_clt(row):
+    """Verifica se o investidor é CLT ou PJ/Estágio"""
+    modelo = str(row.get("Modelo de contrato", "")).upper()
+    # Lista de termos que indicam NÃO ser CLT
+    nao_clt = ["PJ", "PRESTADOR", "ESTÁGIO", "ESTAGIÁRIO", "BOLSISTA"]
     
+    eh_clt = True
+    tipo_encontrado = "CLT"
+    
+    for termo in nao_clt:
+        if termo in modelo:
+            eh_clt = False
+            tipo_encontrado = modelo
+            break
+            
+    return eh_clt, tipo_encontrado
+
+# ==========================================
+# MODAIS DE AÇÃO (DEFINIÇÕES GLOBAIS)
+# ==========================================
+
+@st.dialog("📝 Título Doc Automação")
+def modal_titulo_doc(df):
+    st.markdown("""
+        <div style="background-color: #f9f9f9; padding: 12px; border-left: 5px solid #E30613; border-radius: 4px; margin-bottom: 20px;">
+            <span style="color: #404040; font-size: 14px;">
+                Gera o nome do arquivo padronizado para salvar no Drive/B4.
+            </span>
+        </div>
+    """, unsafe_allow_html=True)
+    
+    nome = st.selectbox("Investidor", sorted(df["Nome"].unique()))
+    titulo = st.text_input("Nome do Documento (ex: Contrato PJ)")
+    
+    st.markdown("<br>", unsafe_allow_html=True)
+    
+    # Centralizando botão
+    c1, c2, c3 = st.columns([1, 2, 1])
+    if c2.button("Gerar Título", use_container_width=True):
+        if nome and titulo:
+            row = df[df["Nome"]==nome].iloc[0]
+            cpf = str(row.get("CPF","")).replace(".", "").replace("-", "").zfill(11)
+            email = str(row.get("E-mail pessoal","")).lower()
+            st.code(f"{nome} __ {cpf} __ {email} __ {titulo}")
+        else:
+            st.warning("Preencha todos os campos.")
+
+@st.dialog("📄 Demissão Comum Acordo")
+def modal_comum(df):
+    st.markdown("""
+        <div style="background-color: #f9f9f9; padding: 12px; border-left: 5px solid #E30613; border-radius: 4px; margin-bottom: 20px;">
+            <span style="color: #404040; font-size: 14px;">
+                Gera a minuta de acordo para formalização do desligamento consensual.
+            </span>
+        </div>
+    """, unsafe_allow_html=True)
+
+    nome_selecionado = st.selectbox("Nome do colaborador", sorted(df["Nome"].dropna().unique()), key="sel_comum")
+    data_desligamento = st.date_input("Data do desligamento", format="DD/MM/YYYY", key="dt_comum")
+    
+    # 1. VALIDAÇÃO VÍNCULO
+    dados_pessoa = df[df["Nome"] == nome_selecionado].iloc[0]
+    eh_clt, tipo_contrato = validar_clt(dados_pessoa)
+    
+    liberar_geracao = False
+    
+    if eh_clt:
+        liberar_geracao = True
+    else:
+        st.markdown(f"""
+            <div style="padding: 10px; background-color: #fff3cd; color: #856404; border: 1px solid #ffeeba; border-radius: 4px; margin-bottom: 10px;">
+                ⚠️ <b>Atenção:</b> O vínculo cadastrado é <b>{tipo_contrato}</b>. Este documento é padrão CLT.
+            </div>
+        """, unsafe_allow_html=True)
+        if st.checkbox("Estou ciente e desejo gerar mesmo assim", key="chk_comum"):
+            liberar_geracao = True
+
+    # 2. GERAÇÃO
+    if liberar_geracao:
+        st.markdown("<br>", unsafe_allow_html=True)
+        c1, c2, c3 = st.columns([1, 2, 1])
+        
+        mapa = {
+            "{nome_completo}": nome_selecionado,
+            "{cargo}": dados_pessoa.get("Cargo", ""),
+            "{data}": data_desligamento.strftime("%d/%m/%Y")
+        }
+
+        try:
+            # Tenta gerar o arquivo em memória para download imediato
+            arquivo_pronto = gerar_docx_com_substituicoes("Demissão por comum acordo.docx", mapa)
+            
+            c2.download_button(
+                label="📄 Gerar e Baixar DOC",
+                data=arquivo_pronto,
+                file_name=f"Demissão - {nome_selecionado}.docx",
+                mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                use_container_width=True,
+                type="primary"
+            )
+        except Exception as e:
+            c2.error("Modelo .docx não encontrado")
+            # st.caption(f"Detalhe do erro: {e}") # Descomente para debug
+
+@st.dialog("📄 Aviso Prévio Indenizado")
+def modal_aviso_previo_indenizado(df):
+    st.markdown("""
+        <div style="background-color: #f9f9f9; padding: 12px; border-left: 5px solid #E30613; border-radius: 4px; margin-bottom: 20px;">
+            <span style="color: #404040; font-size: 14px;">
+                Emite o comunicado de dispensa com aviso prévio indenizado.
+            </span>
+        </div>
+    """, unsafe_allow_html=True)
+    
+    nome = st.selectbox("Nome do investidor", ["Selecione..."] + sorted(df["Nome"].dropna().unique()), key="sel_aviso")
+    
+    c_dat1, c_dat2 = st.columns(2)
+    data_des = c_dat1.date_input("Data desligamento", format="DD/MM/YYYY", key="dt_des_aviso")
+    data_hom = c_dat2.date_input("Data homologação", format="DD/MM/YYYY", key="dt_hom_aviso")
+    
+    st.markdown("<br>", unsafe_allow_html=True)
+    c1, c2, c3 = st.columns([1, 2, 1])
+
+    if nome != "Selecione...":
+        # 1. VALIDAÇÃO VÍNCULO
+        dados_pessoa = df[df["Nome"] == nome].iloc[0]
+        eh_clt, tipo_contrato = validar_clt(dados_pessoa)
+        
+        liberar_geracao = False
+        
+        if eh_clt:
+            liberar_geracao = True
+        else:
+            st.markdown(f"""
+                <div style="padding: 10px; background-color: #fff3cd; color: #856404; border: 1px solid #ffeeba; border-radius: 4px; margin-bottom: 10px;">
+                    ⚠️ <b>Atenção:</b> Investidor cadastrado como <b>{tipo_contrato}</b>. Aviso Prévio é típico de CLT.
+                </div>
+            """, unsafe_allow_html=True)
+            if st.checkbox("Confirmar geração mesmo assim", key="chk_aviso"):
+                liberar_geracao = True
+        
+        # 2. GERAÇÃO
+        if liberar_geracao:
+            mapa = {
+                "{nome_selecionado}": nome,
+                "{data_desligamento}": data_des.strftime("%d/%m/%Y"),
+                "{data_homologacao}": data_hom.strftime("%d/%m/%Y"),
+            }
+            
+            try:
+                arquivo_pronto = gerar_docx_com_substituicoes("Aviso prévio Indenizado.docx", mapa)
+                
+                c2.download_button(
+                    label="📄 Gerar e Baixar DOC",
+                    data=arquivo_pronto,
+                    file_name=f"Aviso Prévio - {nome}.docx",
+                    mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                    use_container_width=True,
+                    type="primary"
+                )
+            except Exception as e:
+                c2.error("Modelo .docx não encontrado")
+
+@st.dialog("🚌 Atualização do Vale Transporte")
+def modal_vale_transporte(df_pessoas):
+    st.markdown("""
+        <div style="background-color: #f9f9f9; padding: 12px; border-left: 5px solid #E30613; border-radius: 4px; margin-bottom: 20px;">
+            <span style="color: #404040; font-size: 14px;">
+                Gera a declaração de opção/desistência de Vale Transporte (CLT).
+            </span>
+        </div>
+    """, unsafe_allow_html=True)
+    
+    nome_sel = st.selectbox("Investidor", sorted(df_pessoas["Nome"].dropna().unique()), key="sel_vt")
+    
+    # Validações e Busca de Dados
+    cpf_sel = ""
+    eh_clt = True
+    tipo_contrato = "CLT"
+
+    if nome_sel:
+        res = df_pessoas[df_pessoas["Nome"] == nome_sel]
+        if not res.empty: 
+            row = res.iloc[0]
+            cpf_sel = str(row.get("CPF", ""))
+            eh_clt, tipo_contrato = validar_clt(row)
+
+    c_end1, c_end2 = st.columns([1, 3])
+    cep = c_end1.text_input("CEP")
+    endereco = c_end2.text_input("Endereço")
+    
+    c_end3, c_end4, c_end5 = st.columns([1, 2, 2])
+    numero = c_end3.text_input("Número")
+    bairro = c_end4.text_input("Bairro")
+    cidade = c_end5.text_input("Cidade")
+    uf = st.text_input("UF")
+
+    st.divider()
+    
+    # --- ÁREA DE VALIDAÇÃO ---
+    liberar_geracao = False
+    if eh_clt:
+        liberar_geracao = True
+    else:
+        st.markdown(f"""
+            <div style="padding: 10px; background-color: #fff3cd; color: #856404; border: 1px solid #ffeeba; border-radius: 4px; margin-bottom: 10px;">
+                ⚠️ <b>Atenção:</b> Investidor <b>{tipo_contrato}</b> não tem direito legal a Vale Transporte (CLT).
+            </div>
+        """, unsafe_allow_html=True)
+        if st.checkbox("Forçar geração do documento", key="chk_vt"):
+            liberar_geracao = True
+
+    # --- INPUTS E GERAÇÃO (SÓ APARECE SE LIBERADO) ---
+    if liberar_geracao:
+        # =====================
+        # IDA
+        # =====================
+        st.subheader("Residência → Trabalho")
+        qtd_res = st.selectbox("Quantidade de transportes (Ida)", [1,2,3,4], key="qtd_res")
+        transportes_res = []
+        
+        for i in range(qtd_res):
+            c1, c2, c3, c4 = st.columns(4)
+            tipo = c1.selectbox("Tipo", ["Ônibus", "Metrô", "Trem"], key=f"tipo_res_{i}")
+            linha = c2.text_input("Linha", key=f"linha_res_{i}")
+            valor = c3.number_input("Valor", min_value=0.0, step=0.01, key=f"valor_res_{i}")
+            inte = c4.number_input("Integração", min_value=0.0, step=0.01, key=f"inte_res_{i}")
+            transportes_res.append((tipo, linha, valor, inte))
+        
+        soma_linhas = len(transportes_res)
+        soma_valor = sum(v for _,_,v,_ in transportes_res)
+        soma_inte = sum(i for _,_,_,i in transportes_res)
+
+        # =====================
+        # VOLTA
+        # =====================
+        st.divider()
+        st.subheader("Trabalho → Residência")
+        qtd_tra = st.selectbox("Quantidade de transportes (Volta)", [1,2,3,4], key="qtd_tra")
+        transportes_tra = []
+        
+        for i in range(qtd_tra):
+            c1, c2, c3, c4 = st.columns(4)
+            tipo = c1.selectbox("Tipo", ["Ônibus", "Metrô", "Trem"], key=f"tipo_tra_{i}")
+            linha = c2.text_input("Linha", key=f"linha_tra_{i}")
+            valor = c3.number_input("Valor", min_value=0.0, step=0.01, key=f"valor_tra_{i}")
+            inte = c4.number_input("Integração", min_value=0.0, step=0.01, key=f"inte_tra_{i}")
+            transportes_tra.append((tipo, linha, valor, inte))
+
+        soma_linhas_tra = len(transportes_tra)
+        soma_valor_tra = sum(v for _,_,v,_ in transportes_tra)
+        soma_inte_tra = sum(i for _,_,_,i in transportes_tra)
+        
+        # TOTAIS
+        soma_unit = soma_valor + soma_valor_tra
+        soma_integracao = soma_inte + soma_inte_tra
+
+        # DATA
+        MESES_PT = {1:"janeiro",2:"fevereiro",3:"março",4:"abril",5:"maio",6:"junho",7:"julho",8:"agosto",9:"setembro",10:"outubro",11:"novembro",12:"dezembro"}
+        hoje = datetime.today()
+        data_extenso = f"{hoje.day} de {MESES_PT[hoje.month]} de {hoje.year}"
+        
+        st.divider()
+        c1, c2, c3 = st.columns([1, 2, 1])
+
+        mapa = {
+            "{nome}": nome_sel, "{cpf}": cpf_sel, "{cep}": cep, "{endereço}": endereco,
+            "{número}": numero, "{bairro}": bairro, "{cidade}": cidade, "{uf_estado}": uf,
+            "{soma_linhas}": str(soma_linhas), "{soma_valor}": f"{soma_valor:.2f}", "{soma_inte}": f"{soma_inte:.2f}",
+            "{soma_linhas_tra}": str(soma_linhas_tra), "{soma_valor_tra}": f"{soma_valor_tra:.2f}", "{soma_inte_tra}": f"{soma_inte_tra:.2f}",
+            "{soma_unit}": f"{soma_unit:.2f}", "{soma_integracao}": f"{soma_integracao:.2f}",
+            "{data}": data_extenso,
+        }
+
+        # 🔹 GARANTE CAMPOS EM BRANCO
+        for i in range(1, 5):
+            for sufixo in ["res", "tra"]:
+                mapa[f"{{transporte_{i}_{sufixo}}}"] = ""
+                mapa[f"{{linha_{i}_{sufixo}}}"] = ""
+                mapa[f"{{valor_{i}_{sufixo}}}"] = ""
+                mapa[f"{{inte_{i}_{sufixo}}}"] = ""
+
+        # 🔹 PREENCHE IDA E VOLTA
+        for i, (t, l, v, it) in enumerate(transportes_res, start=1):
+            mapa[f"{{transporte_{i}_res}}"] = t
+            mapa[f"{{linha_{i}_res}}"] = l
+            mapa[f"{{valor_{i}_res}}"] = f"{v:.2f}"
+            mapa[f"{{inte_{i}_res}}"] = f"{it:.2f}"
+
+        for i, (t, l, v, it) in enumerate(transportes_tra, start=1):
+            mapa[f"{{transporte_{i}_tra}}"] = t
+            mapa[f"{{linha_{i}_tra}}"] = l
+            mapa[f"{{valor_{i}_tra}}"] = f"{v:.2f}"
+            mapa[f"{{inte_{i}_tra}}"] = f"{it:.2f}"
+
+        try:
+            arquivo_pronto = gerar_docx_com_substituicoes("declaracao_vale_transporte_clt.docx", mapa)
+            
+            c2.download_button(
+                label="📄 Gerar e Baixar Declaração",
+                data=arquivo_pronto,
+                file_name=f"VT - {nome_sel}.docx",
+                mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                use_container_width=True,
+                type="primary"
+            )
+        except Exception as e:
+            c2.error("Modelo .docx não encontrado")
+            
 # ==========================================
 # MODAL DE CONSULTA (HÍBRIDO - REFORMULADO V3)
 # ==========================================
