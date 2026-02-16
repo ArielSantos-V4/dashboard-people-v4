@@ -662,7 +662,7 @@ def render(df_ativos, df_desligados):
             </div>
         """, unsafe_allow_html=True)
         
-    aba_dashboard, aba_rolling, aba_analytics, aba_acoes = st.tabs(["📊 Dashboard", "👥 Rolling", "📈 Analytics", "⚡ Ações"])
+    aba_dashboard, aba_rolling, aba_analytics, aba_acoes, aba_conectividade = st.tabs(["📊 Dashboard", "👥 Rolling", "📈 Analytics", "⚡ Ações", "🔗 Conectividade"])
     
     # --- PREPARAÇÃO DE DATAS ---
     def preparar_dataframe(df_raw):
@@ -1188,5 +1188,11 @@ def render(df_ativos, df_desligados):
             st.markdown("##### Ciclo de Vida e Ferramentas")
             if st.button("📝 Título Doc (Automação)", use_container_width=True, type="primary"): 
                 modal_titulo_doc(df_ativos_proc)
-        
+
+    with aba_conectividade:
+        st.markdown("""
+            <div style="background-color: #f1f3f5; padding: 12px; border-radius: 6px; border-left: 5px solid #404040; margin-bottom: 20px;">
+                <span style="color: #404040; font-size: 14px;">Acesso rápido aos links de plataformas mais utilizadas pelo time.</span>
+            </div>
+        """, unsafe_allow_html=True)
         
