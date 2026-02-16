@@ -773,7 +773,7 @@ def render(df_ativos, df_desligados):
                     st.warning("Coluna Modalidade PJ não encontrada.")
 
             # ==========================================
-            # 4. TEMPO DE CASA (PROJEÇÃO FUTURA/PASSADA)
+            # 4. TEMPO DE CASA (CÁLCULO EXATO DE CALENDÁRIO)
             # ==========================================
             with st.expander("⏳ Tempo de Casa", expanded=False):
                 if "Início na V4_dt" in df_ativos_proc.columns:
@@ -783,25 +783,30 @@ def render(df_ativos, df_desligados):
                     min_anos = c_ano.number_input("Mín. Anos", min_value=0, value=1, step=1)
                     min_meses = c_mes.number_input("Mín. Meses", min_value=0, max_value=11, value=0, step=1)
                     
-                    # AQUI ESTÁ A MUDANÇA: format="DD/MM/YYYY"
+                    # Data de Referência formatada BR
                     data_ref_input = c_ref.date_input("Data de Referência", value=datetime.today(), format="DD/MM/YYYY")
                     data_ref = pd.Timestamp(data_ref_input).normalize()
                     
-                    dias_minimos = (min_anos * 365) + (min_meses * 30)
+                    # --- LÓGICA CORRIGIDA (DATA DE CORTE) ---
+                    # Em vez de contar dias, calculamos a data limite exata no passado.
+                    # Quem entrou DEPOIS dessa data, não entra no filtro.
+                    data_limite = data_ref - relativedelta(years=min_anos, months=min_meses)
                     
+                    # Pega apenas quem tem data de início preenchida
                     df_tempo = df_ativos_proc[df_ativos_proc["Início na V4_dt"].notna()].copy()
                     
-                    # Calcula diferença usando a data escolhida
-                    df_tempo["Dias_Casa"] = (data_ref - df_tempo["Início na V4_dt"]).dt.days
-                    
+                    # Filtra quem entrou ANTES ou NO DIA da data limite
                     df_filtrado = df_tempo[
-                        (df_tempo["Dias_Casa"] >= dias_minimos) & 
-                        (df_tempo["Dias_Casa"] > 0)
-                    ].sort_values("Dias_Casa", ascending=False)
+                        (df_tempo["Início na V4_dt"] <= data_limite)
+                    ].copy()
+                    
+                    # Ordena pelos mais antigos
+                    df_filtrado = df_filtrado.sort_values("Início na V4_dt", ascending=True)
                     
                     if df_filtrado.empty:
-                        st.info(f"Ninguém com mais de {min_anos} anos e {min_meses} meses na data de {data_ref.strftime('%d/%m/%Y')}.")
+                        st.info(f"Ninguém com mais de {min_anos} anos e {min_meses} meses completos até {data_ref.strftime('%d/%m/%Y')}.")
                     else:
+                        # Função para texto dinâmico
                         def texto_tempo_dinamico(inicio):
                             if pd.isna(inicio) or inicio > data_ref: return "-"
                             d = relativedelta(data_ref, inicio)
@@ -812,7 +817,7 @@ def render(df_ativos, df_desligados):
                         cols_tempo = ["Nome", "Remuneração", "Início na V4", "Tempo de Casa"]
                         cols_final = [c for c in cols_tempo if c in df_filtrado.columns]
                         
-                        st.markdown(f"Em **{data_ref.strftime('%d/%m/%Y')}**, temos **{len(df_filtrado)} investidores** com esse tempo de casa:")
+                        st.markdown(f"Em **{data_ref.strftime('%d/%m/%Y')}**, temos **{len(df_filtrado)} investidores** com esse tempo mínimo:")
                         st.dataframe(df_filtrado[cols_final], use_container_width=True, hide_index=True)
                 else:
                     st.warning("Coluna Início na V4 não encontrada.")
