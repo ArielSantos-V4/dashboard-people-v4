@@ -300,7 +300,7 @@ def render(df_ativos, df_desligados):
     # ABA DASHBOARD
     # ----------------------------------------------------
     with aba_dashboard:
-        # Texto Explicativo (NOVO)
+        # Texto Explicativo
         st.markdown("""
             <div style="background-color: #f9f9f9; padding: 12px; border-left: 5px solid #E30613; border-radius: 4px; margin-bottom: 20px;">
                 <span style="color: #404040; font-size: 14px;">
@@ -309,26 +309,29 @@ def render(df_ativos, df_desligados):
             </div>
         """, unsafe_allow_html=True)
         
+        # --- LINHA 1: KPIs ---
         col_k1, col_k2, col_k3, col_k4 = st.columns(4)
         col_k1.metric("Headcount Ativo", len(df_ativos_proc))
         
-        hoje = pd.Timestamp.today().normalize()
-        venc_prox = df_ativos_proc[
-            (df_ativos_proc["Térm previsto_dt"].notna()) & 
-            (df_ativos_proc["Térm previsto_dt"] > hoje) &
-            (df_ativos_proc["Térm previsto_dt"] <= hoje + timedelta(days=30))
+        # KPI: Admissões no Ano Corrente (NOVO)
+        ano_atual = datetime.now().year
+        admissoes_ano = df_ativos_proc[
+            (df_ativos_proc["Início na V4_dt"].notna()) & 
+            (df_ativos_proc["Início na V4_dt"].dt.year == ano_atual)
         ]
-        col_k2.metric("Contratos Vencendo (30d)", len(venc_prox))
+        col_k2.metric(f"Admissões em {ano_atual}", len(admissoes_ano))
         
+        # KPI: Média de Idade
         if "Data de nascimento_dt" in df_ativos_proc.columns:
-            idades = (hoje - df_ativos_proc["Data de nascimento_dt"]).dt.days / 365.25
+            idades = (pd.Timestamp.today() - df_ativos_proc["Data de nascimento_dt"]).dt.days / 365.25
             media_idade = idades.mean()
             col_k3.metric("Média de Idade", f"{media_idade:.1f} anos")
         
-        col_k4.metric("Total Desligados", len(df_desligados_proc))
+        col_k4.metric("Total Desligados (Histórico)", len(df_desligados_proc))
         
         st.markdown("---")
         
+        # --- LINHA 2: GRÁFICOS PRINCIPAIS ---
         g1, g2 = st.columns(2)
         with g1:
             st.subheader("📍 Por Unidade / Atuação")
@@ -341,6 +344,39 @@ def render(df_ativos, df_desligados):
                 st.altair_chart(chart_uni, use_container_width=True)
                 
         with g2:
+            st.subheader("🏆 Por Senioridade") # (NOVO)
+            if "Senioridade" in df_ativos_proc.columns:
+                df_sen = df_ativos_proc["Senioridade"].value_counts().reset_index()
+                df_sen.columns = ["Senioridade", "Qtd"]
+                chart_sen = alt.Chart(df_sen).mark_bar(color="#404040").encode( # Cinza escuro V4
+                    x=alt.X("Qtd", title="Qtd"), 
+                    y=alt.Y("Senioridade", sort="-x"), 
+                    tooltip=["Senioridade", "Qtd"]
+                )
+                st.altair_chart(chart_sen, use_container_width=True)
+
+        st.markdown("<br>", unsafe_allow_html=True)
+
+        # --- LINHA 3: EVOLUÇÃO E MODELO ---
+        g3, g4 = st.columns(2)
+        
+        with g3:
+            st.subheader("📈 Evolução de Admissões (Ano)") # (NOVO)
+            if "Início na V4_dt" in df_ativos_proc.columns:
+                df_evo = df_ativos_proc.copy()
+                df_evo["Ano_Admissao"] = df_evo["Início na V4_dt"].dt.year
+                df_evo_count = df_evo["Ano_Admissao"].value_counts().reset_index()
+                df_evo_count.columns = ["Ano", "Investidores"]
+                df_evo_count = df_evo_count[df_evo_count["Ano"].notna()].sort_values("Ano") # Remove nulos e ordena
+                
+                chart_evo = alt.Chart(df_evo_count).mark_line(point=True, color="#E30613").encode(
+                    x=alt.X("Ano:O", title="Ano"), # :O trata o ano como categoria (sem vírgula 2,023)
+                    y="Investidores",
+                    tooltip=["Ano", "Investidores"]
+                )
+                st.altair_chart(chart_evo, use_container_width=True)
+
+        with g4:
             st.subheader("📃 Modelo de Contrato")
             if "Modelo de contrato" in df_ativos_proc.columns:
                 df_mod = df_ativos_proc["Modelo de contrato"].value_counts().reset_index()
@@ -351,7 +387,7 @@ def render(df_ativos, df_desligados):
                     tooltip=["Modelo", "Qtd"]
                 )
                 st.altair_chart(chart_mod, use_container_width=True)
-
+                
     # ----------------------------------------------------
     # ABA ROLLING
     # ----------------------------------------------------
