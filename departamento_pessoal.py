@@ -378,19 +378,37 @@ def render(df_ativos, df_desligados):
         g3, g4 = st.columns(2)
         
         with g3:
-            st.subheader("📈 Evolução de Admissões")
-            if "Início na V4_dt" in df_ativos_proc.columns:
-                df_evo = df_ativos_proc.copy()
-                # Dropa datas vazias
-                df_evo = df_evo.dropna(subset=["Início na V4_dt"])
+            st.subheader("📈 Evolução de Admissões (Histórico Completo)")
+            
+            # Verifica se a coluna de data existe nas duas bases
+            col_data = "Início na V4_dt"
+            has_ativos = col_data in df_ativos_proc.columns
+            has_deslig = col_data in df_desligados_proc.columns
+            
+            if has_ativos:
+                # 1. Pega datas dos ativos
+                series_ativos = df_ativos_proc[col_data]
+                
+                # 2. Pega datas dos desligados (se tiver)
+                if has_deslig:
+                    series_deslig = df_desligados_proc[col_data]
+                    # Junta tudo numa lista só
+                    series_total = pd.concat([series_ativos, series_deslig])
+                else:
+                    series_total = series_ativos
+                
+                # 3. Cria dataframe temporário para o gráfico
+                df_evo = pd.DataFrame({"Data": series_total})
+                df_evo = df_evo.dropna() # Remove vazios
                 
                 if not df_evo.empty:
-                    df_evo["Ano"] = df_evo["Início na V4_dt"].dt.year
+                    df_evo["Ano"] = df_evo["Data"].dt.year
                     df_evo_count = df_evo["Ano"].value_counts().reset_index()
                     df_evo_count.columns = ["Ano", "Investidores"]
                     df_evo_count = df_evo_count.sort_values("Ano")
                     
-                    chart_evo = alt.Chart(df_evo_count).mark_line(point=True, color="#E30613").encode(
+                    # 4. Gráfico na cor PRETA (#000000)
+                    chart_evo = alt.Chart(df_evo_count).mark_line(point=True, color="#000000").encode(
                         x=alt.X("Ano:O", title="Ano"), 
                         y="Investidores",
                         tooltip=["Ano", "Investidores"]
