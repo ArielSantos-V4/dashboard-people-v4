@@ -962,6 +962,15 @@ def render(df_ativos, df_desligados):
     # ABA ANALYTICS (REESTRUTURADA)
     # ----------------------------------------------------
     with aba_analytics:
+        
+        with aba_analyt:
+        st.markdown("""
+            <div style="background-color: #f1f3f5; padding: 12px; border-radius: 6px; border-left: 5px solid #404040; margin-bottom: 20px;">
+                <span style="color: #404040; font-size: 14px;">📈 <b>Relatórios e Inteligência:</b> Utilize as abas abaixo para extrair dados estratégicos, acompanhar indicadores demográficos e realizar auditorias de contratos.</span>
+            </div>
+        """, unsafe_allow_html=True)
+        # ... aqui seguem as suas sub-abas m, d, e, f
+        
         sub_master, sub_demo, sub_estat, sub_finan = st.tabs([
             "📋 Master", 
             "👥 Demográfico", 
@@ -1152,19 +1161,34 @@ def render(df_ativos, df_desligados):
             """, unsafe_allow_html=True)
 
     with aba_acoes:
-        st.markdown("## ⚡ Central de Ações")
-        st.markdown("Selecione uma ferramenta abaixo para gerar documentos padronizados.")
+        with aba_acoes:
+        st.markdown("""
+            <div style="background-color: #fff5f5; padding: 12px; border-radius: 6px; border-left: 5px solid #E30613; margin-bottom: 20px;">
+                <span style="color: #404040; font-size: 14px;">⚡ <b>Processos Automáticos:</b> Gere formulários, contratos e declarações pré-preenchidas com os dados da base Master.</span>
+            </div>
+        """, unsafe_allow_html=True)
         
-        c_acoes1, c_acoes2 = st.columns([1, 1]) # Opcional: dividir em duas colunas
+        # Criando as sub-abas de Ações
+        a_adm, a_desl, a_ciclo = st.tabs(["🌱 Admissão", "🚪 Desligamento", "🔄 Jornada & Ciclo"])
         
-        with c_acoes1:
-            if st.button("📝 Título de doc para automação", use_container_width=True, type="primary"):
-                modal_titulo_doc(df_ativos_proc)
-            if st.button("📄 Demissão por comum acordo", use_container_width=True, type="primary"):
-                modal_comum(df_ativos_proc)
-                
-        with c_acoes2:
-            if st.button("📄 Aviso Prévio Indenizado", use_container_width=True, type="primary"):
-                modal_aviso_previo_indenizado(df_ativos_proc)
-            if st.button("🚌 Atualização do Vale Transporte", use_container_width=True, type="primary"):
+        with a_adm:
+            st.markdown("##### Documentos de Admissão")
+            c1, c2 = st.columns(2)
+            if c1.button("🚌 Vale Transporte", use_container_width=True, type="primary"): 
                 modal_vale_transporte(df_ativos_proc)
+            # Adicione outros de admissão aqui
+            
+        with a_desl:
+            st.markdown("##### Documentos de Desligamento")
+            c1, c2 = st.columns(2)
+            if c1.button("📄 Demissão Comum", use_container_width=True, type="primary"): 
+                modal_comum(df_ativos_proc)
+            if c2.button("📄 Aviso Prévio", use_container_width=True, type="primary"): 
+                modal_aviso_previo_indenizado(df_ativos_proc)
+                
+        with a_ciclo:
+            st.markdown("##### Ciclo de Vida e Ferramentas")
+            if st.button("📝 Título Doc (Automação)", use_container_width=True, type="primary"): 
+                modal_titulo_doc(df_ativos_proc)
+        
+        
