@@ -866,38 +866,32 @@ def render(df_ativos, df_desligados):
         
         import graphviz
 
-        # 1. Função de Cache para o Organograma
         @st.cache_data
-        def gerar_grafo_lideranca(df_base, lider_raiz):
+        def gerar_grafo_lideranca_v5(df_base, lider_raiz):
             df_base = df_base[df_base["Nome"].notna()].copy()
             
-            # Se não selecionar um líder específico, pegamos a base toda
             if lider_raiz == "Ver Tudo":
                 df_exibir = df_base.copy()
             else:
-                # Lógica para pegar o líder selecionado e todos os seus liderados (e abaixo deles)
                 lista_nomes = [lider_raiz]
-                # Rastreia até 5 níveis para baixo
                 for _ in range(5):
                     novos = df_base[df_base["Liderança direta"].isin(lista_nomes)]["Nome"].tolist()
                     if not novos: break
                     lista_nomes.extend(novos)
                 df_exibir = df_base[df_base["Nome"].isin(set(lista_nomes))]
 
-            # Configuração do Gráfico
             dot = graphviz.Digraph()
-            # rankdir='LR' (Esquerda p/ Direita) | nodesep e ranksep aumentados para dar espaço
-            dot.attr(rankdir='LR', ranksep='2.0', nodesep='0.8', bgcolor='transparent')
             
-            # Forçamos o tamanho do gráfico para ele NÃO ser espremido (ex: 50 polegadas de largura)
-            # Isso obriga a barra de rolagem horizontal a aparecer
-            dot.attr(size='50,50!') 
-
-            # Estilo das Caixas: Grafite Escuro V4 e Texto Branco
+            # --- O PULO DO GATO ---
+            # dpi='300': Aumenta a resolução e escala tudo
+            # ranksep e nodesep em valores altos para forçar o distanciamento
+            dot.attr(rankdir='LR', ranksep='2.5', nodesep='1.2', dpi='300', bgcolor='transparent')
+            
+            # Caixas gigantes (width e height em polegadas, mas escaladas pelo DPI)
             dot.attr('node', shape='rectangle', style='filled, rounded', 
                      fillcolor='#404040', color='#2E2E2E', fontcolor='white', 
-                     fontname='Arial', fontsize='14', # Fonte aumentada
-                     width='3.5', height='1.0') # Caixas bem maiores
+                     fontname='Arial Bold', fontsize='16', # Fonte muito maior
+                     width='4.0', height='1.2') # Caixas bem largas
 
             cargos = pd.Series(df_base["Cargo"].values, index=df_base["Nome"]).to_dict()
 
@@ -910,37 +904,34 @@ def render(df_ativos, df_desligados):
                     car_n = cargos.get(nom, "")
                     label_l = f"{lid}\n({car_l})" if car_l else lid
                     label_n = f"{nom}\n({car_n})" if car_n else nom
-                    # Linhas (edges) mais grossas e claras
-                    dot.edge(label_l, label_n, color='#B0B0B0', penwidth='2.0')
+                    # Linhas muito mais visíveis
+                    dot.edge(label_l, label_n, color='#808080', penwidth='3.0')
             
             return dot
 
-        # 2. Interface no Streamlit
         with st.expander("Visualizar organograma", expanded=False):
-            df_org_base = df_ativos_proc.copy()
-            
-            # Filtro de Liderança
-            lista_lideres = ["Ver Tudo"] + sorted([l for l in df_org_base["Liderança direta"].unique() if str(l) != 'nan' and l != ""])
-            sel_lider = st.selectbox("Selecione um Líder para focar na árvore dele:", lista_lideres, key="filtro_lider_org")
+            # Injetando CSS para garantir que o container aceite scroll gigante
+            st.markdown("""
+                <style>
+                    [data-testid="stExpander"] div[role="listitem"] { overflow-x: auto !important; }
+                    .stGraphvizChart { overflow: auto !important; }
+                    .stGraphvizChart svg { 
+                        width: auto !important; 
+                        height: auto !important; 
+                        min-width: 2500px !important; /* Força largura mínima gigante */
+                    }
+                </style>
+            """, unsafe_allow_html=True)
 
-            # Gera o gráfico
-            grafo = gerar_grafo_lideranca(df_org_base, sel_lider)
+            df_org_base = df_ativos_proc.copy()
+            lista_lideres = ["Ver Tudo"] + sorted([l for l in df_org_base["Liderança direta"].unique() if str(l) != 'nan' and l != ""])
+            sel_lider = st.selectbox("Selecione um Líder:", lista_lideres, key="filtro_v5")
+
+            grafo = gerar_grafo_lideranca_v5(df_org_base, sel_lider)
 
             if grafo:
-                # Estilo CSS para forçar o scroll horizontal no container do Streamlit
-                st.markdown("""
-                    <style>
-                        .stGraphvizChart > div {
-                            overflow-x: auto !important;
-                            overflow-y: auto !important;
-                            display: block !important;
-                        }
-                    </style>
-                """, unsafe_allow_html=True)
-
-                # Container com altura fixa para o scroll vertical
+                # Container com altura fixa, mas largura livre para scroll lateral
                 with st.container(height=800, border=True):
-                    # use_container_width=False é OBRIGATÓRIO para o scroll horizontal funcionar
                     st.graphviz_chart(grafo, use_container_width=False)
                 
     # ----------------------------------------------------
