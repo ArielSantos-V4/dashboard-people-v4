@@ -190,7 +190,7 @@ def modal_titulo_doc(df):
     if not nome:
         st.markdown("""
             <div style="padding: 10px; border-radius: 5px; border: 1px solid #dcdfe6; background-color: #f8f9fa; color: #606266; font-size: 14px;">
-                🔍 Selecione um investidor para gerar o título padronizado.
+                Selecione um investidor para gerar o título padronizado.
             </div>
         """, unsafe_allow_html=True)
         return
@@ -216,8 +216,12 @@ def modal_comum(df):
     lista_nomes = [""] + sorted(df["Nome"].dropna().unique())
     nome_selecionado = st.selectbox("Nome do colaborador", lista_nomes, index=0, key="sel_comum")
     
-    if not nome_selecionado:
-        st.info("Selecione um investidor.")
+    if not nome:
+        st.markdown("""
+            <div style="padding: 10px; border-radius: 5px; border: 1px solid #dcdfe6; background-color: #f8f9fa; color: #606266; font-size: 14px;">
+                Selecione um investidor para gerar o título padronizado.
+            </div>
+        """, unsafe_allow_html=True)
         return
 
     data_desligamento = st.date_input("Data do desligamento", format="DD/MM/YYYY", key="dt_comum")
@@ -250,7 +254,11 @@ def modal_aviso_previo_indenizado(df):
     nome = st.selectbox("Nome do investidor", lista_nomes, index=0, key="sel_aviso")
     
     if not nome:
-        st.info("Selecione um investidor.")
+        st.markdown("""
+            <div style="padding: 10px; border-radius: 5px; border: 1px solid #dcdfe6; background-color: #f8f9fa; color: #606266; font-size: 14px;">
+                Selecione um investidor para gerar o título padronizado.
+            </div>
+        """, unsafe_allow_html=True)
         return
 
     c_dat1, c_dat2 = st.columns(2)
@@ -285,8 +293,12 @@ def modal_vale_transporte(df_pessoas):
     lista_nomes = [""] + sorted(df_pessoas["Nome"].dropna().unique())
     nome_sel = st.selectbox("Investidor", lista_nomes, index=0, key="sel_vt")
     
-    if not nome_sel:
-        st.info("Selecione um investidor para continuar.")
+    if not nome:
+        st.markdown("""
+            <div style="padding: 10px; border-radius: 5px; border: 1px solid #dcdfe6; background-color: #f8f9fa; color: #606266; font-size: 14px;">
+                Selecione um investidor para gerar o título padronizado.
+            </div>
+        """, unsafe_allow_html=True)
         return
 
     res = df_pessoas[df_pessoas["Nome"] == nome_sel].iloc[0]
