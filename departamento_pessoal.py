@@ -280,7 +280,6 @@ def modal_consulta_investidor(df_consulta, nome, tipo_base="ativo"):
                         elif tipo == "success": st.success(msg, icon="🎉")
                         else: st.info(msg, icon="ℹ️")
 
-
 # ==========================================
 # MODAIS DE AÇÃO
 # ==========================================
