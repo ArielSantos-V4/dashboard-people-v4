@@ -214,27 +214,23 @@ def modal_comum(df):
     nome_selecionado = st.selectbox("Nome do colaborador", sorted(df["Nome"].dropna().unique()), key="sel_comum")
     data_desligamento = st.date_input("Data do desligamento", format="DD/MM/YYYY", key="dt_comum")
     
-    # 1. VALIDAÇÃO VÍNCULO
     dados_pessoa = df[df["Nome"] == nome_selecionado].iloc[0]
     eh_clt, tipo_contrato = validar_clt(dados_pessoa)
     
     liberar_geracao = False
-    
     if eh_clt:
         liberar_geracao = True
     else:
         st.markdown(f"""
             <div style="padding: 10px; background-color: #fff3cd; color: #856404; border: 1px solid #ffeeba; border-radius: 4px; margin-bottom: 10px;">
-                ⚠️ <b>Atenção:</b> O vínculo cadastrado é <b>{tipo_contrato}</b>. Este documento é padrão CLT.
+                ⚠️ <b>Atenção:</b> O vínculo cadastrado é <b>{tipo_contrato}</b>.
             </div>
         """, unsafe_allow_html=True)
         if st.checkbox("Estou ciente e desejo gerar mesmo assim", key="chk_comum"):
             liberar_geracao = True
 
-    # 2. GERAÇÃO
     if liberar_geracao:
         st.markdown("<br>", unsafe_allow_html=True)
-        c1, c2, c3 = st.columns([1, 2, 1])
         
         mapa = {
             "{nome_completo}": nome_selecionado,
@@ -243,9 +239,12 @@ def modal_comum(df):
         }
 
         try:
-            # Tenta gerar o arquivo em memória para download imediato
             arquivo_pronto = gerar_docx_com_substituicoes("Demissão por comum acordo.docx", mapa)
             
+            # Centralizando os botões
+            c1, c2, c3 = st.columns([1, 2, 1])
+            
+            # 1. Botão Principal VERMELHO
             c2.download_button(
                 label="📄 Gerar e Baixar DOC",
                 data=arquivo_pronto,
@@ -254,9 +253,29 @@ def modal_comum(df):
                 use_container_width=True,
                 type="primary"
             )
+            
+            # 2. Botão de Link CINZA CLARO
+            # Usamos o componente st.link_button para abrir o site externo
+            c2.link_button(
+                "🔃 Converter Doc em PDF", 
+                "https://www.ilovepdf.com/pt/word_para_pdf",
+                use_container_width=True,
+                help="Clique para abrir o iLovePDF e converter seu arquivo."
+            )
+            
+            # CSS para forçar o botão de link a ser cinza (o padrão do link_button é secundário/cinza)
+            st.markdown("""
+                <style>
+                div[data-testid="stBaseButton-secondary"] {
+                    background-color: #f0f2f6 !important;
+                    color: #31333f !important;
+                    border: 1px solid #dcdfe6 !important;
+                }
+                </style>
+            """, unsafe_allow_html=True)
+
         except Exception as e:
-            c2.error("Modelo .docx não encontrado")
-            # st.caption(f"Detalhe do erro: {e}") # Descomente para debug
+            st.error("Modelo .docx não encontrado")
 
 @st.dialog("📄 Aviso Prévio Indenizado")
 def modal_aviso_previo_indenizado(df):
