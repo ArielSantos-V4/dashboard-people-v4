@@ -293,10 +293,6 @@ def modal_vale_transporte(df_pessoas):
             ⚠️ <b>Atenção:</b> Investidor <b>{tipo_contrato}</b> não tem direito legal a VT.</div>""", unsafe_allow_html=True)
         if not st.checkbox("Forçar geração mesmo assim", key="chk_vt"): return
 
-    # --- SELETOR DE ADESÃO ---
-    st.divider()
-    opcao_adesao = st.radio("Selecione a opção:", ["Adesão ao VT", "Não adesão ao VT"], horizontal=True)
-
     # --- CAMPOS DE ENDEREÇO (Com UF ao lado de Cidade) ---
     st.markdown("##### Endereço Residencial")
     c_end1, c_end2 = st.columns([1, 3])
@@ -316,6 +312,10 @@ def modal_vale_transporte(df_pessoas):
     # Inicialização de variáveis para evitar erro de cálculo
     trans_res, trans_tra = [], []
     soma_valor, soma_inte, soma_valor_tra, soma_inte_tra = 0.0, 0.0, 0.0, 0.0
+
+    # --- SELETOR DE ADESÃO ---
+    st.divider()
+    opcao_adesao = st.radio("Selecione a opção:", ["Adesão ao VT", "Não adesão ao VT"], horizontal=True)
 
     # --- CAMPOS DE TRANSPORTE (Só se for Adesão) ---
     if opcao_adesao == "Adesão ao VT":
