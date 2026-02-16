@@ -865,85 +865,71 @@ def render(df_ativos, df_desligados):
         st.subheader("🌳 Estrutura Organizacional")
         
         import graphviz
-        
-        # 1. Preparação da base completa de ativos
-        df_org_base = df_ativos_proc[df_ativos_proc["Nome"].notna() & (df_ativos_proc["Nome"] != "")].copy()
-        
-        # Auditoria de dados (quem não tem líder cadastrado)
-        sem_lider = df_org_base[df_org_base["Liderança direta"].isna() | (df_org_base["Liderança direta"] == "")]
-        qtd_sem_lider = len(sem_lider)
-        
-        if qtd_sem_lider > 0:
-            st.markdown(f"""
-                <div style="background-color: #f8f9fa; padding: 10px; border-radius: 6px; border-left: 5px solid #404040; margin-bottom: 15px;">
-                    <span style="color: #404040; font-size: 13px;">ℹ️ Existem <b>{qtd_sem_lider}</b> investidores ativos sem liderança cadastrada.</span>
-                </div>
-            """, unsafe_allow_html=True)
 
-        # 2. Seleção de Unidade
-        unidades_org = ["Todas"] + sorted(df_org_base["Unidade/Atuação"].unique().tolist())
-        sel_uni_org = st.selectbox("Visualizar árvore da unidade:", unidades_org, key="uni_org")
-        
-        # 3. LÓGICA DE RASTREAMENTO HIERÁRQUICO
-        if sel_uni_org == "Todas":
-            df_exibir = df_org_base.copy()
-        else:
-            # Pegamos os nomes de quem pertence à unidade
-            nomes_unidade = df_org_base[df_org_base["Unidade/Atuação"] == sel_uni_org]["Nome"].tolist()
+        # --- FUNÇÃO COM CACHE PARA NÃO PESAR ---
+        @st.cache_data
+        def gerar_dot_organograma(df_base, unidade_alvo):
+            # Filtro inicial rápido
+            df_base = df_base[df_base["Nome"].notna()].copy()
             
-            # Criamos um set para armazenar quem deve aparecer (inicia com o pessoal da unidade)
-            quem_aparece = set(nomes_unidade)
-            
-            # Rastreia para cima: Para cada pessoa, adiciona o líder, o líder do líder, etc.
-            for nome in nomes_unidade:
-                atual = nome
-                # Limite de 10 níveis para segurança (evitar loop infinito se houver erro na planilha)
-                for _ in range(10):
-                    res = df_org_base[df_org_base["Nome"] == atual]
-                    if res.empty: break
-                    lider_direto = str(res.iloc[0]["Liderança direta"]).strip()
-                    if lider_direto and lider_direto != "nan" and lider_direto != "":
-                        quem_aparece.add(lider_direto)
-                        atual = lider_direto
-                    else:
-                        break
-            
-            df_exibir = df_org_base[df_org_base["Nome"].isin(quem_aparece)]
-
-        # Removemos apenas linhas totalmente vazias para o gráfico
-        df_grafico = df_exibir[df_exibir["Liderança direta"].notna() & (df_exibir["Liderança direta"] != "")]
-
-        # 4. Construção do Gráfico (LR = Left to Right para caber melhor na tela)
-        dot = graphviz.Digraph(comment='Organograma V4')
-        dot.attr(rankdir='LR', ranksep='1.0', nodesep='0.4') 
-        
-        dot.attr('node', shape='rectangle', style='filled, rounded', 
-                 fillcolor='#F1F3F5', color='#D3D3D3', 
-                 fontcolor='#404040', fontname='Arial', fontsize='11',
-                 width='2.5', height='0.6')
-
-        for _, row in df_grafico.iterrows():
-            lider = str(row["Liderança direta"]).strip()
-            liderado = str(row["Nome"]).strip()
-            cargo = str(row.get("Cargo", ""))
-            label_liderado = f"{liderado}\n({cargo})" if cargo else liderado
-            
-            # Verifica se o líder também está na nossa lista de nomes para pegar o cargo dele
-            dados_lider = df_org_base[df_org_base["Nome"] == lider]
-            if not dados_lider.empty:
-                cargo_lider = str(dados_lider.iloc[0].get("Cargo", ""))
-                label_lider = f"{lider}\n({cargo_lider})" if cargo_lider else lider
+            if unidade_alvo == "Todas":
+                df_exibir = df_base.copy()
             else:
-                label_lider = lider
+                nomes_unidade = df_base[df_base["Unidade/Atuação"] == unidade_alvo]["Nome"].tolist()
+                quem_aparece = set(nomes_unidade)
+                
+                # Mapa rápido de liderança
+                mapa_lideres = pd.Series(df_base["Liderança direta"].values, index=df_base["Nome"]).to_dict()
+                
+                for nome in nomes_unidade:
+                    atual = nome
+                    for _ in range(5): # Reduzi para 5 níveis para ganhar velocidade
+                        lider = mapa_lideres.get(atual)
+                        if lider and str(lider) != 'nan':
+                            quem_aparece.add(lider)
+                            atual = lider
+                        else: break
+                df_exibir = df_base[df_base["Nome"].isin(quem_aparece)]
 
-            dot.edge(label_lider, label_liderado, color='#B0B0B0')
+            # Construção do DOT
+            dot = graphviz.Digraph()
+            dot.attr(rankdir='LR', ranksep='1.0', nodesep='0.4')
+            dot.attr('node', shape='rectangle', style='filled, rounded', 
+                     fillcolor='#F1F3F5', color='#D3D3D3', fontcolor='#404040', 
+                     fontname='Arial', fontsize='10', width='2.0', height='0.5')
 
-        # 5. Renderização
-        if not df_grafico.empty:
-            with st.container(height=800, border=True):
-                st.graphviz_chart(dot, use_container_width=False)
-        else:
-            st.info("Dados insuficientes para gerar o organograma.")
+            # Cache de cargos para evitar buscas repetidas no loop
+            cargos = pd.Series(df_base["Cargo"].values, index=df_base["Nome"]).to_dict()
+
+            for _, row in df_exibir.iterrows():
+                lid = str(row["Liderança direta"]).strip()
+                nom = str(row["Nome"]).strip()
+                if lid and lid != 'nan' and lid != "":
+                    # Formata labels
+                    car_l = cargos.get(lid, "")
+                    car_n = cargos.get(nom, "")
+                    label_l = f"{lid}\n({car_l})" if car_l else lid
+                    label_n = f"{nom}\n({car_n})" if car_n else nom
+                    dot.edge(label_l, label_n, color='#B0B0B0')
+            return dot
+
+        # --- EXECUÇÃO NO DASHBOARD ---
+        df_org_base = df_ativos_proc.copy()
+        
+        # Informativo rápido (sem pesar)
+        qtd_sem_lider = len(df_org_base[df_org_base["Liderança direta"].isna() | (df_org_base["Liderança direta"] == "")])
+        if qtd_sem_lider > 0:
+            st.caption(f"ℹ️ {qtd_sem_lider} investidores ativos sem liderança cadastrada.")
+
+        unidades_org = ["Todas"] + sorted(df_org_base["Unidade/Atuação"].unique().tolist())
+        sel_uni_org = st.selectbox("Unidade:", unidades_org, key="uni_org")
+        
+        # Chama a função com cache
+        grafo = gerar_dot_organograma(df_org_base, sel_uni_org)
+
+        if grafo:
+            with st.container(height=600, border=True):
+                st.graphviz_chart(grafo, use_container_width=False)
                 
     # ----------------------------------------------------
     # ABA ROLLING (TÍTULOS PADRONIZADOS)
