@@ -1215,8 +1215,42 @@ def render(df_ativos, df_desligados):
                 <span style="color: #404040; font-size: 14px;">Acesso rápido aos sistemas e ferramentas da rede V4 Company.</span>
             </div>
         """, unsafe_allow_html=True)
-        cv4, cext, capo = st.columns(3)
-        with cv4: st.markdown("##### 🔴 Plataformas V4")
-        with cext: st.markdown("##### 🌐 Plataformas Externas")
-        with capo: st.markdown("##### 🛠️ Ferramentas de Apoio")
         
+        cv4, cext, capo, cmat = st.columns(4)
+        
+        with cv4:
+            st.markdown("##### 🔴 Plataformas V4")
+            st.link_button("WorkForce", "https://workforce.mktlab.app/", use_container_width=True)
+            st.link_button("Suporte Matriz", "https://suportematriz.mktlab.app/#", use_container_width=True)
+            st.link_button("Suporte TI", "https://v4company.atlassian.net/servicedesk/customer/user/login?destination=portals", use_container_width=True)
+            st.link_button("V4 University | Staage", "https://v4university.staage.com/logar", use_container_width=True)
+            st.link_button("Learning Rocks", "https://v4university.staage.com/logar", use_container_width=True)
+            st.link_button("Benefícios corporativos", "https://lp.v4company.com/people-beneficios/", use_container_width=True)
+            st.link_button("Loja V4", "https://v4company.elobrindes.com.br/", use_container_width=True)
+            st.link_button("Foto corporativa", "https://geradordefotov4.lovable.app/", use_container_width=True)
+            st.link_button("Job Description", "https://v4-company.notion.site/Descri-o-de-Cargos-e-OKRs-1d1f09cb6f9080d6ae8ce07e4b687caf", use_container_width=True)
+            st.link_button("Base de conhecimento", "https://v4-company.notion.site/da9e55aee7304761afd5b479d71a53cf?v=0c9c758af9004838b5aa41a581dd8346", use_container_width=True)
+            st.link_button("Calculadora Variável Closer", "https://sites.google.com/comp.vc/simulador-v4-company/simulador-rvv-v4", use_container_width=True)
+            st.link_button("Materiais V4", "https://drive.google.com/drive/folders/0AKHVpFRDdfGeUk9PVA", use_container_width=True)
+            st.link_button("Mapa de salas", "https://docs.google.com/spreadsheets/d/12Cy5eO-CLvv-Od29CyFI7Fyhd4uYsQsaKL8cIOQ59T0/edit?gid=0#gid=0", use_container_width=True)
+
+        with cext:
+            st.markdown("##### 🌐 Plataformas Externas")
+            # Organizado em ordem alfabética
+            st.link_button("Ahgora by TOTVS", "https://app.ahgora.com.br/home", use_container_width=True)
+            st.link_button("B4", "https://assinador.somosb4.com.br/private", use_container_width=True)
+            st.link_button("CIEE Sul", "https://cieers.org.br/conjuntos/empresas/selecionar", use_container_width=True)
+            st.link_button("ECX Pay", "https://grh.ecxpay.com.br/login", use_container_width=True)
+            st.link_button("Pipefy", "https://app.pipefy.com/organizations/159148", use_container_width=True)
+            st.link_button("Salú", "https://app.salu.com.vc/home", use_container_width=True)
+            st.link_button("SAP", "https://vhv4cps4ci.sap.mktlab.app:44300/sap/bc/ui2/flp?sap-client=100&sap-language=PT#Shell-home", use_container_width=True)
+
+        with capo:
+            st.markdown("##### 🛠️ Ferramentas de Apoio")
+            st.link_button("Emissão do Cartão CNPJ", "https://solucoes.receita.fazenda.gov.br/servicos/cnpjreva/Cnpjreva_Solicitacao.asp", use_container_width=True)
+            st.link_button("Consulta CNPJ", "https://cnpj.biz/", use_container_width=True)
+            st.link_button("iLovePDF", "https://www.ilovepdf.com/pt", use_container_width=True)
+
+        with cmat:
+            st.markdown("##### 📚 Material de Consulta")
+            st.link_button("Datas Onboarding Experience", "https://docs.google.com/spreadsheets/d/1ZGxHYq4L9ZLPlDXu4sQF8Fe_JFSf7hUm6zNXUyCAbus/edit?gid=1644549870#gid=1644549870", use_container_width=True)
