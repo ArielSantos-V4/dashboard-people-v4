@@ -919,7 +919,7 @@ def render(df_ativos, df_desligados):
                     .stGraphvizChart svg { 
                         width: auto !important; 
                         height: auto !important; 
-                        min-width: 2500px !important; /* Força largura mínima gigante */
+                        min-width: 1200px !important; /* Reduzi de 2500px para 1200px */
                     }
                 </style>
             """, unsafe_allow_html=True)
