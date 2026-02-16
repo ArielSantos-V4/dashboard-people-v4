@@ -324,7 +324,7 @@ def modal_consulta_investidor(df_consulta, nome, tipo_base="ativo"):
             alertas = gerar_alertas_investidor(linha)
             if alertas:
                 # Altura fixa com rolagem automática se passar do tamanho
-                with st.container(height=200, border=True):
+                with st.container(height=120, border=True):
                     for tipo, msg in alertas:
                         if tipo == "error": st.error(msg, icon="🚨")
                         elif tipo == "warning": st.warning(msg, icon="⚠️")
