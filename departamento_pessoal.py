@@ -602,20 +602,29 @@ def render(df_ativos, df_desligados):
                 st.altair_chart(chart_mod, use_container_width=True)
                 
     # ----------------------------------------------------
-    # ABA ROLLING
+    # ABA ROLLING (DESIGN LIMPO - SEM SUB-ABAS)
     # ----------------------------------------------------
     with aba_rolling:
-        # Texto Explicativo (NOVO)
+        # Texto Explicativo
         st.markdown("""
             <div style="background-color: #f9f9f9; padding: 12px; border-left: 5px solid #E30613; border-radius: 4px; margin-bottom: 20px;">
                 <span style="color: #404040; font-size: 14px;">
-                    Utilize esta área para <b>consultas individuais detalhadas</b> ou para visualizar a <b>tabela completa</b> de todos os investidores, incluindo ativos e desligados.
+                    Utilize os controles abaixo para alternar entre a base de <b>Ativos</b> e <b>Desligados</b>.
                 </span>
             </div>
         """, unsafe_allow_html=True)
         
-        tab_ativos, tab_desligados = st.tabs(["🟢 Base Ativa", "🔴 Base Desligados"])
+        # --- SELETOR DE VISUALIZAÇÃO (SUBSTITUI AS ABAS) ---
+        modo_visualizacao = st.radio(
+            "Selecione a base:",
+            ["🟢 Investidores Ativos", "🔴 Investidores Desligados"],
+            horizontal=True,
+            label_visibility="collapsed" # Esconde o título para ficar mais limpo
+        )
         
+        st.markdown("---")
+
+        # Configuração de colunas para esconder
         def get_column_config(df_cols):
             config = {}
             cols_to_hide = [
@@ -630,51 +639,46 @@ def render(df_ativos, df_desligados):
                     config[col] = None
             return config
 
-        # ATIVOS
-        with tab_ativos:
-            st.markdown("<br>", unsafe_allow_html=True)
-            c_sel, c_btn = st.columns([3, 1])
-            
-            with c_sel:
-                sel_ativo = st.selectbox("Consultar Investidor Ativo", [""] + sorted(df_ativos_proc["Nome"].unique()), key="sel_rol_ativo")
-            
-            with c_btn:
-                # ESPAÇADOR PARA ALINHAR O BOTÃO
-                st.markdown('<div style="height: 28px;"></div>', unsafe_allow_html=True)
-                if st.button("🔍 Ver Detalhes", key="btn_rol_ativo") and sel_ativo:
-                    modal_consulta_investidor(df_ativos_proc, sel_ativo, "ativo")
-            
-            st.markdown("---")
-            st.markdown("### 📋 Base de investidores (Ativos)")
-            busca_a = st.text_input("Filtrar tabela ativa", placeholder="Digite para buscar...", key="busca_a")
-            df_view_a = df_ativos_proc.copy()
-            if busca_a:
-                df_view_a = df_view_a[df_view_a.astype(str).apply(lambda x: x.str.contains(busca_a, case=False).any(), axis=1)]
-            
-            st.dataframe(df_view_a, use_container_width=True, hide_index=True, column_config=get_column_config(df_view_a.columns))
+        # --- LÓGICA DINÂMICA ---
+        if modo_visualizacao == "🟢 Investidores Ativos":
+            df_atual = df_ativos_proc
+            tipo_base = "ativo"
+            key_suffix = "_ativo"
+            cor_titulo = "green"
+        else:
+            df_atual = df_desligados_proc
+            tipo_base = "desligado"
+            key_suffix = "_deslig"
+            cor_titulo = "red"
 
-        # DESLIGADOS
-        with tab_desligados:
-            st.markdown("<br>", unsafe_allow_html=True)
-            c_sel_d, c_btn_d = st.columns([3, 1])
-            
-            with c_sel_d:
-                sel_deslig = st.selectbox("Consultar Investidor Desligado", [""] + sorted(df_desligados_proc["Nome"].unique()), key="sel_rol_deslig")
-            
-            with c_btn_d:
-                # ESPAÇADOR PARA ALINHAR O BOTÃO
-                st.markdown('<div style="height: 28px;"></div>', unsafe_allow_html=True)
-                if st.button("🔍 Ver Detalhes", key="btn_rol_deslig") and sel_deslig:
-                    modal_consulta_investidor(df_desligados_proc, sel_deslig, "desligado")
-                    
-            st.markdown("---")
-            st.markdown("### 📋 Base de investidores (Desligados)")
-            busca_d = st.text_input("Filtrar tabela desligados", placeholder="Digite para buscar...", key="busca_d")
-            df_view_d = df_desligados_proc.copy()
-            if busca_d:
-                df_view_d = df_view_d[df_view_d.astype(str).apply(lambda x: x.str.contains(busca_d, case=False).any(), axis=1)]
-            
-            st.dataframe(df_view_d, use_container_width=True, hide_index=True, column_config=get_column_config(df_view_d.columns))
+        # --- ÁREA DE CONSULTA E TABELA (CÓDIGO ÚNICO) ---
+        c_sel, c_btn = st.columns([3, 1])
+        
+        with c_sel:
+            sel_investidor = st.selectbox(
+                f"Consultar Investidor ({tipo_base.capitalize()})", 
+                [""] + sorted(df_atual["Nome"].unique()), 
+                key=f"sel_rol{key_suffix}"
+            )
+        
+        with c_btn:
+            # Espaçador para alinhar botão
+            st.markdown('<div style="height: 28px;"></div>', unsafe_allow_html=True)
+            if st.button("🔍 Ver Detalhes", key=f"btn_rol{key_suffix}") and sel_investidor:
+                modal_consulta_investidor(df_atual, sel_investidor, tipo_base)
+        
+        st.markdown("<br>", unsafe_allow_html=True)
+        
+        # Título da Tabela
+        st.markdown(f"### 📋 Base Completa :{cor_titulo}[{modo_visualizacao.split(' ')[2]}]")
+        
+        busca = st.text_input(f"Filtrar tabela", placeholder="Digite nome, cargo ou área...", key=f"busca{key_suffix}")
+        
+        df_view = df_atual.copy()
+        if busca:
+            df_view = df_view[df_view.astype(str).apply(lambda x: x.str.contains(busca, case=False).any(), axis=1)]
+        
+        st.dataframe(df_view, use_container_width=True, hide_index=True, column_config=get_column_config(df_view.columns))
 
     # ----------------------------------------------------
     # ABA ANALYTICS (AJUSTADO E REFINADO)
