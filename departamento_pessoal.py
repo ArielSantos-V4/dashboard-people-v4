@@ -866,62 +866,82 @@ def render(df_ativos, df_desligados):
         
         import graphviz
 
-        # 1. Função de Cache Otimizada com estilo V4 Dark
+        # 1. Função de Cache para o Organograma
         @st.cache_data
-        def gerar_dot_organograma_completo(df_base):
+        def gerar_grafo_lideranca(df_base, lider_raiz):
             df_base = df_base[df_base["Nome"].notna()].copy()
             
-            # Configuração do Gráfico (LR = Esquerda para Direita)
+            # Se não selecionar um líder específico, pegamos a base toda
+            if lider_raiz == "Ver Tudo":
+                df_exibir = df_base.copy()
+            else:
+                # Lógica para pegar o líder selecionado e todos os seus liderados (e abaixo deles)
+                lista_nomes = [lider_raiz]
+                # Rastreia até 5 níveis para baixo
+                for _ in range(5):
+                    novos = df_base[df_base["Liderança direta"].isin(lista_nomes)]["Nome"].tolist()
+                    if not novos: break
+                    lista_nomes.extend(novos)
+                df_exibir = df_base[df_base["Nome"].isin(set(lista_nomes))]
+
+            # Configuração do Gráfico
             dot = graphviz.Digraph()
-            # ranksep: distância entre colunas | nodesep: distância entre caixas na mesma coluna
-            dot.attr(rankdir='LR', ranksep='1.2', nodesep='0.5', bgcolor='transparent')
+            # rankdir='LR' (Esquerda p/ Direita) | nodesep e ranksep aumentados para dar espaço
+            dot.attr(rankdir='LR', ranksep='2.0', nodesep='0.8', bgcolor='transparent')
             
-            # Estilo das Caixas: Fundo Escuro (#404040), Texto Branco
+            # Forçamos o tamanho do gráfico para ele NÃO ser espremido (ex: 50 polegadas de largura)
+            # Isso obriga a barra de rolagem horizontal a aparecer
+            dot.attr(size='50,50!') 
+
+            # Estilo das Caixas: Grafite Escuro V4 e Texto Branco
             dot.attr('node', shape='rectangle', style='filled, rounded', 
                      fillcolor='#404040', color='#2E2E2E', fontcolor='white', 
-                     fontname='Arial', fontsize='11', width='2.8', height='0.7')
+                     fontname='Arial', fontsize='14', # Fonte aumentada
+                     width='3.5', height='1.0') # Caixas bem maiores
 
-            # Mapa de cargos para o label
             cargos = pd.Series(df_base["Cargo"].values, index=df_base["Nome"]).to_dict()
 
-            for _, row in df_base.iterrows():
+            for _, row in df_exibir.iterrows():
                 lid = str(row["Liderança direta"]).strip()
                 nom = str(row["Nome"]).strip()
                 
                 if lid and lid != 'nan' and lid != "":
-                    # Busca cargo do líder e do liderado
                     car_l = cargos.get(lid, "")
                     car_n = cargos.get(nom, "")
-                    
-                    # Rótulos com Quebra de Linha
                     label_l = f"{lid}\n({car_l})" if car_l else lid
                     label_n = f"{nom}\n({car_n})" if car_n else nom
-                    
-                    # Seta (Edge) na cor cinza médio
-                    dot.edge(label_l, label_n, color='#D3D3D3')
+                    # Linhas (edges) mais grossas e claras
+                    dot.edge(label_l, label_n, color='#B0B0B0', penwidth='2.0')
+            
             return dot
 
-        # 2. O Expander com o Gráfico Master
-        with st.expander("Visualizar Organograma Completo", expanded=False):
+        # 2. Interface no Streamlit
+        with st.expander("🌳 Explorador de Estrutura Organizacional", expanded=False):
             df_org_base = df_ativos_proc.copy()
             
-            # Auditoria de dados (Informativo discreto)
-            qtd_sem_lider = len(df_org_base[df_org_base["Liderança direta"].isna() | (df_org_base["Liderança direta"] == "")])
-            if qtd_sem_lider > 0:
-                st.markdown(f"""
-                    <div style="padding: 8px; border-radius: 4px; border-left: 4px solid #E30613; background-color: #fcfcfc; margin-bottom: 10px;">
-                        <small style="color: #666;">ℹ️ <b>{qtd_sem_lider}</b> investidores ativos não aparecem na árvore por estarem sem líder cadastrado.</small>
-                    </div>
+            # Filtro de Liderança
+            lista_lideres = ["Ver Tudo"] + sorted([l for l in df_org_base["Liderança direta"].unique() if str(l) != 'nan' and l != ""])
+            sel_lider = st.selectbox("Selecione um Líder para focar na árvore dele:", lista_lideres, key="filtro_lider_org")
+
+            # Gera o gráfico
+            grafo = gerar_grafo_lideranca(df_org_base, sel_lider)
+
+            if grafo:
+                # Estilo CSS para forçar o scroll horizontal no container do Streamlit
+                st.markdown("""
+                    <style>
+                        .stGraphvizChart > div {
+                            overflow-x: auto !important;
+                            overflow-y: auto !important;
+                            display: block !important;
+                        }
+                    </style>
                 """, unsafe_allow_html=True)
 
-            # Gera o gráfico master (sem filtros de unidade)
-            grafo_master = gerar_dot_organograma_completo(df_org_base)
-
-            if grafo_master:
-                # Container alto para permitir navegação fluida
-                with st.container(height=900, border=True):
-                    # use_container_width=False garante que ele não fique "espremido"
-                    st.graphviz_chart(grafo_master, use_container_width=False)
+                # Container com altura fixa para o scroll vertical
+                with st.container(height=800, border=True):
+                    # use_container_width=False é OBRIGATÓRIO para o scroll horizontal funcionar
+                    st.graphviz_chart(grafo, use_container_width=False)
                 
     # ----------------------------------------------------
     # ABA ROLLING (TÍTULOS PADRONIZADOS)
