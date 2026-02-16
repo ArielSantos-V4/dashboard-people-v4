@@ -860,6 +860,47 @@ def render(df_ativos, df_desligados):
                     tooltip=["Modelo", "Qtd"]
                 )
                 st.altair_chart(chart_mod, use_container_width=True)
+        
+        st.markdown("---")
+        st.subheader("🌳 Estrutura Organizacional")
+        
+        # Criando o gráfico do Organograma
+        import graphviz
+        
+        # Filtro para não bugar o gráfico com nomes vazios
+        df_org = df_ativos_proc[df_ativos_proc["Liderança direta"].notna() & (df_ativos_proc["Liderança direta"] != "")].copy()
+        
+        # Opcional: Filtro por Unidade para o organograma não ficar gigante e ilegível
+        unidades_org = ["Todas"] + sorted(df_org["Unidade/Atuação"].unique().tolist())
+        sel_uni_org = st.selectbox("Filtrar árvore por Unidade:", unidades_org, key="uni_org")
+        
+        if sel_uni_org != "Todas":
+            df_org = df_org[df_org["Unidade/Atuação"] == sel_uni_org]
+
+        # Configuração do Gráfico
+        dot = graphviz.Digraph(comment='Organograma V4')
+        dot.attr(rankdir='TB', size='10,10') # TB = Top to Bottom (Cima para baixo)
+        
+        # Estilo dos nós (caixinhas)
+        dot.attr('node', shape='rectangle', style='filled, rounded', 
+                 color='#E30613', fontcolor='white', fontname='Arial', fontsize='10')
+
+        # Criando as conexões
+        for index, row in df_org.iterrows():
+            lider = str(row["Liderança direta"]).strip()
+            liderado = str(row["Nome"]).strip()
+            cargo = str(row.get("Cargo", ""))
+            
+            # Formatação da caixinha (Nome + Cargo embaixo)
+            label_liderado = f"{liderado}\n({cargo})" if cargo else liderado
+            
+            dot.edge(lider, label_liderado, color='#404040')
+
+        # Renderização
+        if not df_org.empty:
+            st.graphviz_chart(dot, use_container_width=True)
+        else:
+            st.info("Sem dados de liderança para gerar o organograma nesta unidade.")
                 
     # ----------------------------------------------------
     # ABA ROLLING (TÍTULOS PADRONIZADOS)
