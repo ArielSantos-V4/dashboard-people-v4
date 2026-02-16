@@ -671,7 +671,7 @@ def render(df_ativos, df_desligados):
             </div>
         """, unsafe_allow_html=True)
         
-    aba_dashboard, aba_rolling, aba_analytics = st.tabs(["📊 Dashboard", "👥 Rolling", "📈 Analytics"])
+    aba_dashboard, aba_rolling, aba_analytics, aba_acoes = st.tabs(["📊 Dashboard", "👥 Rolling", "📈 Analytics", "⚡ Ações"])
     
     # --- PREPARAÇÃO DE DATAS ---
     def preparar_dataframe(df_raw):
