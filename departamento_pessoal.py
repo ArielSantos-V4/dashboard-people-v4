@@ -350,7 +350,7 @@ def modal_consulta_investidor(df_consulta, nome, tipo_base="ativo"):
 # ==========================================
 @st.dialog("📝 Título Doc Automação")
 def modal_titulo_doc(df):
-    st.info("Gera o nome do arquivo padronizado para salvar no Drive.")
+    st.info("Gera o nome do arquivo padronizado para enviar no B4.")
     nome = st.selectbox("Investidor", sorted(df["Nome"].unique()))
     titulo = st.text_input("Nome do Documento (ex: Contrato PJ)")
     if st.button("Gerar Código"):
