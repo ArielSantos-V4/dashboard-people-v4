@@ -178,7 +178,7 @@ def validar_clt(row):
 def modal_exportar_excel(df_master):
     st.markdown("""
         <div style="padding: 10px; border-radius: 5px; border: 1px solid #dcdfe6; background-color: #f8f9fa; color: #606266; font-size: 14px; margin-bottom: 15px;">
-            🗄️ Selecione as colunas que deseja incluir no arquivo final.
+            Selecione as colunas que deseja incluir no arquivo final.
         </div>
     """, unsafe_allow_html=True)
 
