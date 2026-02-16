@@ -274,7 +274,7 @@ def modal_aviso_previo_indenizado(df):
 def modal_vale_transporte(df_pessoas):
     st.markdown("""
         <div style="background-color: #f9f9f9; padding: 12px; border-left: 5px solid #E30613; border-radius: 4px; margin-bottom: 20px;">
-            <span style="color: #404040; font-size: 14px;">Gera a declaração de opção/desistência de Vale Transporte (CLT).</span>
+            <span style="color: #404040; font-size: 14px;">Gera a declaração de opção ou desistência de Vale Transporte (CLT).</span>
         </div>
     """, unsafe_allow_html=True)
     
@@ -282,47 +282,76 @@ def modal_vale_transporte(df_pessoas):
     nome_sel = st.selectbox("Investidor", lista_nomes, index=0, key="sel_vt")
     
     if not nome_sel:
-        st.info("Selecione um investidor.")
+        st.info("Selecione um investidor para continuar.")
         return
 
     res = df_pessoas[df_pessoas["Nome"] == nome_sel].iloc[0]
     eh_clt, tipo_contrato = validar_clt(res)
 
     if not eh_clt:
-        st.warning(f"⚠️ Atenção: {tipo_contrato} não tem direito legal a VT.")
-        if not st.checkbox("Forçar geração", key="chk_vt"): return
+        st.markdown(f"""<div style="padding: 10px; background-color: #fff3cd; color: #856404; border: 1px solid #ffeeba; border-radius: 4px; margin-bottom: 10px;">
+            ⚠️ <b>Atenção:</b> Investidor <b>{tipo_contrato}</b> não tem direito legal a VT.</div>""", unsafe_allow_html=True)
+        if not st.checkbox("Forçar geração mesmo assim", key="chk_vt"): return
 
+    # --- SELETOR DE ADESÃO ---
+    st.divider()
+    opcao_adesao = st.radio("Selecione a opção:", ["Adesão ao VT", "Não adesão ao VT"], horizontal=True)
+
+    # --- CAMPOS DE ENDEREÇO (Com UF ao lado de Cidade) ---
+    st.markdown("##### Endereço Residencial")
     c_end1, c_end2 = st.columns([1, 3])
     cep = c_end1.text_input("CEP")
-    endereco = c_end2.text_input("Endereço")
-    c_end3, c_end4, c_end5 = st.columns([1, 2, 2])
-    numero, bairro, cidade = c_end3.text_input("Número"), c_end4.text_input("Bairro"), c_end5.text_input("Cidade")
-    uf = st.text_input("UF")
+    endereco = c_end2.text_input("Endereço (Rua/Av)")
+    
+    c_end3, c_end4, c_end5 = st.columns([1, 2.5, 1])
+    numero = c_end3.text_input("Número")
+    bairro = c_end4.text_input("Bairro")
+    # CIDADE E UF NA MESMA LINHA
+    cidade = st.text_input("Cidade") # Reorganizado abaixo para melhor fluxo
+    
+    c_cid, c_uf = st.columns([3, 1])
+    cidade = c_cid.text_input("Cidade", key="cid_vt")
+    uf = c_uf.text_input("UF", key="uf_vt")
 
-    st.divider()
-    st.subheader("Residência → Trabalho")
-    qtd_res = st.selectbox("Qtd transportes (Ida)", [1,2,3,4], key="qtd_res")
-    trans_res = []
-    for i in range(qtd_res):
-        cols = st.columns(4)
-        tipo = cols[0].selectbox("Tipo", ["Ônibus", "Metrô", "Trem"], key=f"t_res_{i}")
-        linha = cols[1].text_input("Linha", key=f"l_res_{i}")
-        valor = cols[2].number_input("Valor", min_value=0.0, step=0.01, key=f"v_res_{i}")
-        inte = cols[3].number_input("Integração", min_value=0.0, step=0.01, key=f"i_res_{i}")
-        trans_res.append((tipo, linha, valor, inte))
+    # Inicialização de variáveis para evitar erro de cálculo
+    trans_res, trans_tra = [], []
+    soma_valor, soma_inte, soma_valor_tra, soma_inte_tra = 0.0, 0.0, 0.0, 0.0
 
-    st.divider()
-    st.subheader("Trabalho → Residência")
-    qtd_tra = st.selectbox("Qtd transportes (Volta)", [1,2,3,4], key="qtd_tra")
-    trans_tra = []
-    for i in range(qtd_tra):
-        cols = st.columns(4)
-        tipo = cols[0].selectbox("Tipo", ["Ônibus", "Metrô", "Trem"], key=f"t_tra_{i}")
-        linha = cols[1].text_input("Linha", key=f"l_tra_{i}")
-        valor = cols[2].number_input("Valor", min_value=0.0, step=0.01, key=f"v_tra_{i}")
-        inte = cols[3].number_input("Integração", min_value=0.0, step=0.01, key=f"i_tra_{i}")
-        trans_tra.append((tipo, linha, valor, inte))
+    # --- CAMPOS DE TRANSPORTE (Só se for Adesão) ---
+    if opcao_adesao == "Adesão ao VT":
+        st.divider()
+        st.subheader("Residência → Trabalho")
+        qtd_res = st.selectbox("Qtd transportes (Ida)", [1,2,3,4], key="qtd_res")
+        for i in range(qtd_res):
+            cols = st.columns(4)
+            t = cols[0].selectbox("Tipo", ["Ônibus", "Metrô", "Trem"], key=f"t_res_{i}")
+            l = cols[1].text_input("Linha", key=f"l_res_{i}")
+            v = cols[2].number_input("Valor", min_value=0.0, step=0.01, key=f"v_res_{i}")
+            inte = cols[3].number_input("Integração", min_value=0.0, step=0.01, key=f"i_res_{i}")
+            trans_res.append((t, l, v, inte))
 
+        st.divider()
+        st.subheader("Trabalho → Residência")
+        qtd_tra = st.selectbox("Qtd transportes (Volta)", [1,2,3,4], key="qtd_tra")
+        for i in range(qtd_tra):
+            cols = st.columns(4)
+            t = cols[0].selectbox("Tipo", ["Ônibus", "Metrô", "Trem"], key=f"t_tra_{i}")
+            l = cols[1].text_input("Linha", key=f"l_tra_{i}")
+            v = cols[2].number_input("Valor", min_value=0.0, step=0.01, key=f"v_tra_{i}")
+            inte = cols[3].number_input("Integração", min_value=0.0, step=0.01, key=f"i_tra_{i}")
+            trans_tra.append((t, l, v, inte))
+
+        # Cálculos de soma
+        soma_valor = sum(v for _,_,v,_ in trans_res)
+        soma_inte = sum(i for _,_,_,i in trans_res)
+        soma_valor_tra = sum(v for _,_,v,_ in trans_tra)
+        soma_inte_tra = sum(i for _,_,_,i in trans_tra)
+
+    # Cálculos Finais (Funcionam mesmo se for Não Adesão como 0.0)
+    soma_unit = soma_valor + soma_valor_tra
+    soma_integracao = soma_inte + soma_inte_tra
+
+    # Data por extenso
     hoje = datetime.today()
     meses = {1:"janeiro",2:"fevereiro",3:"março",4:"abril",5:"maio",6:"junho",7:"julho",8:"agosto",9:"setembro",10:"outubro",11:"novembro",12:"dezembro"}
     data_extenso = f"{hoje.day} de {meses[hoje.month]} de {hoje.year}"
@@ -330,27 +359,42 @@ def modal_vale_transporte(df_pessoas):
     st.divider()
     c1, c2, c3 = st.columns([1, 2, 1])
     
+    # Mapa de Substituição Completo
     mapa = {
         "{nome}": nome_sel, "{cpf}": res.get("CPF",""), "{cep}": cep, "{endereço}": endereco,
         "{número}": numero, "{bairro}": bairro, "{cidade}": cidade, "{uf_estado}": uf,
-        "{soma_linhas}": str(len(trans_res)), "{soma_valor}": f"{sum(v for _,_,v,_ in trans_res):.2f}",
-        "{soma_linhas_tra}": str(len(trans_tra)), "{soma_valor_tra}": f"{sum(v for _,_,v,_ in trans_tra):.2f}",
+        "{soma_linhas}": str(len(trans_res)), 
+        "{soma_valor}": f"{soma_valor:.2f}",
+        "{soma_inte}": f"{soma_inte:.2f}",
+        "{soma_linhas_tra}": str(len(trans_tra)), 
+        "{soma_valor_tra}": f"{soma_valor_tra:.2f}",
+        "{soma_inte_tra}": f"{soma_inte_tra:.2f}",
+        "{soma_unit}": f"{soma_unit:.2f}",
+        "{soma_integracao}": f"{soma_integracao:.2f}",
         "{data}": data_extenso
     }
 
-    # Limpa campos do Word
+    # Limpa campos de transporte no Word (Garante 4 slots)
     for i in range(1, 5):
-        for s in ["res", "tra"]: mapa[f"{{transporte_{i}_{s}}}"] = ""; mapa[f"{{linha_{i}_{s}}}"] = ""; mapa[f"{{valor_{i}_{s}}}"] = ""; mapa[f"{{inte_{i}_{s}}}"] = ""
+        for s in ["res", "tra"]:
+            mapa[f"{{transporte_{i}_{s}}}"] = ""; mapa[f"{{linha_{i}_{s}}}"] = ""; mapa[f"{{valor_{i}_{s}}}"] = ""; mapa[f"{{inte_{i}_{s}}}"] = ""
 
-    # Preenche transportes
-    for i, (t, l, v, it) in enumerate(trans_res, 1): mapa[f"{{transporte_{i}_res}}"]=t; mapa[f"{{linha_{i}_res}}"]=l; mapa[f"{{valor_{i}_res}}"]=f"{v:.2f}"; mapa[f"{{inte_{i}_res}}"]=f"{it:.2f}"
-    for i, (t, l, v, it) in enumerate(trans_tra, 1): mapa[f"{{transporte_{i}_tra}}"]=t; mapa[f"{{linha_{i}_tra}}"]=l; mapa[f"{{valor_{i}_tra}}"]=f"{v:.2f}"; mapa[f"{{inte_{i}_tra}}"]=f"{it:.2f}"
+    # Preenche slots preenchidos
+    for i, (t, l, v, it) in enumerate(trans_res, 1):
+        mapa[f"{{transporte_{i}_res}}"]=t; mapa[f"{{linha_{i}_res}}"]=l; mapa[f"{{valor_{i}_res}}"]=f"{v:.2f}"; mapa[f"{{inte_{i}_res}}"]=f"{it:.2f}"
+    for i, (t, l, v, it) in enumerate(trans_tra, 1):
+        mapa[f"{{transporte_{i}_tra}}"]=t; mapa[f"{{linha_{i}_tra}}"]=l; mapa[f"{{valor_{i}_tra}}"]=f"{v:.2f}"; mapa[f"{{inte_{i}_tra}}"]=f"{it:.2f}"
+
+    # Escolha do modelo de arquivo
+    modelo_file = "declaracao_vale_transporte_clt.docx" if opcao_adesao == "Adesão ao VT" else "declaracao_nao_vale_transporte_clt.docx"
 
     try:
-        arquivo = gerar_docx_com_substituicoes("declaracao_vale_transporte_clt.docx", mapa)
-        c2.download_button("📄 Gerar e Baixar DOC", data=arquivo, file_name=f"VT - {nome_sel}.docx", use_container_width=True, type="primary")
-        c2.link_button("🔃 Converter Doc em PDF", "https://www.ilovepdf.com/pt/word_para_pdf", use_container_width=True)
-    except: st.error("Modelo não encontrado.")
+        arquivo = gerar_docx_com_substituicoes(modelo_file, mapa)
+        with c2:
+            st.download_button(f"📄 Baixar {opcao_adesao}", data=arquivo, file_name=f"VT_{opcao_adesao.replace(' ', '_')} - {nome_sel}.docx", use_container_width=True, type="primary")
+            st.link_button("🔃 Converter Doc em PDF", "https://www.ilovepdf.com/pt/word_para_pdf", use_container_width=True)
+    except: 
+        c2.error(f"Modelo '{modelo_file}' não encontrado na pasta.")
             
 # ==========================================
 # MODAL DE CONSULTA (HÍBRIDO - REFORMULADO V3)
