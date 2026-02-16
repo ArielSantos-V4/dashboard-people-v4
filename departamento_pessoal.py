@@ -297,7 +297,7 @@ def modal_consulta_investidor(df_consulta, nome, tipo_base="ativo"):
         # Foto (Sem título, apenas a imagem)
         foto = linha.get("Foto", "")
         if foto and str(foto).startswith("http"):
-            st.markdown(f'<div style="display:flex; justify-content:center; margin-bottom:20px; margin-top: 25px;"><img src="{foto}" width="160" style="border-radius:8px; box-shadow: 0px 2px 5px rgba(0,0,0,0.1);"></div>', unsafe_allow_html=True)
+            st.markdown(f'<div style="display:flex; justify-content:center; margin-bottom:20px; margin-top: 25px;"><img src="{foto}" width="100" style="border-radius:8px; box-shadow: 0px 2px 5px rgba(0,0,0,0.1);"></div>', unsafe_allow_html=True)
         else:
             st.markdown("<br><br>", unsafe_allow_html=True) # Espaço vazio para alinhar se não tiver foto
             st.info("Sem foto")
@@ -324,7 +324,7 @@ def modal_consulta_investidor(df_consulta, nome, tipo_base="ativo"):
             alertas = gerar_alertas_investidor(linha)
             if alertas:
                 # Altura fixa com rolagem automática se passar do tamanho
-                with st.container(height=120, border=True):
+                with st.container(height=100, border=True):
                     for tipo, msg in alertas:
                         if tipo == "error": st.error(msg, icon="🚨")
                         elif tipo == "warning": st.warning(msg, icon="⚠️")
