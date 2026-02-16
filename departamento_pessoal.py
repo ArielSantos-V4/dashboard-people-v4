@@ -964,7 +964,7 @@ def render(df_ativos, df_desligados):
     with aba_analytics:
         st.markdown("""
             <div style="background-color: #f1f3f5; padding: 12px; border-radius: 6px; border-left: 5px solid #404040; margin-bottom: 20px;">
-                <span style="color: #404040; font-size: 14px;">📈 <b>Relatórios e Inteligência:</b> Utilize as abas abaixo para extrair dados estratégicos, acompanhar indicadores demográficos e realizar auditorias de contratos.</span>
+                <span style="color: #404040; font-size: 14px;">Utilize as abas abaixo para extrair dados estratégicos, acompanhar indicadores demográficos e realizar auditorias de contratos.</span>
             </div>
         """, unsafe_allow_html=True)
         # ... aqui seguem as suas sub-abas m, d, e, f
@@ -1161,7 +1161,7 @@ def render(df_ativos, df_desligados):
     with aba_acoes:
         st.markdown("""
             <div style="background-color: #fff5f5; padding: 12px; border-radius: 6px; border-left: 5px solid #E30613; margin-bottom: 20px;">
-                <span style="color: #404040; font-size: 14px;">⚡ <b>Processos Automáticos:</b> Gere formulários, contratos e declarações pré-preenchidas com os dados da base Master.</span>
+                <span style="color: #404040; font-size: 14px;">Gere formulários, contratos e declarações pré-preenchidas com os dados da base Master.</span>
             </div>
         """, unsafe_allow_html=True)
         
