@@ -862,74 +862,65 @@ def render(df_ativos, df_desligados):
                 st.altair_chart(chart_mod, use_container_width=True)
         
         st.markdown("---")
-        st.subheader("🌳 Estrutura Organizacional")
         
         import graphviz
 
-        # --- FUNÇÃO COM CACHE PARA NÃO PESAR ---
+        # 1. Função de Cache Otimizada com estilo V4 Dark
         @st.cache_data
-        def gerar_dot_organograma(df_base, unidade_alvo):
-            # Filtro inicial rápido
+        def gerar_dot_organograma_completo(df_base):
             df_base = df_base[df_base["Nome"].notna()].copy()
             
-            if unidade_alvo == "Todas":
-                df_exibir = df_base.copy()
-            else:
-                nomes_unidade = df_base[df_base["Unidade/Atuação"] == unidade_alvo]["Nome"].tolist()
-                quem_aparece = set(nomes_unidade)
-                
-                # Mapa rápido de liderança
-                mapa_lideres = pd.Series(df_base["Liderança direta"].values, index=df_base["Nome"]).to_dict()
-                
-                for nome in nomes_unidade:
-                    atual = nome
-                    for _ in range(5): # Reduzi para 5 níveis para ganhar velocidade
-                        lider = mapa_lideres.get(atual)
-                        if lider and str(lider) != 'nan':
-                            quem_aparece.add(lider)
-                            atual = lider
-                        else: break
-                df_exibir = df_base[df_base["Nome"].isin(quem_aparece)]
-
-            # Construção do DOT
+            # Configuração do Gráfico (LR = Esquerda para Direita)
             dot = graphviz.Digraph()
-            dot.attr(rankdir='LR', ranksep='1.0', nodesep='0.4')
+            # ranksep: distância entre colunas | nodesep: distância entre caixas na mesma coluna
+            dot.attr(rankdir='LR', ranksep='1.2', nodesep='0.5', bgcolor='transparent')
+            
+            # Estilo das Caixas: Fundo Escuro (#404040), Texto Branco
             dot.attr('node', shape='rectangle', style='filled, rounded', 
-                     fillcolor='#F1F3F5', color='#D3D3D3', fontcolor='#404040', 
-                     fontname='Arial', fontsize='10', width='2.0', height='0.5')
+                     fillcolor='#404040', color='#2E2E2E', fontcolor='white', 
+                     fontname='Arial', fontsize='11', width='2.8', height='0.7')
 
-            # Cache de cargos para evitar buscas repetidas no loop
+            # Mapa de cargos para o label
             cargos = pd.Series(df_base["Cargo"].values, index=df_base["Nome"]).to_dict()
 
-            for _, row in df_exibir.iterrows():
+            for _, row in df_base.iterrows():
                 lid = str(row["Liderança direta"]).strip()
                 nom = str(row["Nome"]).strip()
+                
                 if lid and lid != 'nan' and lid != "":
-                    # Formata labels
+                    # Busca cargo do líder e do liderado
                     car_l = cargos.get(lid, "")
                     car_n = cargos.get(nom, "")
+                    
+                    # Rótulos com Quebra de Linha
                     label_l = f"{lid}\n({car_l})" if car_l else lid
                     label_n = f"{nom}\n({car_n})" if car_n else nom
-                    dot.edge(label_l, label_n, color='#B0B0B0')
+                    
+                    # Seta (Edge) na cor cinza médio
+                    dot.edge(label_l, label_n, color='#D3D3D3')
             return dot
 
-        # --- EXECUÇÃO NO DASHBOARD ---
-        df_org_base = df_ativos_proc.copy()
-        
-        # Informativo rápido (sem pesar)
-        qtd_sem_lider = len(df_org_base[df_org_base["Liderança direta"].isna() | (df_org_base["Liderança direta"] == "")])
-        if qtd_sem_lider > 0:
-            st.caption(f"ℹ️ {qtd_sem_lider} investidores ativos sem liderança cadastrada.")
+        # 2. O Expander com o Gráfico Master
+        with st.expander("🌳 Visualizar Organograma Completo", expanded=False):
+            df_org_base = df_ativos_proc.copy()
+            
+            # Auditoria de dados (Informativo discreto)
+            qtd_sem_lider = len(df_org_base[df_org_base["Liderança direta"].isna() | (df_org_base["Liderança direta"] == "")])
+            if qtd_sem_lider > 0:
+                st.markdown(f"""
+                    <div style="padding: 8px; border-radius: 4px; border-left: 4px solid #E30613; background-color: #fcfcfc; margin-bottom: 10px;">
+                        <small style="color: #666;">ℹ️ <b>{qtd_sem_lider}</b> investidores ativos não aparecem na árvore por estarem sem líder cadastrado.</small>
+                    </div>
+                """, unsafe_allow_html=True)
 
-        unidades_org = ["Todas"] + sorted(df_org_base["Unidade/Atuação"].unique().tolist())
-        sel_uni_org = st.selectbox("Unidade:", unidades_org, key="uni_org")
-        
-        # Chama a função com cache
-        grafo = gerar_dot_organograma(df_org_base, sel_uni_org)
+            # Gera o gráfico master (sem filtros de unidade)
+            grafo_master = gerar_dot_organograma_completo(df_org_base)
 
-        if grafo:
-            with st.container(height=600, border=True):
-                st.graphviz_chart(grafo, use_container_width=False)
+            if grafo_master:
+                # Container alto para permitir navegação fluida
+                with st.container(height=900, border=True):
+                    # use_container_width=False garante que ele não fique "espremido"
+                    st.graphviz_chart(grafo_master, use_container_width=False)
                 
     # ----------------------------------------------------
     # ABA ROLLING (TÍTULOS PADRONIZADOS)
