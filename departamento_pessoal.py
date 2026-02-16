@@ -617,7 +617,7 @@ def render(df_ativos, df_desligados):
         # --- SELETOR DE VISUALIZAÇÃO (SUBSTITUI AS ABAS) ---
         modo_visualizacao = st.radio(
             "Selecione a base:",
-            ["Investidores Ativos 🟢", "Investidores Desligados 🔴"],
+            ["Investidores Ativos", "Investidores Desligados"],
             horizontal=True,
             label_visibility="collapsed" # Esconde o título para ficar mais limpo
         )
