@@ -222,7 +222,7 @@ def modal_comum(df):
     
     liberar = eh_clt
     if not eh_clt:
-        st.warning(f"⚠️ Atenção: Vínculo é {tipo_contrato}.")
+        st.warning(f"⚠️ Atenção: Vínculo é {tipo_contrato}. Este documento é padrão CLT.")
         if st.checkbox("Desejo gerar mesmo assim", key="chk_comum"): liberar = True
 
     if liberar:
@@ -258,7 +258,7 @@ def modal_aviso_previo_indenizado(df):
     
     liberar = eh_clt
     if not eh_clt:
-        st.warning(f"⚠️ Atenção: Vínculo é {tipo_contrato}.")
+        st.warning(f"⚠️ Atenção: Vínculo é {tipo_contrato}. Este documento é padrão CLT")
         if st.checkbox("Confirmar geração mesmo assim", key="chk_aviso"): liberar = True
 
     if liberar:
