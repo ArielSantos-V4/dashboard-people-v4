@@ -241,14 +241,14 @@ def modal_titulo_doc(df):
 
 @st.dialog("📄 Demissão Comum Acordo")
 def modal_comum(df):
-    nome = st.selectbox("Colaborador", sorted(df["Nome"].unique()))
+    nome = st.selectbox("Investidor", sorted(df["Nome"].unique()))
     data = st.date_input("Data Desligamento")
     if st.button("Gerar DOC"):
         st.success("Simulação: Documento gerado!") 
 
 @st.dialog("📄 Aviso Prévio Indenizado")
 def modal_aviso_previo_indenizado(df):
-    nome = st.selectbox("Colaborador", sorted(df["Nome"].unique()))
+    nome = st.selectbox("Investidor", sorted(df["Nome"].unique()))
     data_des = st.date_input("Data Desligamento")
     data_hom = st.date_input("Data Homologação")
     if st.button("Gerar DOC"):
@@ -256,7 +256,7 @@ def modal_aviso_previo_indenizado(df):
 
 @st.dialog("🚌 Vale Transporte")
 def modal_vale_transporte(df):
-    nome = st.selectbox("Colaborador", sorted(df["Nome"].unique()))
+    nome = st.selectbox("Investidor", sorted(df["Nome"].unique()))
     st.info("Preencha os dados de transporte (Ônibus/Metrô)...")
     if st.button("Gerar Declaração"):
         st.success("Simulação: Declaração gerada!")
@@ -304,7 +304,7 @@ def render(df_ativos, df_desligados):
         st.markdown("""
             <div style="background-color: #f9f9f9; padding: 12px; border-left: 5px solid #E30613; border-radius: 4px; margin-bottom: 20px;">
                 <span style="color: #404040; font-size: 14px;">
-                    Acompanhe abaixo os principais indicadores (KPIs) e gráficos demográficos referentes exclusivamente à <b>base de colaboradores ativos</b>.
+                    Acompanhe abaixo os principais indicadores (KPIs) e gráficos demográficos referentes exclusivamente à <b>base de investidores ativos</b>.
                 </span>
             </div>
         """, unsafe_allow_html=True)
