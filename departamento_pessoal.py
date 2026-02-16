@@ -178,7 +178,7 @@ def validar_clt(row):
 def modal_exportar_excel(df_master):
     st.markdown("""
         <div style="padding: 10px; border-radius: 5px; border: 1px solid #dcdfe6; background-color: #f8f9fa; color: #606266; font-size: 14px; margin-bottom: 15px;">
-            Selecione as colunas que deseja incluir no arquivo final.
+            🗄️ Selecione abaixo as colunas que deseja incluir no seu arquivo Excel.
         </div>
     """, unsafe_allow_html=True)
 
@@ -186,26 +186,29 @@ def modal_exportar_excel(df_master):
     colunas_escolhidas = st.multiselect(
         "Colunas do relatório:",
         options=todas_colunas,
-        default=["Nome", "Cargo", "Área"]
+        default=["Nome", "Cargo", "Área", "BP", "Remuneração"]
     )
 
     if colunas_escolhidas:
         output = BytesIO()
-        # Aqui usamos o engine 'xlsxwriter' que você vai adicionar ao requirements
-        with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
-            df_master[colunas_escolhidas].to_excel(writer, index=False, sheet_name='Master')
-        
-        st.markdown("---")
-        c1, c2, c3 = st.columns([1, 2, 1])
-        with c2:
-            st.download_button(
-                label="📗 Baixar Arquivo Excel",
-                data=output.getvalue(),
-                file_name=f"Relatorio_V4_{datetime.now().strftime('%d_%m_%Y')}.xlsx",
-                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                type="primary",
-                use_container_width=True
-            )
+        try:
+            # O engine 'xlsxwriter' precisa estar no requirements.txt
+            with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
+                df_master[colunas_escolhidas].to_excel(writer, index=False, sheet_name='Master')
+            
+            st.markdown("---")
+            c1, c2, c3 = st.columns([1, 2, 1])
+            with c2:
+                st.download_button(
+                    label="📗 Baixar Arquivo Excel",
+                    data=output.getvalue(),
+                    file_name=f"Relatorio_V4_{datetime.now().strftime('%d_%m_%Y')}.xlsx",
+                    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                    type="primary",
+                    use_container_width=True
+                )
+        except Exception as e:
+            st.error(f"Erro técnico ao gerar arquivo: {e}")
     else:
         st.warning("Selecione ao menos uma coluna.")
             
@@ -968,7 +971,7 @@ def render(df_ativos, df_desligados):
         with sub_master:
             st.markdown("### 📋 Relatório Master")
             
-            # Criamos duas colunas: uma para o filtro e outra para o botão lateral
+            # Layout em colunas para Filtro e Botão ficarem na mesma linha
             c_filtro, c_gerar = st.columns([3, 1])
             
             with c_filtro:
@@ -979,7 +982,7 @@ def render(df_ativos, df_desligados):
                     key="radio_master"
                 )
             
-            # Lógica de seleção da base
+            # Lógica de unificação/seleção da base
             if status_master == "Ativos":
                 df_m = df_ativos_proc
             elif status_master == "Desligados":
@@ -988,15 +991,15 @@ def render(df_ativos, df_desligados):
                 df_m = pd.concat([df_ativos_proc, df_desligados_proc], ignore_index=True)
             
             with c_gerar:
-                st.markdown("<br>", unsafe_allow_html=True) # Alinha o botão com o radio
+                st.markdown("<br>", unsafe_allow_html=True) # Espaçador para alinhar com o rádio
                 if st.button("📥 Exportar Excel", type="primary", use_container_width=True):
                     modal_exportar_excel(df_m)
 
-            # Tabela Master com colunas filtradas
+            # Colunas padrão para visualização rápida na tela
             cols_master = ["Nome", "E-mail corporativo", "BP", "Modelo de contrato", "Cargo", "Remuneração", "Senioridade", "Área", "CPF"]
-            cols_existentes = [c for c in cols_master if c in df_m.columns]
+            cols_view = [c for c in cols_master if c in df_m.columns]
             
-            st.dataframe(df_m[cols_existentes], use_container_width=True, hide_index=True)
+            st.dataframe(df_m[cols_view], use_container_width=True, hide_index=True)
             
         # --- SUB-ABA: DEMOGRÁFICO ---
         with sub_demo:
