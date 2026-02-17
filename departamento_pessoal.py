@@ -1461,7 +1461,7 @@ def render(df_ativos, df_desligados):
                     modal_vale_transporte(df_ativos_proc)
             
             with st.expander("🚪 Desligamento", expanded=False):
-                if st.button("📄 Demissão Comum", use_container_width=True, type="primary"): 
+                if st.button("📄 Demissão Comum Acordo", use_container_width=True, type="primary"): 
                     modal_comum(df_ativos_proc)
                 if st.button("📄 Aviso Prévio", use_container_width=True, type="primary"): 
                     modal_aviso_previo_indenizado(df_ativos_proc)
