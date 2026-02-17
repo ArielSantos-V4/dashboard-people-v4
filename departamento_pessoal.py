@@ -558,7 +558,7 @@ def modal_rascunho_ponto(df_ativos):
                 st.markdown("---")
                 # Definimos o Assunto primeiro
                 # 1. Quadro do Assunto (Estilizado)
-                st.markdown("##### 📌 Copie o Assunto:")
+                st.markdown("##### 📌 Assunto:")
                 assunto_html = f"""
                 <div style="background-color: white; color: #000000; font-family: Arial, sans-serif; font-size: 11pt; padding: 10px; border: 1px solid #eeeeee; border-radius: 8px; margin-bottom: 15px;">
                     Formalização CLT - Sistema Ponto 🕝
@@ -569,7 +569,7 @@ def modal_rascunho_ponto(df_ativos):
                 st.markdown("---")
 
                 # Criamos o HTML completo em uma única variável, sem quebras de linha estranhas
-                # O segredo é usar f-strings mas manter as tags HTML coladas
+                st.markdown("##### 📌 Corpo do e-mail:")
                 corpo_final = f"""
                 <div style="background-color: white; color: #000000; font-family: Arial, sans-serif; font-size: 11pt; line-height: 1.6; padding: 20px; border: 1px solid #eeeeee; border-radius: 8px;">
                     Olá, <b>{primeiro_nome}</b>. 
