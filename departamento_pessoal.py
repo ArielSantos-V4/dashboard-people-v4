@@ -1238,11 +1238,11 @@ def render(df_ativos, df_desligados):
         # ... aqui seguem as suas sub-abas m, d, e, f
         
         sub_master, sub_demo, sub_estat, sub_finan, sub_oper = st.tabs([
-            "📋 Master", 
-            "👥 Demográfico", 
-            "📊 Estatístico", 
-            "💰 Financeiro",
-            "🔨 Operacional"
+            "Master", 
+            "Demográfico", 
+            "Estatístico", 
+            "Financeiro",
+            "Operacional"
         ])
 
         # --- SUB-ABA: MASTER ---
