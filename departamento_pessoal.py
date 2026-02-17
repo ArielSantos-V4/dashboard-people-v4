@@ -1457,7 +1457,7 @@ def render(df_ativos, df_desligados):
                 if qtd_sem_cc > 0:
                     st.warning(f"⚠️ **Alerta:** Existem **{qtd_sem_cc}** investidores sem Centro de Custo. Eles não estão somados na tabela abaixo.")
                     if st.checkbox("🔍 Mostrar nomes sem CC"):
-                        st.dataframe(sem_cc[["Nome", "Área", "Unidade/Atuação"]], use_container_width=True, hide_index=True)
+                        st.dataframe(sem_cc[["Nome", "BP", "E-mail corporativo", "Unidade/Atuação"]], use_container_width=True, hide_index=True)
                     st.markdown("---") # Linha separadora entre o alerta e o relatório
 
                 # 2. O Relatório propriamente dito
