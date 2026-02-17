@@ -238,7 +238,7 @@ def modal_workflow_comissao(df_ativos, df_desligados):
         st.markdown("---")
         
         # 5. Conclusão (Botão Vermelho V4)
-        if st.button("OK - CONCLUIR", type="primary", use_container_width=True):
+        if st.button("Ok", type="primary", use_container_width=True):
             st.success(f"Workflow finalizado para {nome_sel}! 🚀")
             
 # ==========================================
