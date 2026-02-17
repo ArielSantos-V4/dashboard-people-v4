@@ -548,16 +548,16 @@ def modal_rascunho_ponto(df_ativos):
         
         st.info(f"📌 **Lembrete:** Não esqueça de adicionar **{lider_nome}** em cópia no e-mail.")
         # Alerta visual para não esquecer de anexar no Outlook/Gmail
-        st.warning("🚨 **NÃO ESQUEÇA:** Este e-mail exige o anexo")
+        st.warning("🚨 **Não esqueça:** Este e-mail exige o anexo")
         
         st.markdown("---")
-        st.markdown("##### 📎 Anexo Obrigatório")
+        st.markdown("##### Anexo Obrigatório")
         
         # Exemplo 1: Se o arquivo for um padrão fixo que você já tem na pasta
         try:
             with open("Treinamento CLTs - Ponto por exceção.pptx", "rb") as f:
                 st.download_button(
-                    label="📥 Baixar Anexo para o E-mail",
+                    label="📎 Baixar Anexo para o E-mail",
                     data=f,
                     file_name="Treinamento CLTs - Ponto por exceção.pptx",
                     mime="application/pdf",
