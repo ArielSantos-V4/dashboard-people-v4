@@ -137,20 +137,19 @@ from datetime import datetime, timedelta
 
 def buscar_base_vagas():
     try:
-        spreadsheet_id = "13EPwhiXgh8BkbhyrEy2aCy3cv1O8npxJ_hA-HmLZ-pY" 
+        # Link direto com ID e GID já inseridos
+        url_vagas = "https://docs.google.com/spreadsheets/d/13EPwhiXgh8BkbhyrEy2aCy3cv1O8npxJ_hA-HmLZ-pY/export?format=csv&gid=1415557248"
         
-        # 2. O GID da aba de vagas (o número que você passou)
-        gid = "1415557248"
+        # Lendo o CSV diretamente
+        df_vagas = pd.read_csv(url_vagas)
         
-        # 3. Montamos o link final
-        url_direta = f"https://docs.google.com/spreadsheets/d/{spreadsheet_id}/export?format=csv&gid={gid}"
-        
-        # 4. Lemos o CSV
-        df_vagas = pd.read_csv(url_direta)
+        # Opcional: Limpar colunas totalmente vazias que o Sheets às vezes gera
+        df_vagas = df_vagas.dropna(how='all', axis=0).dropna(how='all', axis=1)
         
         return df_vagas
     except Exception as e:
-        st.error(f"Erro na conexão com a aba de vagas: {e}")
+        # Mostra o erro exato na tela para sabermos se é permissão ou link
+        st.error(f"Erro ao acessar aba de vagas: {e}")
         return None
         
 
