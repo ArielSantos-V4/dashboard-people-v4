@@ -145,102 +145,102 @@ def buscar_base_vagas():
     except:
         return None
 
-def exibir_formulario_cadastro():
-    st.markdown("### 📝 Cadastro de Novo Investidor")
-    
-    # Criamos o formulário para evitar que a página recarregue a cada clique
-    with st.form("form_cadastro_v4", clear_on_submit=False):
-        # --- BLOCO 1: IDENTIFICAÇÃO ---
-        c1, c2, c3 = st.columns([1, 1, 1])
-        nome_curto = c1.text_input("Nome (Como será chamado)")
-        nome_completo = c2.text_input("Nome Completo (Com acentos)")
-        foto_link = c3.text_input("URL da Foto (Link Drive/Web)")
+@st.dialog("📝 Cadastro de Novo Investidor", width="large")
+def modal_cadastro_investidor():
+    # Removi o st.markdown do título daqui de dentro, 
+    # pois o @st.dialog já cria o título no topo da janela.
 
-        # --- BLOCO 2: CONTRATUAL ---
-        c4, c5, c6 = st.columns(3)
-        bp = c4.number_input("BP (Número)", step=1, value=0)
-        matricula = c5.number_input("Matrícula (Número)", step=1, value=0)
-        data_contrato = c6.date_input("Data do Contrato", value=datetime.today())
+    # DICA: Remova o 'with st.form' se for usar dentro do dialog, 
+    # ou mantenha se quiser o botão de 'clear_on_submit'. 
+    # Para o dialog, o formulário simples costuma funcionar melhor:
 
-        c7, c8, c9 = st.columns(3)
-        modelo = c7.selectbox("Modelo de Contrato", ["CLT", "PJ", "Estágio"])
-        unidade = c8.selectbox("Unidade/Atuação", ["Flagship", "Headquarters", "Híbrido", "Remoto", "Unidade São Leopoldo"])
-        email_corp = c9.text_input("E-mail Corporativo")
+    # --- BLOCO 1: IDENTIFICAÇÃO ---
+    c1, c2, c3 = st.columns([1, 1, 1])
+    nome_curto = c1.text_input("Nome (Como será chamado)")
+    nome_completo = c2.text_input("Nome Completo (Com acentos)")
+    foto_link = c3.text_input("URL da Foto (Link Drive/Web)")
 
-        # --- BLOCO 3: VAGA E CARGO ---
-        c10, c11 = st.columns([0.85, 0.15])
-        id_vaga = c10.text_input("ID Vaga")
-        with c11:
-            st.write(" ") # Ajuste vertical
-            with st.popover("❓"):
-                st.write("### IDs de Vaga Disponíveis")
-                df_vagas = buscar_base_vagas()
-                if df_vagas is not None:
-                    st.dataframe(df_vagas, use_container_width=True, hide_index=True)
-                else:
-                    st.error("Não foi possível carregar a aba de vagas.")
+    # --- BLOCO 2: CONTRATUAL ---
+    c4, c5, c6 = st.columns(3)
+    bp = c4.number_input("BP (Número)", step=1, value=0)
+    matricula = c5.number_input("Matrícula (Número)", step=1, value=0)
+    data_contrato = c6.date_input("Data do Contrato", value=datetime.today())
 
-        c12, c13, c14 = st.columns(3)
-        cargo = c12.text_input("Cargo")
-        remun = c13.text_input("Remuneração (Ex: 5500,00)")
-        area = c14.text_input("Área")
+    c7, c8, c9 = st.columns(3)
+    modelo = c7.selectbox("Modelo de Contrato", ["CLT", "PJ", "Estágio"])
+    unidade = c8.selectbox("Unidade/Atuação", ["Flagship", "Headquarters", "Híbrido", "Remoto", "Unidade São Leopoldo"])
+    email_corp = c9.text_input("E-mail Corporativo")
 
-        # --- BLOCO 4: FINANCEIRO E LOCALIZAÇÃO ---
-        c15, c16, c17 = st.columns(3)
-        cod_cc = c15.text_input("Código CC")
-        desc_cc = c16.text_input("Descrição CC")
-        conta_contabil = c17.text_input("Conta Contábil")
-
-        # CEP Inteligente
-        c18, c19 = st.columns([0.3, 0.7])
-        cep_input = c18.text_input("CEP (Apenas números)")
-        endereco_resumo = buscar_cep(cep_input)
-        if endereco_resumo:
-            c19.info(f"📍 {endereco_resumo}")
-        else:
-            c19.write("")
-
-        # --- DADOS FINAIS ---
-        c20, c21, c22 = st.columns(3)
-        cpf = c20.text_input("CPF")
-        nascimento = c21.date_input("Data de Nascimento", value=None)
-        link_drive = c22.text_input("Link Drive Docs")
-
-        # BOTÃO DE SUBMIT
-        enviar = st.form_submit_button("🚀 Gravar na Planilha Master", use_container_width=True)
-
-        if enviar:
-            if not nome_curto or not cpf or not cod_cc:
-                st.warning("Preencha Nome, CPF e Código CC!")
+    # --- BLOCO 3: VAGA E CARGO ---
+    c10, c11 = st.columns([0.85, 0.15])
+    id_vaga = c10.text_input("ID Vaga")
+    with c11:
+        st.write(" ") 
+        with st.popover("❓"):
+            st.write("### IDs de Vaga Disponíveis")
+            df_vagas = buscar_base_vagas()
+            if df_vagas is not None:
+                st.dataframe(df_vagas, use_container_width=True, hide_index=True)
             else:
-                # Montagem da Linha conforme as colunas da sua planilha
-                linha_final = [
-                    nome_curto, nome_completo, foto_link, bp, matricula,
-                    data_contrato.strftime("%d/%m/%Y"), 
-                    "", # G: Término (Calculado na função gravar_no_google_sheets)
-                    "Ativo", # H: Situação
-                    unidade, modelo, email_corp, 
-                    "", # L: Modalidade PJ
-                    data_contrato.strftime("%d/%m/%Y"), # M: Início V4
-                    "", "", # N, O: CNPJ e Razão
-                    cargo, remun, 
-                    "", "", # R, S: CBO
-                    id_vaga, cod_cc, desc_cc,
-                    "", "", # W, X: Senioridade/Liderança
-                    conta_contabil, area, cpf,
-                    nascimento.strftime("%d/%m/%Y") if nascimento else "",
-                    cep_input, "", "", "", # AD, AE, AF
-                    "Pendente", # AG: Situação Plano
-                    "", "", "", # AH, AI, AJ
-                    link_drive, # AK: Link Drive Docs
-                    "" # AL: FotoView
-                ]
-                
-                try:
-                    gravar_no_google_sheets(linha_final)
-                    st.success(f"Sucesso! {nome_curto} foi adicionado à planilha.")
-                except Exception as e:
-                    st.error(f"Erro ao gravar: {e}")
+                st.error("Erro ao carregar vagas.")
+
+    c12, c13, c14 = st.columns(3)
+    cargo = c12.text_input("Cargo")
+    remun = c13.text_input("Remuneração (Ex: 5500,00)")
+    area = c14.text_input("Área")
+
+    # --- BLOCO 4: FINANCEIRO E LOCALIZAÇÃO ---
+    c15, c16, c17 = st.columns(3)
+    cod_cc = c15.text_input("Código CC")
+    desc_cc = c16.text_input("Descrição CC")
+    conta_contabil = c17.text_input("Conta Contábil")
+
+    # CEP Inteligente
+    c18, c19 = st.columns([0.3, 0.7])
+    cep_input = c18.text_input("CEP (Apenas números)")
+    endereco_resumo = buscar_cep(cep_input)
+    if endereco_resumo:
+        c19.info(f"📍 {endereco_resumo}")
+
+    # --- DADOS FINAIS ---
+    c20, c21, c22 = st.columns(3)
+    cpf = c20.text_input("CPF")
+    nascimento = c21.date_input("Data de Nascimento", value=None)
+    link_drive = c22.text_input("Link Drive Docs")
+
+    st.markdown("---")
+    if st.button("🚀 Gravar na Planilha Master", use_container_width=True, type="primary"):
+        if not nome_curto or not cpf or not cod_cc:
+            st.warning("Preencha Nome, CPF e Código CC!")
+        else:
+            linha_final = [
+                nome_curto, nome_completo, foto_link, bp, matricula,
+                data_contrato.strftime("%d/%m/%Y"), 
+                "", # G: Término (Calculado na gravação)
+                "Ativo", # H: Situação
+                unidade, modelo, email_corp, 
+                "", # L
+                data_contrato.strftime("%d/%m/%Y"), # M
+                "", "", # N, O
+                cargo, remun, 
+                "", "", # R, S
+                id_vaga, cod_cc, desc_cc,
+                "", "", # W, X
+                conta_contabil, area, cpf,
+                nascimento.strftime("%d/%m/%Y") if nascimento else "",
+                cep_input, "", "", "", # AD, AE, AF
+                "Pendente", # AG
+                "", "", "", # AH, AI, AJ
+                link_drive, # AK
+                "" # AL
+            ]
+            
+            try:
+                gravar_no_google_sheets(linha_final)
+                st.success(f"Sucesso! {nome_curto} foi adicionado.")
+                st.rerun() # Fecha o modal e atualiza a página
+            except Exception as e:
+                st.error(f"Erro ao gravar: {e}")
                     
 # ==========================================
 # LÓGICA DE ALERTAS (ATIVOS)
@@ -1648,9 +1648,10 @@ def render(df_ativos, df_desligados):
         
         with c_cad:
             st.markdown("##### 📥 Cadastros")
-            with st.expander("👤 Investidor", expanded=False):
-                # Chamamos a função aqui dentro
-                exibir_formulario_cadastro()
+            with st.expander("👤 Investidor", expanded=True):
+                # Em vez de chamar a função direto, criamos o botão de gatilho
+                if st.button("➕ Cadastrar Novo Investidor", use_container_width=True, type="primary"):
+                    modal_cadastro_investidor()
         
         with c_form:
             st.markdown("##### 📝 Gerar Formulários")
