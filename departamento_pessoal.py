@@ -619,7 +619,7 @@ def modal_rascunho_ponto(df_ativos):
                     <b>Transparência:</b><br>
                     Cada investidor terá acesso ao extrato mensal do banco de horas.<br>
                     <b>Obs.:</b> A apuração da folha de pagamento acontece a cada dia 25.<br><br>
-                    Conte conosco para o que precisar.<br><br>
+                    Conte conosco para o que precisar.<br><br><br>
                     Atenciosamente,
                 </div>
                 """
