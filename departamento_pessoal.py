@@ -728,7 +728,7 @@ def render(df_ativos, df_desligados):
         st.markdown("""
             <div style="display: flex; flex-direction: column; justify-content: center; height: 100px;">
                 <h1 style="margin: 0; padding: 0; font-size: 2.2rem; line-height: 1.1;">Departamento Pessoal</h1>
-                <span style="color: grey; font-size: 1.1rem; margin-top: 2px;">Gestão de Talentos</span>
+                <span style="color: grey; font-size: 1.1rem; margin-top: 2px;">V4 Company</span>
             </div>
         """, unsafe_allow_html=True)
         
