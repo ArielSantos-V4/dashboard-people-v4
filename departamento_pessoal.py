@@ -1451,7 +1451,7 @@ def render(df_ativos, df_desligados):
         with c_cad:
             st.markdown("##### 📥 Cadastros")
             with st.expander("👤 Investidor", expanded=False):
-                st.caption("Modelos automáticos")
+                st.caption("Em breve")
                 # Aqui entraremos com os inputs de Nome, CPF, etc.
         
         with c_form:
@@ -1472,7 +1472,7 @@ def render(df_ativos, df_desligados):
                 if st.button("📝 Formalização CLT (Ponto)", use_container_width=True, type="primary"):
                     modal_rascunho_ponto(df_ativos_proc)
             with st.expander("📩 Rascunhos Desligamento", expanded=False):
-                st.caption("Modelos automáticos")
+                st.caption("Em breve")
 
         with c_div:
             st.markdown("##### 📂 Diversos")
