@@ -560,54 +560,64 @@ def modal_rascunho_ponto(df_ativos):
                 st.markdown(f"**Assunto:** Formalização CLT - Sistema Ponto 🕝")
                 st.markdown("---")
 
-                # Corpo do e-mail com quebras de linha reforçadas (\n\n)
-                corpo_email = f"""
-Olá, **{primeiro_nome}**  
-Espero que esteja bem.
-
-Tivemos um bate-papo importante sobre o modelo de contrato dos CLTs na V4 Company e agora oficialmente, estou enviando seu acesso ao sistema **AHGORA** para registro de **ponto por exceção**  
-
-👉 [**CLIQUE AQUI PARA ACESSAR O MANUAL DE ATIVAÇÃO DO SISTEMA**]({link_manual})
-
-**Matrícula:** {matricula.zfill(6)}  
-**Senha:** 123456  
-**Chave de ativação:** {chave_ativacao}
-
-**Para relembrarmos:** Adotamos a utilização do controle de ponto por **EXCEÇÃO**, no modelo de Banco de Horas trimestral. Esse sistema foi pensado para trazer mais flexibilidade e transparência na gestão do tempo de trabalho, garantindo clareza para todos.
-
-**Como funciona:**  
-* **Horas positivas (extras):** entram no banco de horas e podem ser compensadas em descanso até o final desses 3 meses, desde que tenham aprovação pela liderança e DP (milena.nascimento@v4company.com) no e-mail;  
-* **Horas negativas (faltas/atrasos):** entram no banco de horas e deverão ser compensadas no período de 3 meses do banco de horas pelo investidor.
-
-**Regras principais:**  
-* **Validade:** apuração a cada 3 meses;  
-* **Aprovação de horas extras:** Somente com autorização da liderança e DP (milena.nascimento@v4company.com), em casos específicos (ex.: War Day ou final do mês).
-
-**Cálculo de horas:**  
-* **Domingos/feriados** → 1h = 1h24 no banco;  
-* **Demais dias** → 1h trabalhada = 1h de banco de horas;  
-* **Adicional noturno (22h–06h):** pago em dinheiro (30%) dentro do mês, horas entram para banco de horas.
-
-**Rescisão:**  
-* **Saldo positivo** → pago junto às verbas rescisórias;  
-* **Saldo negativo** → descontado na rescisão.
-
-**Folgas compensatórias:** precisam ser combinadas com 1 dia de antecedência + formalização com o DP (via e-mail milena.nascimento@v4company.com).
-
-**Atestados:** devem ser anexados **obrigatoriamente** no sistema para abono.
-
-**Apuração:** revisar saldo a cada 2 semanas para evitar acúmulo.
-
-**Transparência:** Cada investidor terá acesso ao extrato mensal do banco de horas.  
-**Obs.:** A apuração da folha de pagamento acontece a cada dia 25.
-
-Conte conosco para o que precisar.
-
-
-Atenciosamente,
-"""
-                st.markdown(corpo_email)
-                st.success("Rascunho pronto para copiar! Selecione o texto acima e cole no seu e-mail.")
+                # Definindo o HTML do rascunho (para copiar limpo)
+                corpo_html = f"""
+                <div style="background-color: white; color: #000000; font-family: Arial, sans-serif; font-size: 11pt; line-height: 1.5; padding: 10px; border: 1px solid #eeeeee; border-radius: 5px;">
+                    <p>Olá, <b>{primeiro_nome}</b>. Espero que esteja bem.</p>
+                    
+                    <p>Hoje tivemos um bate-papo importante sobre o modelo de contrato dos CLTs na V4 Company.</p>
+                    
+                    <p>E agora oficialmente, estou enviando seu acesso ao sistema <b>AHGORA</b> para registro de <b>ponto por exceção</b> 👉 
+                    <a href="{link_manual}" style="color: #E30613; font-weight: bold; text-decoration: underline;">CLIQUE AQUI PARA ACESSAR O MANUAL DE ATIVAÇÃO DO SISTEMA</a></p>
+                    
+                    <p>
+                        <b>Seus dados:</b><br>
+                        <b>Matrícula:</b> {matricula.zfill(6)}<br>
+                        <b>Senha:</b> 123456<br>
+                        <b>Chave de ativação:</b> {chave_ativacao}
+                    </p>
+                    
+                    <p><b>Para relembrarmos:</b><br>
+                    Adotamos a utilização do controle de ponto por <b>EXCEÇÃO</b>, no modelo de Banco de Horas trimestral. Esse sistema foi pensado para trazer mais flexibilidade e transparência na gestão do tempo de trabalho, garantindo clareza para todos.</p>
+                    
+                    <p><b>Como funciona:</b><br>
+                    • <b>Horas positivas (extras):</b> entram no banco de horas e podem ser compensadas em descanso até o final desses 3 meses, desde que tenham aprovação pela liderança e DP (milena.nascimento@v4company.com) no e-mail.<br>
+                    • <b>Horas negativas (faltas/atrasos):</b> entram no banco de horas e deverão ser compensadas no período de 3 meses do banco de horas pelo investidor.</p>
+                    
+                    <p><b>Regras principais:</b><br>
+                    • <b>Validade:</b> apuração a cada 3 meses.<br>
+                    • <b>Aprovação de horas extras:</b> Somente com autorização da liderança e DP (milena.nascimento@v4company.com), em casos específicos (ex.: War Day ou final do mês).</p>
+                    
+                    <p><b>Cálculo de horas:</b><br>
+                    • <b>Domingos/feriados</b> → 1h = 1h24 no banco.<br>
+                    • <b>Demais dias</b> → 1h trabalhada = 1h de banco de horas.<br>
+                    • <b>Adicional noturno (22h–06h):</b> pago em dinheiro (30%) dentro do mês, horas entram para banco de horas.</p>
+                    
+                    <p><b>Rescisão:</b><br>
+                    • <b>Saldo positivo</b> → pago junto às verbas rescisórias.<br>
+                    • <b>Saldo negativo</b> → descontado na rescisão.</p>
+                    
+                    <p><b>Folgas compensatórias:</b> precisam ser combinadas com 1 dia de antecedência + formalização com o DP (via e-mail milena.nascimento@v4company.com).</p>
+                    
+                    <p><b>Atestados:</b> devem ser anexados <b>obrigatoriamente</b> no sistema para abono.</p>
+                    
+                    <p><b>Apuração:</b> revisar saldo a cada 2 semanas para evitar acúmulo.</p>
+                    
+                    <p><b>Transparência:</b><br>
+                    Cada investidor terá acesso ao extrato mensal do banco de horas.<br>
+                    <b>Obs.:</b> A apuração da folha de pagamento acontece a cada dia 25.</p>
+                    
+                    <p>Conte conosco para o que precisar.</p>
+                    
+                    <p>Atenciosamente,</p>
+                </div>
+                """
+                
+                st.markdown(f"**Assunto:** Formalização CLT - Sistema Ponto 🕝")
+                st.markdown("---")
+                # Renderiza o HTML para cópia limpa
+                st.markdown(corpo_html, unsafe_allow_html=True)
+                st.success("Rascunho pronto! Selecione o texto no quadro branco acima para copiar.")
                 
 # ==========================================
 # MODAL DE CONSULTA (HÍBRIDO - REFORMULADO V3)
