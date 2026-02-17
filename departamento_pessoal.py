@@ -1326,19 +1326,27 @@ def render(df_ativos, df_desligados):
                 </div>
             """, unsafe_allow_html=True)
 
+    # ----------------------------------------------------
+    # ABA AÇÕES
+    # ----------------------------------------------------
     with aba_acoes:
         st.markdown("""
             <div style="background-color: #f1f3f5; padding: 12px; border-radius: 6px; border-left: 5px solid #404040; margin-bottom: 20px;">
-                <span style="color: #404040; font-size: 14px;">Gere formulários, contratos e declarações pré-preenchidas.</span>
+                <span style="color: #404040; font-size: 14px;">Realize cadastros, gere formulários e rascunhos de e-mail pré-preenchidos.</span>
             </div>
         """, unsafe_allow_html=True)
         
-        # Divisão em 3 colunas principais
-        c1, c2, c3 = st.columns(3)
+        # Agora dividido em 4 colunas
+        c_cad, c_form, c_mail, c_div = st.columns(4)
         
-        with c1:
+        with c_cad:
+            st.markdown("##### 📥 Cadastros")
+            with st.expander("👤 Investidor", expanded=False):
+                st.info("Formulário para novo cadastro em breve.")
+                # Aqui entraremos com os inputs de Nome, CPF, etc.
+        
+        with c_form:
             st.markdown("##### 📝 Gerar Formulários")
-            
             with st.expander("🌱 Admissão", expanded=False):
                 if st.button("🚌 Vale Transporte", use_container_width=True, type="primary"): 
                     modal_vale_transporte(df_ativos_proc)
@@ -1348,33 +1356,27 @@ def render(df_ativos, df_desligados):
                     modal_comum(df_ativos_proc)
                 if st.button("📄 Aviso Prévio", use_container_width=True, type="primary"): 
                     modal_aviso_previo_indenizado(df_ativos_proc)
-            
-            with st.expander("🔄 Jornada & Ciclo", expanded=False):
-                st.caption("Novos formulários em breve")
 
-        with c2:
+        with c_mail:
             st.markdown("##### ✉️ E-mail / Mensagens")
-            
             with st.expander("📩 Rascunhos Admissão", expanded=False):
-                st.info("Espaço para rascunhos automáticos")
-                
+                st.caption("Modelos automáticos")
             with st.expander("📩 Rascunhos Desligamento", expanded=False):
-                st.info("Espaço para rascunhos automáticos")
-                
-            with st.expander("📩 Comunicação Interna", expanded=False):
-                st.info("Espaço para rascunhos automáticos")
+                st.caption("Modelos automáticos")
 
-        with c3:
+        with c_div:
             st.markdown("##### 📂 Diversos")
+            with st.expander("📋 Checklists / Workflow", expanded=True):
+                if st.button("💰 Comissão PJ", use_container_width=True, type="primary"):
+                    modal_workflow_comissao(df_ativos_proc, df_desligados_proc)
             
             with st.expander("🛠️ Ferramentas", expanded=False):
                 if st.button("📝 Título Doc (Automação)", use_container_width=True, type="primary"): 
                     modal_titulo_doc(df_ativos_proc)
-            
-            with st.expander("📋 Checklists / Workflow", expanded=True): # Deixei True para você testar
-                if st.button("💰 Comissão PJ", type="primary", use_container_width=True):
-                    modal_workflow_comissao(df_ativos_proc, df_desligados_proc)
 
+    # ----------------------------------------------------
+    # ABA CONECTIVIDADE
+    # ----------------------------------------------------
     with aba_conectividade:
         st.markdown("""
             <div style="background-color: #f1f3f5; padding: 12px; border-radius: 6px; border-left: 5px solid #404040; margin-bottom: 20px;">
