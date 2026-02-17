@@ -100,6 +100,21 @@ def converter_remuneracao_para_float(coluna):
                                   .str.strip()
     # Converte para número, o que não for número vira NaN (vazio)
     return pd.to_numeric(col_limpa, errors='coerce')
+
+import gspread
+from google.oauth2.service_account import Credentials
+
+def gravar_no_google_sheets(dados_lista):
+    # 1. Configura o escopo e as credenciais (puxando do Secrets do Streamlit)
+    scope = ["https://www.googleapis.com/auth/spreadsheets", "https://www.googleapis.com/auth/drive"]
+    creds = Credentials.from_service_account_info(st.secrets["gcp_service_account"], scopes=scope)
+    client = gspread.authorize(creds)
+    
+    # 2. Abre a planilha pelo ID que você tem
+    sheet = client.open_by_key("SEU_ID_DA_PLANILHA_AQUI").sheet1 # Ou o nome da aba
+    
+    # 3. Adiciona a nova linha
+    sheet.append_row(dados_lista, value_input_option="USER_ENTERED")
     
 # ==========================================
 # LÓGICA DE ALERTAS (ATIVOS)
