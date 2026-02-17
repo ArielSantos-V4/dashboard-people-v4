@@ -576,7 +576,7 @@ def modal_rascunho_ponto(df_ativos):
                     Espero que esteja bem.<br><br>
                     Hoje tivemos um bate-papo importante sobre o modelo de contrato dos CLTs na V4 Company.<br><br>
                     E agora oficialmente, estou enviando seu acesso ao sistema <b>AHGORA</b> para registro de <b>ponto por exceção</b> 👉 
-                    <a href="https://docs.google.com/document/d/1PD-14f2227BPHbZmjAnB9JoowJgLMS9FET8YGf5Oq-w/edit?tab=t.0" target="_blank" style="color: #E30613; font-weight: bold; text-decoration: underline;">Clique aqui para acessar o manual de ativação</a>
+                    <a href="https://docs.google.com/document/d/1PD-14f2227BPHbZmjAnB9JoowJgLMS9FET8YGf5Oq-w/edit?tab=t.0" target="_blank" style="color: #E30613; font-weight: bold; text-decoration: underline;">Clique aqui para acessar o manual de ativação</a><br>
                     <b>Matrícula:</b> {matricula.zfill(6)}<br>
                     <b>Senha:</b> 123456<br>
                     <b>Chave de ativação:</b> {chave_ativacao}<br><br>
