@@ -171,12 +171,12 @@ def validar_clt(row):
             
     return eh_clt, tipo_encontrado
 
-@st.dialog("💰 Workflow: Pagamento de Comissão PJ") # Removido o large para manter a largura padrão
+@st.dialog("💰 Pagamento de Comissão PJ") # Removido o large para manter a largura padrão
 def modal_workflow_comissao(df_ativos, df_desligados):
     # Texto explicativo no topo
     st.markdown("""
         <div style="background-color: #f9f9f9; padding: 12px; border-left: 5px solid #E30613; border-radius: 4px; margin-bottom: 20px;">
-            <span style="color: #404040; font-size: 14px;">Workflow para conferência e lançamento de notas fiscais de comissão para investidores PJ.</span>
+            <span style="color: #404040; font-size: 14px;">Checklist para lançamento de comissão para investidores PJ.</span>
         </div>
     """, unsafe_allow_html=True)
 
@@ -216,22 +216,21 @@ def modal_workflow_comissao(df_ativos, df_desligados):
         c4.text_input("Descrição CC", res.get("Descrição CC", ""), disabled=True)
         
         st.markdown("---")
-        st.subheader("✅ Etapas do Processo")
+        st.subheader("✅ Checklist")
 
-        # 4. Checklist de Workflow
+        # Etapa 1
         st.checkbox("NF emitida com valor correto e tomador de serviços correto?", key="st1")
         
-        # Etapa SAP com Hiperlink na palavra e Lembrete em vermelho
-        st.markdown(f"""
-            <div style="margin-left: 28px; margin-top: -10px; margin-bottom: 10px;">
-                <span style="font-size: 14px; color: #404040;">Programação de pagamento na 
-                <a href="https://vhv4cps4ci.sap.mktlab.app:44300/sap/bc/ui2/flp#ME21N-display?sap-ui-tech-hint=GUI" target="_blank" style="color: #E30613; font-weight: bold; text-decoration: underline;">SAP</a>?
-                <b style="color: #E30613; margin-left: 10px;">⚠️ Lembrete: Material 115</b></span>
-            </div>
-        """, unsafe_allow_html=True)
-        # O checkbox em si fica logo abaixo ou acima, mas para o clique ser funcional:
-        step2 = st.checkbox("Confirmação de lançamento no sistema", label_visibility="collapsed", key="st2")
+        # Etapa 2: Tudo na mesma linha usando Markdown no label
+        # O link na SAP e o lembrete em vermelho
+        label_sap = (
+            "Programação de pagamento na "
+            "[**SAP**](https://vhv4cps4ci.sap.mktlab.app:44300/sap/bc/ui2/flp#ME21N-display?sap-ui-tech-hint=GUI)? "
+            "&nbsp;&nbsp; :red[⚠️ **Lembrete: Material 115**]"
+        )
+        st.checkbox(label_sap, key="st2")
         
+        # Etapas seguintes
         st.checkbox("Cadastro na planilha do financeiro", key="st3")
         st.checkbox("Salvar NF no Drive de Notas fiscais", key="st4")
         st.checkbox("Retornar investidor pelo email informando sobre o pagamento", key="st5")
