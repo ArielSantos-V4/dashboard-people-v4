@@ -554,7 +554,8 @@ def modal_rascunho_ponto(df_ativos):
             else:
                 primeiro_nome = nome_sel.split()[0].capitalize()
                 link_manual = "https://docs.google.com/document/d/1PD-14f2227BPHbZmjAnB9JoowJgLMS9FET8YGf5Oq-w/edit?tab=t.0"
-                
+
+                st.markdown("---")
                 # Assunto separado para facilitar a cópia
                 st.markdown(f"**Assunto:** Formalização CLT - Sistema Ponto 🕝")
                 st.markdown("---")
@@ -574,17 +575,21 @@ Tivemos um bate-papo importante sobre o modelo de contrato dos CLTs na V4 Compan
 
 **Para relembrarmos:** Adotamos a utilização do controle de ponto por **EXCEÇÃO**, no modelo de Banco de Horas trimestral. Esse sistema foi pensado para trazer mais flexibilidade e transparência na gestão do tempo de trabalho, garantindo clareza para todos.
 
-**Como funciona:** * **Horas positivas (extras):** entram no banco de horas e podem ser compensadas em descanso até o final desses 3 meses, desde que tenham aprovação pela liderança e DP (milena.nascimento@v4company.com) no e-mail.  
+**Como funciona:**  
+* **Horas positivas (extras):** entram no banco de horas e podem ser compensadas em descanso até o final desses 3 meses, desde que tenham aprovação pela liderança e DP (milena.nascimento@v4company.com) no e-mail;  
 * **Horas negativas (faltas/atrasos):** entram no banco de horas e deverão ser compensadas no período de 3 meses do banco de horas pelo investidor.
 
-**Regras principais:** * **Validade:** apuração a cada 3 meses.  
+**Regras principais:**  
+* **Validade:** apuração a cada 3 meses;  
 * **Aprovação de horas extras:** Somente com autorização da liderança e DP (milena.nascimento@v4company.com), em casos específicos (ex.: War Day ou final do mês).
 
-**Cálculo de horas:** * **Domingos/feriados** → 1h = 1h24 no banco.  
-* **Demais dias** → 1h trabalhada = 1h de banco de horas.  
+**Cálculo de horas:**  
+* **Domingos/feriados** → 1h = 1h24 no banco;  
+* **Demais dias** → 1h trabalhada = 1h de banco de horas;  
 * **Adicional noturno (22h–06h):** pago em dinheiro (30%) dentro do mês, horas entram para banco de horas.
 
-**Rescisão:** * **Saldo positivo** → pago junto às verbas rescisórias.  
+**Rescisão:**  
+* **Saldo positivo** → pago junto às verbas rescisórias;  
 * **Saldo negativo** → descontado na rescisão.
 
 **Folgas compensatórias:** precisam ser combinadas com 1 dia de antecedência + formalização com o DP (via e-mail milena.nascimento@v4company.com).
