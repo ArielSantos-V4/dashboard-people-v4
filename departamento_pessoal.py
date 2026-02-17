@@ -547,9 +547,9 @@ def modal_rascunho_ponto(df_ativos):
         chave_ativacao = st.text_input("Chave de ativação:", placeholder="Digite a chave gerada no Ahgora...")
         
         st.info(f"📌 **Lembrete:** Não esqueça de adicionar **{lider_nome}** em cópia no e-mail.")
-
-        # ... (dentro do modal_rascunho_ponto, após as validações) ...
-
+        # Alerta visual para não esquecer de anexar no Outlook/Gmail
+        st.warning("🚨 **NÃO ESQUEÇA:** Este e-mail exige o anexo")
+        
         st.markdown("---")
         st.markdown("##### 📎 Anexo Obrigatório")
         
@@ -565,9 +565,6 @@ def modal_rascunho_ponto(df_ativos):
                 )
         except FileNotFoundError:
             st.error("⚠️ Arquivo 'MTreinamento CLTs - Ponto por exceção.pptx' não encontrado na pasta do sistema.")
-
-        # Alerta visual para não esquecer de anexar no Outlook/Gmail
-        st.warning("🚨 **NÃO ESQUEÇA:** Este e-mail exige o anexo")
 
         if st.button("Gerar Rascunho", type="primary", use_container_width=True):
             if not chave_ativacao:
