@@ -100,7 +100,22 @@ def converter_remuneracao_para_float(coluna):
                                   .str.strip()
     # Converte para número, o que não for número vira NaN (vazio)
     return pd.to_numeric(col_limpa, errors='coerce')
+# ... logo abaixo de converter_remuneracao_para_float ...
 
+import requests # Adicione este import no topo do seu arquivo também!
+
+def buscar_cep(cep_digitado):
+    cep_limpo = str(cep_digitado).replace("-", "").replace(".", "").strip()
+    if len(cep_limpo) == 8:
+        try:
+            r = requests.get(f"https://viacep.com.br/ws/{cep_limpo}/json/")
+            if r.status_code == 200 and "erro" not in r.json():
+                dados = r.json()
+                return f"{dados['logradouro']}, {dados['bairro']}, {dados['localidade']}-{dados['uf']}"
+        except:
+            return None
+    return None
+    
 import gspread
 from google.oauth2.service_account import Credentials
 
@@ -130,120 +145,103 @@ def buscar_base_vagas():
     except:
         return None
 
-def formulario_cadastro_investidor():
+def exibir_formulario_cadastro():
     st.markdown("### 📝 Cadastro de Novo Investidor")
     
-    # --- DADOS PESSOAIS ---
-    with st.container(border=True):
-        st.caption("👤 Informações Pessoais")
-        c1, c2 = st.columns(2)
-        nome = c1.text_input("Nome (Curto)")
-        nome_completo = c2.text_input("Nome Completo (com acentos)")
-        
-        c3, c4, c5 = st.columns([2, 1, 1])
-        foto_link = c3.text_input("Link da Foto (URL)")
-        cpf = c4.text_input("CPF")
-        nascimento = c5.date_input("Data de Nascimento", value=None)
+    # Criamos o formulário para evitar que a página recarregue a cada clique
+    with st.form("form_cadastro_v4", clear_on_submit=False):
+        # --- BLOCO 1: IDENTIFICAÇÃO ---
+        c1, c2, c3 = st.columns([1, 1, 1])
+        nome_curto = c1.text_input("Nome (Como será chamado)")
+        nome_completo = c2.text_input("Nome Completo (Com acentos)")
+        foto_link = c3.text_input("URL da Foto (Link Drive/Web)")
 
-    # --- DADOS CONTRATUAIS ---
-    with st.container(border=True):
-        st.caption("💼 Contrato e Atuação")
-        c6, c7, c8 = st.columns(3)
-        bp = c6.number_input("BP", step=1, value=0)
-        matricula = c7.number_input("Matrícula", step=1, value=0)
-        data_contrato = c8.date_input("Data do Contrato", value=datetime.today())
-        
-        c9, c10 = st.columns(2)
-        modelo = c9.selectbox("Modelo de Contrato", ["CLT", "PJ", "Estagiário"])
-        unidade = c10.selectbox("Unidade/Atuação", ["Flagship", "Headquarters", "Híbrido", "Remoto", "Unidade São Leopoldo"])
+        # --- BLOCO 2: CONTRATUAL ---
+        c4, c5, c6 = st.columns(3)
+        bp = c4.number_input("BP (Número)", step=1, value=0)
+        matricula = c5.number_input("Matrícula (Número)", step=1, value=0)
+        data_contrato = c6.date_input("Data do Contrato", value=datetime.today())
 
-        # Lógica do ID Vaga com consulta à tabela
-        col_vaga, col_ajuda = st.columns([4, 1])
-        id_vaga = col_vaga.text_input("ID Vaga")
-        with col_ajuda:
-            st.write("") # Alinhamento
+        c7, c8, c9 = st.columns(3)
+        modelo = c7.selectbox("Modelo de Contrato", ["CLT", "PJ", "Estágio"])
+        unidade = c8.selectbox("Unidade/Atuação", ["Flagship", "Headquarters", "Híbrido", "Remoto", "Unidade São Leopoldo"])
+        email_corp = c9.text_input("E-mail Corporativo")
+
+        # --- BLOCO 3: VAGA E CARGO ---
+        c10, c11 = st.columns([0.85, 0.15])
+        id_vaga = c10.text_input("ID Vaga")
+        with c11:
+            st.write(" ") # Ajuste vertical
             with st.popover("❓"):
-                st.markdown("**Consulta de IDs de Vaga**")
-                df_v_vagas = buscar_base_vagas()
-                if df_v_vagas is not None:
-                    st.dataframe(df_v_vagas, use_container_width=True, hide_index=True)
+                st.write("### IDs de Vaga Disponíveis")
+                df_vagas = buscar_base_vagas()
+                if df_vagas is not None:
+                    st.dataframe(df_vagas, use_container_width=True, hide_index=True)
                 else:
-                    st.error("Erro ao carregar base de vagas.")
+                    st.error("Não foi possível carregar a aba de vagas.")
 
-    # --- DADOS FINANCEIROS E CC ---
-    with st.container(border=True):
-        st.caption("💰 Financeiro e Centro de Custo")
-        c11, c12 = st.columns(2)
-        cod_cc = c11.text_input("Código CC")
-        desc_cc = c12.text_input("Descrição CC")
-        
-        c13, c14 = st.columns(2)
-        remuneracao = c13.text_input("Remuneração (Ex: 5000.00)")
-        conta_contabil = c14.text_input("Conta Contábil")
-        
-        area = st.text_input("Área")
+        c12, c13, c14 = st.columns(3)
+        cargo = c12.text_input("Cargo")
+        remun = c13.text_input("Remuneração (Ex: 5500,00)")
+        area = c14.text_input("Área")
 
-    # --- BOTÃO DE SALVAR ---
-    if st.button("🚀 FINALIZAR CADASTRO", use_container_width=True, type="primary"):
-        # 1. Validação simples
-        if not nome or not cpf:
-            st.error("Campos Nome e CPF são obrigatórios!")
-            return
+        # --- BLOCO 4: FINANCEIRO E LOCALIZAÇÃO ---
+        c15, c16, c17 = st.columns(3)
+        cod_cc = c15.text_input("Código CC")
+        desc_cc = c16.text_input("Descrição CC")
+        conta_contabil = c17.text_input("Conta Contábil")
 
-        # 2. Preparação da Linha para o Google Sheets
-        # Precisamos saber em qual linha o registro vai entrar para a fórmula do término
-        # Aqui simulamos o acesso ao Sheets para pegar a próxima linha (ex: 500)
-        proxima_linha = 500 # Isso será dinâmico na função real
-        
-        # Fórmula do Término para CLT
-        if modelo == "CLT":
-            col_data = "F" # Supondo que Data Contrato é coluna F
-            formula_termino = f'=SE(HOJE()>({col_data}{proxima_linha}+90);"Indeterminado";({col_data}{proxima_linha}+90))'
+        # CEP Inteligente
+        c18, c19 = st.columns([0.3, 0.7])
+        cep_input = c18.text_input("CEP (Apenas números)")
+        endereco_resumo = buscar_cep(cep_input)
+        if endereco_resumo:
+            c19.info(f"📍 {endereco_resumo}")
         else:
-            formula_termino = ""
+            c19.write("")
 
-        # Montagem da lista seguindo a ordem exata da sua planilha
-        linha_sheets = [
-            nome,             # A
-            nome_completo,    # B
-            foto_link,        # C
-            bp,               # D
-            matricula,        # E
-            data_contrato.strftime("%d/%m/%Y"), # F
-            formula_termino,  # G
-            "Ativo",          # H (Situação fixa)
-            unidade,          # I
-            modelo,           # J
-            "",               # K (E-mail corp - em branco)
-            "",               # L (Modalidade PJ)
-            data_contrato.strftime("%d/%m/%Y"), # M (Início na V4)
-            "",               # N (CNPJ)
-            "",               # O (Razão Social)
-            "",               # P (Cargo)
-            remuneracao,      # Q
-            "",               # R (CBO)
-            "",               # S (Descrição CBO)
-            id_vaga,          # T
-            cod_cc,           # U
-            desc_cc,          # V
-            "",               # W (Senioridade)
-            "",               # X (Liderança)
-            conta_contabil,   # Y
-            area,             # Z
-            cpf,              # AA
-            nascimento.strftime("%d/%m/%Y") if nascimento else "", # AB
-            "",               # AC (CEP)
-            "",               # AD (Escolaridade)
-            "",               # AE (E-mail pessoal)
-            "",               # AF (Telefone)
-            "Pendente",       # AG (Situação no plano fixa)
-            # ... preencher com "" até o final das colunas
-        ]
+        # --- DADOS FINAIS ---
+        c20, c21, c22 = st.columns(3)
+        cpf = c20.text_input("CPF")
+        nascimento = c21.date_input("Data de Nascimento", value=None)
+        link_drive = c22.text_input("Link Drive Docs")
 
-        # CHAMADA DA FUNÇÃO DE GRAVAÇÃO (Que criamos na etapa anterior)
-        # gravar_no_google_sheets(linha_sheets)
-        st.success("Investidor cadastrado com sucesso na Planilha Master!")
+        # BOTÃO DE SUBMIT
+        enviar = st.form_submit_button("🚀 Gravar na Planilha Master", use_container_width=True)
 
+        if enviar:
+            if not nome_curto or not cpf or not cod_cc:
+                st.warning("Preencha Nome, CPF e Código CC!")
+            else:
+                # Montagem da Linha conforme as colunas da sua planilha
+                linha_final = [
+                    nome_curto, nome_completo, foto_link, bp, matricula,
+                    data_contrato.strftime("%d/%m/%Y"), 
+                    "", # G: Término (Calculado na função gravar_no_google_sheets)
+                    "Ativo", # H: Situação
+                    unidade, modelo, email_corp, 
+                    "", # L: Modalidade PJ
+                    data_contrato.strftime("%d/%m/%Y"), # M: Início V4
+                    "", "", # N, O: CNPJ e Razão
+                    cargo, remun, 
+                    "", "", # R, S: CBO
+                    id_vaga, cod_cc, desc_cc,
+                    "", "", # W, X: Senioridade/Liderança
+                    conta_contabil, area, cpf,
+                    nascimento.strftime("%d/%m/%Y") if nascimento else "",
+                    cep_input, "", "", "", # AD, AE, AF
+                    "Pendente", # AG: Situação Plano
+                    "", "", "", # AH, AI, AJ
+                    link_drive, # AK: Link Drive Docs
+                    "" # AL: FotoView
+                ]
+                
+                try:
+                    gravar_no_google_sheets(linha_final)
+                    st.success(f"Sucesso! {nome_curto} foi adicionado à planilha.")
+                except Exception as e:
+                    st.error(f"Erro ao gravar: {e}")
+                    
 # ==========================================
 # LÓGICA DE ALERTAS (ATIVOS)
 # ==========================================
