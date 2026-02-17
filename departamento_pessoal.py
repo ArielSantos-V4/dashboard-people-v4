@@ -193,7 +193,7 @@ def modal_workflow_comissao(df_ativos, df_desligados):
         # 1. Validação de Desligado
         is_desligado = nome_sel in df_desligados["Nome"].values
         if is_desligado:
-            st.warning(f"⚠️ {nome_sel} consta na base de DESLIGADOS.")
+            st.warning(f"⚠️ Esse investidor consta na base de DESLIGADOS.")
             if not st.checkbox("Desejo continuar o processo para este ex-investidor", key="wf_com_des"):
                 return
 
