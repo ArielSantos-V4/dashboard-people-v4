@@ -115,7 +115,135 @@ def gravar_no_google_sheets(dados_lista):
     
     # 3. Adiciona a nova linha
     sheet.append_row(dados_lista, value_input_option="USER_ENTERED")
+
+import pandas as pd
+import streamlit as st
+from datetime import datetime, timedelta
+
+# Função para buscar a base de IDs de Vaga (Aba específica da sua planilha)
+def buscar_base_vagas():
+    try:
+        # Aqui usamos o ID da sua planilha que você passou
+        url_vagas = "https://docs.google.com/spreadsheets/d/13EPwhiXgh8BkbhyrEy2aCy3cv1O8npxJ_hA-HmLZ-pY/export?format=csv&gid=1415557248"
+        df_vagas = pd.read_csv(url_vagas)
+        return df_vagas
+    except:
+        return None
+
+def formulario_cadastro_investidor():
+    st.markdown("### 📝 Cadastro de Novo Investidor")
     
+    # --- DADOS PESSOAIS ---
+    with st.container(border=True):
+        st.caption("👤 Informações Pessoais")
+        c1, c2 = st.columns(2)
+        nome = c1.text_input("Nome (Curto)")
+        nome_completo = c2.text_input("Nome Completo (com acentos)")
+        
+        c3, c4, c5 = st.columns([2, 1, 1])
+        foto_link = c3.text_input("Link da Foto (URL)")
+        cpf = c4.text_input("CPF")
+        nascimento = c5.date_input("Data de Nascimento", value=None)
+
+    # --- DADOS CONTRATUAIS ---
+    with st.container(border=True):
+        st.caption("💼 Contrato e Atuação")
+        c6, c7, c8 = st.columns(3)
+        bp = c6.number_input("BP", step=1, value=0)
+        matricula = c7.number_input("Matrícula", step=1, value=0)
+        data_contrato = c8.date_input("Data do Contrato", value=datetime.today())
+        
+        c9, c10 = st.columns(2)
+        modelo = c9.selectbox("Modelo de Contrato", ["CLT", "PJ", "Estagiário"])
+        unidade = c10.selectbox("Unidade/Atuação", ["Flagship", "Headquarters", "Híbrido", "Remoto", "Unidade São Leopoldo"])
+
+        # Lógica do ID Vaga com consulta à tabela
+        col_vaga, col_ajuda = st.columns([4, 1])
+        id_vaga = col_vaga.text_input("ID Vaga")
+        with col_ajuda:
+            st.write("") # Alinhamento
+            with st.popover("❓"):
+                st.markdown("**Consulta de IDs de Vaga**")
+                df_v_vagas = buscar_base_vagas()
+                if df_v_vagas is not None:
+                    st.dataframe(df_v_vagas, use_container_width=True, hide_index=True)
+                else:
+                    st.error("Erro ao carregar base de vagas.")
+
+    # --- DADOS FINANCEIROS E CC ---
+    with st.container(border=True):
+        st.caption("💰 Financeiro e Centro de Custo")
+        c11, c12 = st.columns(2)
+        cod_cc = c11.text_input("Código CC")
+        desc_cc = c12.text_input("Descrição CC")
+        
+        c13, c14 = st.columns(2)
+        remuneracao = c13.text_input("Remuneração (Ex: 5000.00)")
+        conta_contabil = c14.text_input("Conta Contábil")
+        
+        area = st.text_input("Área")
+
+    # --- BOTÃO DE SALVAR ---
+    if st.button("🚀 FINALIZAR CADASTRO", use_container_width=True, type="primary"):
+        # 1. Validação simples
+        if not nome or not cpf:
+            st.error("Campos Nome e CPF são obrigatórios!")
+            return
+
+        # 2. Preparação da Linha para o Google Sheets
+        # Precisamos saber em qual linha o registro vai entrar para a fórmula do término
+        # Aqui simulamos o acesso ao Sheets para pegar a próxima linha (ex: 500)
+        proxima_linha = 500 # Isso será dinâmico na função real
+        
+        # Fórmula do Término para CLT
+        if modelo == "CLT":
+            col_data = "F" # Supondo que Data Contrato é coluna F
+            formula_termino = f'=SE(HOJE()>({col_data}{proxima_linha}+90);"Indeterminado";({col_data}{proxima_linha}+90))'
+        else:
+            formula_termino = ""
+
+        # Montagem da lista seguindo a ordem exata da sua planilha
+        linha_sheets = [
+            nome,             # A
+            nome_completo,    # B
+            foto_link,        # C
+            bp,               # D
+            matricula,        # E
+            data_contrato.strftime("%d/%m/%Y"), # F
+            formula_termino,  # G
+            "Ativo",          # H (Situação fixa)
+            unidade,          # I
+            modelo,           # J
+            "",               # K (E-mail corp - em branco)
+            "",               # L (Modalidade PJ)
+            data_contrato.strftime("%d/%m/%Y"), # M (Início na V4)
+            "",               # N (CNPJ)
+            "",               # O (Razão Social)
+            "",               # P (Cargo)
+            remuneracao,      # Q
+            "",               # R (CBO)
+            "",               # S (Descrição CBO)
+            id_vaga,          # T
+            cod_cc,           # U
+            desc_cc,          # V
+            "",               # W (Senioridade)
+            "",               # X (Liderança)
+            conta_contabil,   # Y
+            area,             # Z
+            cpf,              # AA
+            nascimento.strftime("%d/%m/%Y") if nascimento else "", # AB
+            "",               # AC (CEP)
+            "",               # AD (Escolaridade)
+            "",               # AE (E-mail pessoal)
+            "",               # AF (Telefone)
+            "Pendente",       # AG (Situação no plano fixa)
+            # ... preencher com "" até o final das colunas
+        ]
+
+        # CHAMADA DA FUNÇÃO DE GRAVAÇÃO (Que criamos na etapa anterior)
+        # gravar_no_google_sheets(linha_sheets)
+        st.success("Investidor cadastrado com sucesso na Planilha Master!")
+
 # ==========================================
 # LÓGICA DE ALERTAS (ATIVOS)
 # ==========================================
@@ -1523,8 +1651,8 @@ def render(df_ativos, df_desligados):
         with c_cad:
             st.markdown("##### 📥 Cadastros")
             with st.expander("👤 Investidor", expanded=False):
-                st.caption("Em breve")
-                # Aqui entraremos com os inputs de Nome, CPF, etc.
+                # Chamamos a função aqui dentro
+                exibir_formulario_cadastro()
         
         with c_form:
             st.markdown("##### 📝 Gerar Formulários")
