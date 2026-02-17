@@ -1451,7 +1451,7 @@ def render(df_ativos, df_desligados):
         with c_cad:
             st.markdown("##### 📥 Cadastros")
             with st.expander("👤 Investidor", expanded=False):
-                st.info("Formulário para novo cadastro em breve.")
+                st.caption("Modelos automáticos")
                 # Aqui entraremos com os inputs de Nome, CPF, etc.
         
         with c_form:
