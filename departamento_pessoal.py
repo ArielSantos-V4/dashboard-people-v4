@@ -219,7 +219,7 @@ def modal_workflow_comissao(df_ativos, df_desligados):
         st.subheader("✅ Checklist")
 
         # Etapa 1
-        st.checkbox("NF emitida com valor correto e tomador de serviços correto?", key="st1")
+        st.checkbox("NF emitida com valor e tomador de serviços corretos?", key="st1")
         
         # Etapa 2: Tudo na mesma linha usando Markdown no label
         # O link na SAP e o lembrete em vermelho
@@ -233,7 +233,7 @@ def modal_workflow_comissao(df_ativos, df_desligados):
         # Etapas seguintes
         st.checkbox("Cadastro na planilha do financeiro", key="st3")
         st.checkbox("Salvar NF no Drive de Notas fiscais", key="st4")
-        st.checkbox("Retornar investidor pelo email informando sobre o pagamento", key="st5")
+        st.checkbox("Informar investidor sobre o pagamento", key="st5")
 
         st.markdown("---")
         
