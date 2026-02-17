@@ -135,15 +135,27 @@ import pandas as pd
 import streamlit as st
 from datetime import datetime, timedelta
 
-# Função para buscar a base de IDs de Vaga (Aba específica da sua planilha)
 def buscar_base_vagas():
     try:
-        # Aqui usamos o ID da sua planilha que você passou
-        url_vagas = "https://docs.google.com/spreadsheets/d/13EPwhiXgh8BkbhyrEy2aCy3cv1O8npxJ_hA-HmLZ-pY/export?format=csv&gid=1415557248"
-        df_vagas = pd.read_csv(url_vagas)
+        # Substitua 'SEU_ID_DA_PLANILHA' pelo ID que você já usa na gravação
+        # O gid=1415557248 é o que você me passou para a aba de vagas
+        spreadsheet_id = "COLE_AQUI_O_ID_DA_SUA_PLANILHA"
+        gid = "1415557248"
+        
+        url = f"https://docs.google.com/spreadsheets/d/{spreadsheet_id}/export?format=csv&gid={gid}"
+        
+        # O header=0 diz que a primeira linha são os títulos das colunas
+        df_vagas = pd.read_csv(url, header=0)
+        
+        # Limpeza rápida: remove linhas totalmente vazias
+        df_vagas = df_vagas.dropna(how='all')
+        
         return df_vagas
-    except:
+    except Exception as e:
+        # Isso vai te ajudar a ver o erro real no console se falhar
+        print(f"Erro detalhado na busca de vagas: {e}")
         return None
+        
 
 @st.dialog("📝 Cadastro de Novo Investidor", width="large")
 def modal_cadastro_investidor():
