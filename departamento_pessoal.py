@@ -1263,48 +1263,46 @@ def render(df_ativos, df_desligados):
             </div>
         """, unsafe_allow_html=True)
         
-        a_adm, a_desl, a_ciclo = st.tabs(["🌱 Admissão", "🚪 Desligamento", "🔄 Jornada & Ciclo"])
+        # Divisão em 3 colunas principais
+        c1, c2, c3 = st.columns(3)
         
-        with a_adm:
-            c1, c2, c3 = st.columns(3)
-            with c1:
-                st.markdown("##### 📝 Gerar Formulários")
+        with c1:
+            st.markdown("##### 📝 Gerar Formulários")
+            
+            with st.expander("🌱 Admissão", expanded=False):
                 if st.button("🚌 Vale Transporte", use_container_width=True, type="primary"): 
                     modal_vale_transporte(df_ativos_proc)
-            with c2:
-                st.markdown("##### ✉️ E-mail / Mensagens")
-                st.caption("Em breve")
-            with c3:
-                st.markdown("##### 📂 Diversos")
-                st.caption("Em breve")
-
-        with a_desl:
-            c1, c2, c3 = st.columns(3)
-            with c1:
-                st.markdown("##### 📝 Gerar Formulários")
+            
+            with st.expander("🚪 Desligamento", expanded=False):
                 if st.button("📄 Demissão Comum", use_container_width=True, type="primary"): 
                     modal_comum(df_ativos_proc)
                 if st.button("📄 Aviso Prévio", use_container_width=True, type="primary"): 
                     modal_aviso_previo_indenizado(df_ativos_proc)
-            with c2:
-                st.markdown("##### ✉️ E-mail / Mensagens")
-                st.caption("Em breve")
-            with c3:
-                st.markdown("##### 📂 Diversos")
-                st.caption("Em breve")
+            
+            with st.expander("🔄 Jornada & Ciclo", expanded=False):
+                st.caption("Novos formulários em breve")
 
-        with a_ciclo:
-            c1, c2, c3 = st.columns(3)
-            with c1:
-                st.markdown("##### 📝 Gerar Formulários")
-                st.caption("Em breve")
-            with c2:
-                st.markdown("##### ✉️ E-mail / Mensagens")
-                st.caption("Em breve")
-            with c3:
-                st.markdown("##### 📂 Diversos")
+        with c2:
+            st.markdown("##### ✉️ E-mail / Mensagens")
+            
+            with st.expander("📩 Rascunhos Admissão", expanded=False):
+                st.info("Espaço para rascunhos automáticos")
+                
+            with st.expander("📩 Rascunhos Desligamento", expanded=False):
+                st.info("Espaço para rascunhos automáticos")
+                
+            with st.expander("📩 Comunicação Interna", expanded=False):
+                st.info("Espaço para rascunhos automáticos")
+
+        with c3:
+            st.markdown("##### 📂 Diversos")
+            
+            with st.expander("🛠️ Ferramentas", expanded=False):
                 if st.button("📝 Título Doc (Automação)", use_container_width=True, type="primary"): 
                     modal_titulo_doc(df_ativos_proc)
+            
+            with st.expander("📋 Checklists", expanded=False):
+                st.caption("Apoio aos processos")
 
     with aba_conectividade:
         st.markdown("""
