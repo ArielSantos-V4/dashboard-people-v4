@@ -1321,7 +1321,7 @@ def render(df_ativos, df_desligados):
             st.link_button("Suporte Matriz", "https://suportematriz.mktlab.app/#", use_container_width=True)
             st.link_button("Suporte TI", "https://v4company.atlassian.net/servicedesk/customer/user/login?destination=portals", use_container_width=True)
             st.link_button("V4 University | Staage", "https://v4university.staage.com/logar", use_container_width=True)
-            st.link_button("Learning Rocks", "https://v4university.staage.com/logar", use_container_width=True)
+            st.link_button("Learning Rocks", "https://growth.learning.rocks/", use_container_width=True)
             st.link_button("Benefícios corporativos", "https://lp.v4company.com/people-beneficios/", use_container_width=True)
             st.link_button("Loja V4", "https://v4company.elobrindes.com.br/", use_container_width=True)
             st.link_button("Foto corporativa", "https://geradordefotov4.lovable.app/", use_container_width=True)
