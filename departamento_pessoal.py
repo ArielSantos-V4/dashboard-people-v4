@@ -1441,43 +1441,37 @@ def render(df_ativos, df_desligados):
         with sub_finan:
             st.markdown("### 💰 Relatórios Financeiros")
             
-            # --- ALERTA DE AUDITORIA DE CC (VERSÃO IMPLACÁVEL) ---
-            # Considera: NaN real, string "nan", string vazia "", ou apenas espaços " "
-            def is_vazio(valor):
-                v = str(valor).strip().lower()
-                return v in ["", "nan", "none", "nat"]
-
-            # Aplicando o filtro nas colunas de Código ou Descrição
-            sem_cc = df_ativos_proc[
-                df_ativos_proc["Código CC"].apply(is_vazio) | 
-                df_ativos_proc["Descrição CC"].apply(is_vazio)
-            ]
-            
-            qtd_sem_cc = len(sem_cc)
-            
-            if qtd_sem_cc > 0:
-                st.error(f"⚠️ **Atenção:** Existem **{qtd_sem_cc}** investidores ativos sem Centro de Custo cadastrado corretamente.")
-                with st.expander("🔍 Ver quem são os investidores sem CC", expanded=False):
-                    # Mostra os nomes e a unidade para facilitar a busca na planilha
-                    st.dataframe(
-                        sem_cc[["Nome", "Unidade/Atuação", "Cargo", "Área"]], 
-                        use_container_width=True, 
-                        hide_index=True
-                    )
-            else:
-                st.info("✅ Todos os investidores ativos possuem Centro de Custo cadastrado.")
-
-            # --- RESTANTE DOS RELATÓRIOS (CÓDIGO ANTERIOR) ---
+            # Preparando os dados numéricos para os cálculos
             df_temp = df_ativos_proc.copy()
             df_temp["Rem_Num"] = converter_remuneracao_para_float(df_temp["Remuneração"])
 
             with st.expander("🏢 Visão por Centro de Custo", expanded=False):
-                df_cc = df_temp.groupby(["Código CC", "Descrição CC", "Área"]).agg(
+                # 1. Lógica do Alerta (Interno ao Expander)
+                def is_vazio(valor):
+                    v = str(valor).strip().lower()
+                    return v in ["", "nan", "none", "nat"]
+
+                sem_cc = df_temp[df_temp["Código CC"].apply(is_vazio) | df_temp["Descrição CC"].apply(is_vazio)]
+                qtd_sem_cc = len(sem_cc)
+
+                if qtd_sem_cc > 0:
+                    st.warning(f"⚠️ **Auditoria:** Existem **{qtd_sem_cc}** investidores sem Centro de Custo. Eles não estão somados na tabela abaixo.")
+                    if st.checkbox("🔍 Mostrar nomes sem CC"):
+                        st.dataframe(sem_cc[["Nome", "Área", "Unidade/Atuação"]], use_container_width=True, hide_index=True)
+                    st.markdown("---") # Linha separadora entre o alerta e o relatório
+
+                # 2. O Relatório propriamente dito
+                # Filtramos para mostrar no relatório apenas quem TEM Centro de Custo
+                df_cc_valido = df_temp[~(df_temp["Código CC"].apply(is_vazio) | df_temp["Descrição CC"].apply(is_vazio))]
+                
+                df_cc = df_cc_valido.groupby(["Código CC", "Descrição CC", "Área"]).agg(
                     Qtd_Investidores=("Nome", "count"),
                     Total_Remuneracao=("Rem_Num", "sum")
                 ).reset_index()
                 
+                # Formatação Moeda BRL
                 df_cc["Total_Remuneracao"] = df_cc["Total_Remuneracao"].map('R$ {:,.2f}'.format).str.replace(',', 'X').str.replace('.', ',').str.replace('X', '.')
+                
                 st.dataframe(df_cc, use_container_width=True, hide_index=True)
 
             with st.expander("📄 Visão por Modelo de Contrato", expanded=False):
