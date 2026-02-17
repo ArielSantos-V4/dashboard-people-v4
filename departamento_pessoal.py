@@ -536,8 +536,7 @@ def modal_rascunho_ponto(df_ativos):
     if nome_sel:
         row = df_clt[df_clt["Nome"] == nome_sel].iloc[0]
         matricula = str(row.get("Matrícula", "")).replace(".0", "").strip()
-        lider_nome = row.get("Liderança imediata", "Não cadastrado")
-        lider_email = row.get("E-mail liderança", "") # Ajuste o nome da coluna se for diferente
+        lider_nome = row.get("Liderança direta", "Não cadastrado")
         
         if not matricula or matricula.lower() == "nan":
             st.error("🚨 Matrícula não encontrada. Cadastre na planilha antes de prosseguir.")
@@ -545,7 +544,7 @@ def modal_rascunho_ponto(df_ativos):
 
         chave_ativacao = st.text_input("Chave de ativação:", placeholder="Digite a chave do Ahgora...")
         
-        st.info(f"📌 **Lembrete:** Adicionar **{lider_nome}** ({lider_email}) em cópia no e-mail.")
+        st.info(f"📌 **Lembrete:** Adicionar a liderança **{lider_nome}** em cópia no e-mail.")
         
         st.markdown(f"**Confirmação:** A matrícula é **{matricula.zfill(6)}**?")
         confirmou = st.checkbox("Sim, está correta.")
@@ -573,7 +572,7 @@ Hoje tivemos um bate-papo importante sobre o modelo de contrato dos CLTs na V4 C
 
 E agora oficialmente, estou enviando seu acesso ao sistema **AHGORA** para registro de **ponto por exceção** 👉 [**CLIQUE AQUI PARA ACESSAR O MANUAL DE ATIVAÇÃO DO SISTEMA**]({link_manual})
 
-**Seus dados:** **Matrícula:** {matricula.zfill(6)}
+**Matrícula:** {matricula.zfill(6)}
 **Senha:** 123456
 **Chave de ativação:** {chave_ativacao}
 
@@ -608,6 +607,7 @@ Cada investidor terá acesso ao extrato mensal do banco de horas.
 **Obs.:** A apuração da folha de pagamento acontece a cada dia 25.
 
 Conte conosco para o que precisar.
+
 
 Atenciosamente,
 """
