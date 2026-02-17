@@ -1372,7 +1372,7 @@ def render(df_ativos, df_desligados):
                     modal_titulo_doc(df_ativos_proc)
             
             with st.expander("📋 Checklists / Workflow", expanded=True): # Deixei True para você testar
-                if st.button("💰 Comissão PJ", use_container_width=True):
+                if st.button("💰 Comissão PJ", type="primary", use_container_width=True):
                     modal_workflow_comissao(df_ativos_proc, df_desligados_proc)
 
     with aba_conectividade:
