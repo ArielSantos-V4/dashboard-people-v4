@@ -523,91 +523,98 @@ def modal_vale_transporte(df_pessoas):
 def modal_rascunho_ponto(df_ativos):
     st.markdown("""
         <div style="background-color: #f9f9f9; padding: 12px; border-left: 5px solid #E30613; border-radius: 4px; margin-bottom: 20px;">
-            <span style="color: #404040; font-size: 14px;">Gera o rascunho de orientação e acesso ao sistema Ahgora.</span>
+            <span style="color: #404040; font-size: 14px;">Gera o rascunho com formatação para o onboarding de CLTs.</span>
         </div>
     """, unsafe_allow_html=True)
 
-    # 1. Filtro inicial: Apenas Ativos e que contenham CLT no modelo de contrato
+    # Filtro: Apenas CLT Ativos
     df_clt = df_ativos[df_ativos["Modelo de contrato"].astype(str).str.upper().str.contains("CLT", na=False)].copy()
     
     lista_nomes = [""] + sorted(df_clt["Nome"].unique())
-    nome_sel = st.selectbox("Selecione o Investidor CLT:", lista_nomes, key="sel_ponto_clt")
+    nome_sel = st.selectbox("Selecione o Investidor CLT:", lista_nomes, key="sel_ponto_clt_v3")
 
     if nome_sel:
         row = df_clt[df_clt["Nome"] == nome_sel].iloc[0]
         matricula = str(row.get("Matrícula", "")).replace(".0", "").strip()
+        lider_nome = row.get("Liderança imediata", "Não cadastrado")
+        lider_email = row.get("E-mail liderança", "") # Ajuste o nome da coluna se for diferente
         
-        # Validação de Matrícula existente
         if not matricula or matricula.lower() == "nan":
-            st.error("🚨 Este investidor não possui matrícula cadastrada. Cadastre na planilha antes de gerar o rascunho.")
+            st.error("🚨 Matrícula não encontrada. Cadastre na planilha antes de prosseguir.")
             return
 
         chave_ativacao = st.text_input("Chave de ativação:", placeholder="Digite a chave do Ahgora...")
         
-        st.markdown(f"**Confirmação:** A matrícula cadastrada para {nome_sel} é **{matricula.zfill(6)}**. Está correta?")
-        confirmou = st.checkbox("Sim, a matrícula está correta.")
+        st.info(f"📌 **Lembrete:** Adicionar **{lider_nome}** ({lider_email}) em cópia no e-mail.")
+        
+        st.markdown(f"**Confirmação:** A matrícula é **{matricula.zfill(6)}**?")
+        confirmou = st.checkbox("Sim, está correta.")
 
         if st.button("Gerar Rascunho", type="primary", use_container_width=True):
             if not chave_ativacao:
-                st.warning("Informe a chave de ativação para prosseguir.")
+                st.warning("Informe a chave de ativação.")
             elif not confirmou:
-                st.warning("Você precisa confirmar a matrícula para gerar o rascunho.")
+                st.warning("Confirme a matrícula.")
             else:
-                # Lógica do Primeiro Nome
                 primeiro_nome = nome_sel.split()[0].capitalize()
+                link_manual = "https://docs.google.com/document/d/1PD-14f2227BPHbZmjAnB9JoowJgLMS9FET8YGf5Oq-w/edit?tab=t.0"
                 
-                # O Rascunho
-                texto_email = f"""Olá, {primeiro_nome}
+                # Texto formatado para exibição (Markdown)
+                assunto = "Formalização CLT - Sistema Ponto 🕝"
+                corpo_email = f"""
+**Assunto:** {assunto}
+
+---
+
+Olá, **{primeiro_nome}**
 Espero que esteja bem.
 
 Hoje tivemos um bate-papo importante sobre o modelo de contrato dos CLTs na V4 Company. 
 
-E agora oficialmente, estou enviando seu acesso ao sistema AHGORA para registro de ponto por exceção 
+E agora oficialmente, estou enviando seu acesso ao sistema **AHGORA** para registro de **ponto por exceção** 👉 [**CLIQUE AQUI PARA ACESSAR O MANUAL DE ATIVAÇÃO DO SISTEMA**]({link_manual})
 
-[CLIQUE AQUI PARA ACESSAR O MANUAL DE ATIVAÇÃO DO SISTEMA](https://growth.learning.rocks/)
+**Seus dados:** **Matrícula:** {matricula.zfill(6)}
+**Senha:** 123456
+**Chave de ativação:** {chave_ativacao}
 
-Seus dados: 
+**Para relembrarmos:**
+Adotamos a utilização do controle de ponto por **EXCEÇÃO**, no modelo de Banco de Horas trimestral. Esse sistema foi pensado para trazer mais flexibilidade e transparência na gestão do tempo de trabalho, garantindo clareza para todos.
 
-Matrícula: {matricula.zfill(6)}
-Senha: 123456
-Chave de ativação: {chave_ativacao}
+**Como funciona:**
+* **Horas positivas (extras):** entram no banco de horas e podem ser compensadas em descanso até o final desses 3 meses, desde que tenham aprovação pela liderança e DP (milena.nascimento@v4company.com) no e-mail.
+* **Horas negativas (faltas/atrasos):** entram no banco de horas e deverão ser compensadas no período de 3 meses do banco de horas pelo investidor.
 
-Para relembrarmos:
-Adotamos a utilização do controle de ponto por EXCEÇÃO, no modelo de Banco de Horas trimestral. Esse sistema foi pensado para trazer mais flexibilidade e transparência na gestão do tempo de trabalho, garantindo clareza para todos.
+**Regras principais:**
+* **Validade:** apuração a cada 3 meses.
+* **Aprovação de horas extras:** Somente com autorização da liderança e DP (milena.nascimento@v4company.com), em casos específicos (ex.: War Day ou final do mês).
 
-Como funciona:
-• Horas positivas (extras): entram no banco de horas e podem ser compensadas em descanso até o final desses 3 meses, desde que tenham aprovação pela liderança e DP (milena.nascimento@v4company.com) no e-mail.
-• Horas negativas (faltas/atrasos): entram no banco de horas e deverão ser compensadas no período de 3 meses do banco de horas pelo investidor.
+**Cálculo de horas:**
+* **Domingos/feriados** → 1h = 1h24 no banco.
+* **Demais dias** → 1h trabalhada = 1h de banco de horas.
+* **Adicional noturno (22h–06h):** pago em dinheiro (30%) dentro do mês, horas entram para banco de horas.
 
-Regras principais:
-• Validade: apuração a cada 3 meses.
-• Aprovação de horas extras: Somente com autorização da liderança e DP (milena.nascimento@v4company.com), em casos específicos (ex.: War Day ou final do mês).
+**Rescisão:**
+* **Saldo positivo** → pago junto às verbas rescisórias.
+* **Saldo negativo** → descontado na rescisão.
 
-Cálculo de horas:
-• Domingos/feriados → 1h = 1h24 no banco.
-• Demais dias → 1h trabalhada = 1h de banco de horas.
-• Adicional noturno (22h–06h): pago em dinheiro (30%) dentro do mês, horas entram para banco de horas.
+**Folgas compensatórias:** precisam ser combinadas com 1 dia de antecedência + formalização com o DP (via e-mail milena.nascimento@v4company.com).
 
-Rescisão:
-• Saldo positivo → pago junto às verbas rescisórias.
-• Saldo negativo → descontado na rescisão.
+**Atestados:** devem ser anexados **obrigatoriamente** no sistema para abono.
 
-Folgas compensatórias: precisam ser combinadas com 1 dia de antecedência + formalização com o DP (via e-mail milena.nascimento@v4company.com).
+**Apuração:** revisar saldo a cada 2 semanas para evitar acúmulo.
 
-Atestados: devem ser anexados obrigatoriamente no sistema para abono.
-
-Apuração: revisar saldo a cada 2 semanas para evitar acúmulo.
-
-Transparência:
+**Transparência:**
 Cada investidor terá acesso ao extrato mensal do banco de horas.
-Obs.: A apuração da folha de pagamento acontece a cada dia 25.
+**Obs.:** A apuração da folha de pagamento acontece a cada dia 25.
+
 Conte conosco para o que precisar.
 
-Atenciosamente,"""
-
+Atenciosamente,
+"""
                 st.markdown("---")
-                st.code(texto_email, language="text")
-                st.success("Rascunho gerado! Clique no ícone de copiar no canto superior direito do bloco cinza.")
+                # Usamos st.area_text ou markdown para permitir copiar a formatação em editores que aceitam rich text
+                st.markdown(corpo_email)
+                st.success("Rascunho gerado com sucesso!")
                 
 # ==========================================
 # MODAL DE CONSULTA (HÍBRIDO - REFORMULADO V3)
