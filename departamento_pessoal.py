@@ -137,23 +137,20 @@ from datetime import datetime, timedelta
 
 def buscar_base_vagas():
     try:
-        # Substitua 'SEU_ID_DA_PLANILHA' pelo ID que você já usa na gravação
-        # O gid=1415557248 é o que você me passou para a aba de vagas
-        spreadsheet_id = "COLE_AQUI_O_ID_DA_SUA_PLANILHA"
+        spreadsheet_id = "https://docs.google.com/spreadsheets/d/13EPwhiXgh8BkbhyrEy2aCy3cv1O8npxJ_hA-HmLZ-pY/edit?usp=sharing" # Use o ID da sua Master
         gid = "1415557248"
-        
         url = f"https://docs.google.com/spreadsheets/d/{spreadsheet_id}/export?format=csv&gid={gid}"
         
-        # O header=0 diz que a primeira linha são os títulos das colunas
-        df_vagas = pd.read_csv(url, header=0)
+        # Lendo a base
+        df_vagas = pd.read_csv(url)
         
-        # Limpeza rápida: remove linhas totalmente vazias
-        df_vagas = df_vagas.dropna(how='all')
-        
+        # Limpeza: Mantemos apenas o que tem ID preenchido
+        if "ID" in df_vagas.columns:
+            df_vagas = df_vagas.dropna(subset=["ID"])
+            
         return df_vagas
     except Exception as e:
-        # Isso vai te ajudar a ver o erro real no console se falhar
-        print(f"Erro detalhado na busca de vagas: {e}")
+        st.error(f"Erro na conexão com a aba de vagas: {e}")
         return None
         
 
@@ -187,14 +184,30 @@ def modal_cadastro_investidor():
     c10, c11 = st.columns([0.85, 0.15])
     id_vaga = c10.text_input("ID Vaga")
     with c11:
-        st.write(" ") 
-        with st.popover("❓"):
-            st.write("### IDs de Vaga Disponíveis")
-            df_vagas = buscar_base_vagas()
-            if df_vagas is not None:
-                st.dataframe(df_vagas, use_container_width=True, hide_index=True)
-            else:
-                st.error("Erro ao carregar vagas.")
+            st.write(" ") 
+            with st.popover("❓", help="Consultar base de vagas"):
+                st.subheader("🔍 Consulta de Vagas")
+                df_vagas = buscar_base_vagas()
+                
+                if df_vagas is not None:
+                    # Input de busca rápida dentro do popover
+                    busca_vaga = st.text_input("Filtrar por Cargo ou ID", placeholder="Ex: Closer...")
+                    
+                    df_v_filtrado = df_vagas.copy()
+                    if busca_vaga:
+                        # Busca em todas as colunas da aba de vagas
+                        mask = df_v_filtrado.astype(str).apply(lambda x: x.str.contains(busca_vaga, case=False).any(), axis=1)
+                        df_v_filtrado = df_v_filtrado[mask]
+                    
+                    # Exibição da tabela
+                    st.dataframe(
+                        df_v_filtrado, 
+                        use_container_width=True, 
+                        hide_index=True,
+                        height=300 # Altura fixa para não esticar o modal
+                    )
+                else:
+                    st.error("Não foi possível carregar os dados. Verifique o compartilhamento da planilha.")
 
     c12, c13, c14 = st.columns(3)
     cargo = c12.text_input("Cargo")
