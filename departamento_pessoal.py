@@ -226,7 +226,7 @@ def modal_workflow_comissao(df_ativos, df_desligados):
         label_sap = (
             "Programação de pagamento na "
             "[**SAP**](https://vhv4cps4ci.sap.mktlab.app:44300/sap/bc/ui2/flp#ME21N-display?sap-ui-tech-hint=GUI)? "
-            "&nbsp;&nbsp; :red[⚠️ **Lembrete: Material 115**]"
+            "&nbsp;&nbsp; :red[⚠️ **Obs: Material 115**]"
         )
         st.checkbox(label_sap, key="st2")
         
