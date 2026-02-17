@@ -171,15 +171,23 @@ def validar_clt(row):
             
     return eh_clt, tipo_encontrado
 
-@st.dialog("💰 Workflow: Pagamento de Comissão PJ", width="large")
+@st.dialog("💰 Workflow: Pagamento de Comissão PJ") # Removido o large para manter a largura padrão
 def modal_workflow_comissao(df_ativos, df_desligados):
-    # Unificando as bases para busca
+    # Texto explicativo no topo
+    st.markdown("""
+        <div style="background-color: #f9f9f9; padding: 12px; border-left: 5px solid #E30613; border-radius: 4px; margin-bottom: 20px;">
+            <span style="color: #404040; font-size: 14px;">Workflow para conferência e lançamento de notas fiscais de comissão para investidores PJ.</span>
+        </div>
+    """, unsafe_allow_html=True)
+
+    # Unificando as bases
     df_total = pd.concat([df_ativos, df_desligados], ignore_index=True)
     
     lista_nomes = [""] + sorted(df_total["Nome"].dropna().unique())
-    nome_sel = st.selectbox("Selecione o Investidor:", lista_nomes, key="wf_com_nome")
+    nome_sel = st.selectbox("Selecione o Investidor:", lista_nomes, key="wf_com_v2")
 
     if nome_sel:
+        # Busca a linha correta
         res = df_total[df_total["Nome"] == nome_sel].iloc[0]
         
         # 1. Validação de Desligado
@@ -194,44 +202,45 @@ def modal_workflow_comissao(df_ativos, df_desligados):
         if "PJ" not in modelo:
             st.error(f"🚨 Alerta: Este investidor está registrado como {modelo}. Pagamento de comissão via NF é exclusivo para PJ.")
         
-        # 3. Informações de Apoio (Cards Informativos)
+        # 3. Informações de Apoio (Organizadas em 2x2 como pedido)
         st.markdown("---")
-        c1, c2, c3 = st.columns(3)
-        c1.metric("BP", res.get("BP", "N/A"))
-        c2.metric("Cód. CC", res.get("Código CC", "N/A"))
-        c3.metric("Razão Social", res.get("Razão social", "N/A")[:20] + "...")
-        st.caption(f"**Descrição CC:** {res.get('Descrição CC', 'N/A')}")
+        
+        # Linha 1: BP e Razão
+        c1, c2 = st.columns([1, 2])
+        c1.text_input("BP", str(res.get("BP", "")).replace(".0", ""), disabled=True)
+        c2.text_input("Razão Social", res.get("Razão social", ""), disabled=True)
+        
+        # Linha 2: CC e Descrição CC
+        c3, c4 = st.columns([1, 2])
+        c3.text_input("Cód. CC", str(res.get("Código CC", "")).replace(".0", ""), disabled=True)
+        c4.text_input("Descrição CC", res.get("Descrição CC", ""), disabled=True)
         
         st.markdown("---")
         st.subheader("✅ Etapas do Processo")
 
         # 4. Checklist de Workflow
-        step1 = st.checkbox("NF emitida com valor e tomador corretos?")
+        st.checkbox("NF emitida com valor correto e tomador de serviços correto?", key="st1")
         
-        # Etapa SAP com Lembrete e Link
+        # Etapa SAP com Hiperlink na palavra e Lembrete em vermelho
         st.markdown(f"""
-            <div style="margin-left: 25px; margin-bottom: 10px;">
-                <a href="https://vhv4cps4ci.sap.mktlab.app:44300/sap/bc/ui2/flp#ME21N-display?sap-ui-tech-hint=GUI" target="_blank" style="text-decoration: none;">
-                    🚀 Abrir SAP (ME21N)
-                </a><br>
-                <small style="color: #E30613;">💡 Lembrete: Material <b>115</b> (Despesas variáveis com PJ)</small>
+            <div style="margin-left: 28px; margin-top: -10px; margin-bottom: 10px;">
+                <span style="font-size: 14px; color: #404040;">Programação de pagamento na 
+                <a href="https://vhv4cps4ci.sap.mktlab.app:44300/sap/bc/ui2/flp#ME21N-display?sap-ui-tech-hint=GUI" target="_blank" style="color: #E30613; font-weight: bold; text-decoration: underline;">SAP</a>?
+                <b style="color: #E30613; margin-left: 10px;">⚠️ Lembrete: Material 115</b></span>
             </div>
         """, unsafe_allow_html=True)
-        step2 = st.checkbox("Programação de pagamento realizada na SAP?")
+        # O checkbox em si fica logo abaixo ou acima, mas para o clique ser funcional:
+        step2 = st.checkbox("Confirmação de lançamento no sistema", label_visibility="collapsed", key="st2")
         
-        step3 = st.checkbox("Cadastro na planilha do financeiro realizado?")
-        step4 = st.checkbox("Nota Fiscal salva no Drive de Notas?")
-        step5 = st.checkbox("E-mail de confirmação enviado ao investidor?")
+        st.checkbox("Cadastro na planilha do financeiro", key="st3")
+        st.checkbox("Salvar NF no Drive de Notas fiscais", key="st4")
+        st.checkbox("Retornar investidor pelo email informando sobre o pagamento", key="st5")
 
         st.markdown("---")
         
-        # 5. Conclusão
-        if step1 and step2 and step3 and step4 and step5:
-            if st.button("Finalizar Workflow", type="primary", use_container_width=True):
-                st.success(f"Workflow de comissão para {nome_sel} concluído com sucesso! 🎉")
-                # Opcional: st.balloons() para comemorar
-        else:
-            st.button("Finalizar Workflow", disabled=True, use_container_width=True, help="Conclua todas as etapas para finalizar.")
+        # 5. Conclusão (Botão Vermelho V4)
+        if st.button("OK - CONCLUIR", type="primary", use_container_width=True):
+            st.success(f"Workflow finalizado para {nome_sel}! 🚀")
             
 # ==========================================
 # MODAIS DE RELATÓRIO MASTER
