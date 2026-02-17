@@ -523,7 +523,7 @@ def modal_vale_transporte(df_pessoas):
 def modal_rascunho_ponto(df_ativos):
     st.markdown("""
         <div style="background-color: #f9f9f9; padding: 12px; border-left: 5px solid #E30613; border-radius: 4px; margin-bottom: 20px;">
-            <span style="color: #404040; font-size: 14px;">Gera o rascunho formatado para o onboarding de CLTs.</span>
+            <span style="color: #404040; font-size: 14px;">Gera o rascunho de e-mail formatado para ativação do investidor CLT no sistema ponto.</span>
         </div>
     """, unsafe_allow_html=True)
 
