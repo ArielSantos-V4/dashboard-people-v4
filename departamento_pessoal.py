@@ -137,17 +137,17 @@ from datetime import datetime, timedelta
 
 def buscar_base_vagas():
     try:
-        spreadsheet_id = "https://docs.google.com/spreadsheets/d/13EPwhiXgh8BkbhyrEy2aCy3cv1O8npxJ_hA-HmLZ-pY/edit?usp=sharing" # Use o ID da sua Master
+        spreadsheet_id = "13EPwhiXgh8BkbhyrEy2aCy3cv1O8npxJ_hA-HmLZ-pY" 
+        
+        # 2. O GID da aba de vagas (o número que você passou)
         gid = "1415557248"
-        url = f"https://docs.google.com/spreadsheets/d/{spreadsheet_id}/export?format=csv&gid={gid}"
         
-        # Lendo a base
-        df_vagas = pd.read_csv(url)
+        # 3. Montamos o link final
+        url_direta = f"https://docs.google.com/spreadsheets/d/{spreadsheet_id}/export?format=csv&gid={gid}"
         
-        # Limpeza: Mantemos apenas o que tem ID preenchido
-        if "ID" in df_vagas.columns:
-            df_vagas = df_vagas.dropna(subset=["ID"])
-            
+        # 4. Lemos o CSV
+        df_vagas = pd.read_csv(url_direta)
+        
         return df_vagas
     except Exception as e:
         st.error(f"Erro na conexão com a aba de vagas: {e}")
