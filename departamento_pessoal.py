@@ -554,9 +554,18 @@ def modal_rascunho_ponto(df_ativos):
             else:
                 primeiro_nome = nome_sel.split()[0].capitalize()
                 link_manual = "[https://docs.google.com/document/d/1PD-14f2227BPHbZmjAnB9JoowJgLMS9FET8YGf5Oq-w/edit?tab=t.0](https://docs.google.com/document/d/1PD-14f2227BPHbZmjAnB9JoowJgLMS9FET8YGf5Oq-w/edit?tab=t.0)"
-                
+
+                st.markdown("---")
                 # Definimos o Assunto primeiro
-                st.markdown(f"### Assunto: Formalização CLT - Sistema Ponto 🕝")
+                # 1. Quadro do Assunto (Estilizado)
+                st.markdown("##### 📌 Copie o Assunto:")
+                assunto_html = f"""
+                <div style="background-color: white; color: #000000; font-family: Arial, sans-serif; font-size: 11pt; padding: 10px; border: 1px solid #eeeeee; border-radius: 8px; margin-bottom: 15px;">
+                    Formalização CLT - Sistema Ponto 🕝
+                </div>
+                """
+                st.markdown(assunto_html, unsafe_allow_html=True)
+                
                 st.markdown("---")
 
                 # Criamos o HTML completo em uma única variável, sem quebras de linha estranhas
@@ -567,7 +576,7 @@ def modal_rascunho_ponto(df_ativos):
                     Espero que esteja bem.<br><br>
                     Hoje tivemos um bate-papo importante sobre o modelo de contrato dos CLTs na V4 Company.<br><br>
                     E agora oficialmente, estou enviando seu acesso ao sistema <b>AHGORA</b> para registro de <b>ponto por exceção</b> 👉 
-                    <a href="{link_manual}" target="_blank" style="color: #E30613; font-weight: bold; text-decoration: underline;">CLIQUE AQUI PARA ACESSAR O MANUAL DE ATIVAÇÃO DO SISTEMA</a><br><br>
+                    <a href="{link_manual}" target="_blank" style="color: #E30613; font-weight: bold; text-decoration: underline;">Clique aqui para acessar o manual de ativação</a><br><br>
                     <b>Matrícula:</b> {matricula.zfill(6)}<br>
                     <b>Senha:</b> 123456<br>
                     <b>Chave de ativação:</b> {chave_ativacao}<br><br>
