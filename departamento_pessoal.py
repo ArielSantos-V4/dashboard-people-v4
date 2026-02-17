@@ -592,8 +592,7 @@ def modal_rascunho_ponto(df_ativos):
                 <div style="background-color: white; color: #000000; font-family: Arial, sans-serif; font-size: 11pt; line-height: 1.6; padding: 20px; border: 1px solid #eeeeee; border-radius: 8px;">
                     Olá, <b>{primeiro_nome}</b>. 
                     Espero que esteja bem.<br><br>
-                    Hoje tivemos um bate-papo importante sobre o modelo de contrato dos CLTs na V4 Company.<br><br>
-                    E agora oficialmente, estou enviando seu acesso ao sistema <b>AHGORA</b> para registro de <b>ponto por exceção</b> 👉 
+                    Tivemos um bate-papo importante sobre o modelo de contrato dos CLTs na V4 Company e agora oficialmente, estou enviando seu acesso ao sistema <b>AHGORA</b> para registro de <b>ponto por exceção</b><br> 👉 
                     <a href="https://docs.google.com/document/d/1PD-14f2227BPHbZmjAnB9JoowJgLMS9FET8YGf5Oq-w/edit?tab=t.0" target="_blank" style="color: #E30613; font-weight: bold; text-decoration: underline;">Clique aqui para acessar o manual de ativação</a><br><br>
                     <b>Matrícula:</b> {matricula.zfill(6)}<br>
                     <b>Senha:</b> 123456<br>
