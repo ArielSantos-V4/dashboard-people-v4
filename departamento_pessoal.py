@@ -1369,7 +1369,17 @@ def render(df_ativos, df_desligados):
         with sub_estat:
             # MOVA PARA CÁ: Bloco de Contratos a vencer e Investidores MEI
             st.markdown("### 📊 Relatórios Estatísticos")
-            
+
+            # --- RELATÓRIO 3: CARGOS ---
+            with st.expander("👔 Estrutura de Cargos e Salários", expanded=False):
+                # Agrupando por Cargo e Área
+                df_cargo = df_ativos_proc.groupby(["Cargo", "Área", "CBO", "Descrição CBO"]).agg(
+                    Remuneração_Média=("Remuneração", lambda x: x.replace('[R$ .]', '', regex=True).astype(float).mean())
+                ).reset_index()
+                
+                df_cargo["Remuneração_Média"] = df_cargo["Remuneração_Média"].map('R$ {:,.2f}'.format)
+                st.dataframe(df_cargo, use_container_width=True, hide_index=True)
+                
             # ==========================================
             # 2. CONTRATOS A VENCER
             # ==========================================
@@ -1417,14 +1427,30 @@ def render(df_ativos, df_desligados):
 
             pass
 
-        # --- SUB-ABA: FINANCEIRO ---
         with sub_finan:
             st.markdown("### 💰 Relatórios Financeiros")
-            st.markdown("""
-                <div style="padding: 20px; border-radius: 5px; border: 1px solid #dcdfe6; background-color: #f8f9fa; color: #606266; text-align: center;">
-                    ⚙️ Esta seção está sendo preparada e será configurada futuramente.
-                </div>
-            """, unsafe_allow_html=True)
+            
+            # --- RELATÓRIO 1: CENTRO DE CUSTO ---
+            with st.expander("🏢 Visão por Centro de Custo", expanded=False):
+                # Agrupando os dados
+                df_cc = df_ativos_proc.groupby(["Código CC", "Descrição CC", "Área"]).agg(
+                    Qtd_Investidores=("Nome", "count"),
+                    Total_Remuneracao=("Remuneração", lambda x: x.replace('[R$ .]', '', regex=True).astype(float).sum()) # Ajuste se sua coluna for string
+                ).reset_index()
+                
+                # Formatação para moeda
+                df_cc["Total_Remuneracao"] = df_cc["Total_Remuneracao"].map('R$ {:,.2f}'.format)
+                st.dataframe(df_cc, use_container_width=True, hide_index=True)
+
+            # --- RELATÓRIO 2: MODELO DE CONTRATO ---
+            with st.expander("📄 Visão por Modelo de Contrato", expanded=False):
+                df_mod = df_ativos_proc.groupby("Modelo de contrato").agg(
+                    Qtd_Investidores=("Nome", "count"),
+                    Total_Remuneracao=("Remuneração", lambda x: x.replace('[R$ .]', '', regex=True).astype(float).sum())
+                ).reset_index()
+                
+                df_mod["Total_Remuneracao"] = df_mod["Total_Remuneracao"].map('R$ {:,.2f}'.format)
+                st.dataframe(df_mod, use_container_width=True, hide_index=True)
 
         # --- SUB-ABA: OPERACIONAL ---
         with sub_oper:
