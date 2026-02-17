@@ -548,6 +548,27 @@ def modal_rascunho_ponto(df_ativos):
         
         st.info(f"📌 **Lembrete:** Não esqueça de adicionar **{lider_nome}** em cópia no e-mail.")
 
+        # ... (dentro do modal_rascunho_ponto, após as validações) ...
+
+        st.markdown("---")
+        st.markdown("##### 📎 Anexo Obrigatório")
+        
+        # Exemplo 1: Se o arquivo for um padrão fixo que você já tem na pasta
+        try:
+            with open("Treinamento CLTs - Ponto por exceção", "rb") as f:
+                st.download_button(
+                    label="📥 Baixar Anexo para o E-mail",
+                    data=f,
+                    file_name="Treinamento CLTs - Ponto por exceção",
+                    mime="application/pdf",
+                    use_container_width=True
+                )
+        except FileNotFoundError:
+            st.error("⚠️ Arquivo 'MTreinamento CLTs - Ponto por exceção' não encontrado na pasta do sistema.")
+
+        # Alerta visual para não esquecer de anexar no Outlook/Gmail
+        st.warning("🚨 **NÃO ESQUEÇA:** Este e-mail exige o anexo")
+
         if st.button("Gerar Rascunho", type="primary", use_container_width=True):
             if not chave_ativacao:
                 st.warning("Por favor, informe a chave de ativação para gerar o rascunho.")
