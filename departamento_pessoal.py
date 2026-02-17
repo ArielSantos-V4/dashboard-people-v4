@@ -544,7 +544,7 @@ def modal_rascunho_ponto(df_ativos):
             st.error("🚨 **Matrícula não encontrada!** Por favor, cadastre a matrícula na planilha Master antes de gerar este rascunho.")
             return
 
-        chave_ativacao = st.text_input("Chave de ativação:", placeholder="Digite a chave do Ahgora...")
+        chave_ativacao = st.text_input("Chave de ativação:", placeholder="Digite a chave gerada no Ahgora...")
         
         st.info(f"📌 **Lembrete:** Não esqueça de adicionar **{lider_nome}** em cópia no e-mail.")
 
