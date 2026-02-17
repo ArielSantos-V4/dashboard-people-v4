@@ -14,6 +14,14 @@ import pandas as pd
 import gspread
 from google.oauth2.service_account import Credentials
 
+try:
+    scope = ["https://www.googleapis.com/auth/spreadsheets"]
+    creds = Credentials.from_service_account_info(st.secrets["gcp_service_account"], scopes=scope)
+    client = gspread.authorize(creds)
+    st.success("Conexão com o Google estabelecida! ✅")
+except Exception as e:
+    st.error(f"Erro na conexão: {e}")
+    
 # ==============================
 # CARREGAMENTO DE DADOS (ATUALIZADO)
 # ==============================
