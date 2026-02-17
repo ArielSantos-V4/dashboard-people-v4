@@ -1441,25 +1441,31 @@ def render(df_ativos, df_desligados):
         with sub_finan:
             st.markdown("### 💰 Relatórios Financeiros")
             
-            # --- ALERTA DE AUDITORIA DE CC ---
-            # Filtra quem não tem Código CC ou Descrição CC preenchidos
+            # --- ALERTA DE AUDITORIA DE CC (VERSÃO IMPLACÁVEL) ---
+            # Considera: NaN real, string "nan", string vazia "", ou apenas espaços " "
+            def is_vazio(valor):
+                v = str(valor).strip().lower()
+                return v in ["", "nan", "none", "nat"]
+
+            # Aplicando o filtro nas colunas de Código ou Descrição
             sem_cc = df_ativos_proc[
-                (df_ativos_proc["Código CC"].isna()) | 
-                (df_ativos_proc["Código CC"].astype(str).str.strip() == "") |
-                (df_ativos_proc["Descrição CC"].isna()) | 
-                (df_ativos_proc["Descrição CC"].astype(str).str.strip() == "")
+                df_ativos_proc["Código CC"].apply(is_vazio) | 
+                df_ativos_proc["Descrição CC"].apply(is_vazio)
             ]
             
             qtd_sem_cc = len(sem_cc)
             
             if qtd_sem_cc > 0:
-                st.error(f"⚠️ **Atenção:** Existem **{qtd_sem_cc}** investidores ativos sem Centro de Custo cadastrado. Isso pode afetar a somatória dos relatórios abaixo.")
-                with st.expander("🔍 Ver investidores sem CC", expanded=False):
-                    st.dataframe(sem_cc[["Nome", "Área", "Cargo", "Unidade/Atuação"]], use_container_width=True, hide_index=True)
+                st.error(f"⚠️ **Atenção:** Existem **{qtd_sem_cc}** investidores ativos sem Centro de Custo cadastrado corretamente.")
+                with st.expander("🔍 Ver quem são os investidores sem CC", expanded=False):
+                    # Mostra os nomes e a unidade para facilitar a busca na planilha
+                    st.dataframe(
+                        sem_cc[["Nome", "Unidade/Atuação", "Cargo", "Área"]], 
+                        use_container_width=True, 
+                        hide_index=True
+                    )
             else:
                 st.info("✅ Todos os investidores ativos possuem Centro de Custo cadastrado.")
-            
-            st.markdown("<br>", unsafe_allow_html=True)
 
             # --- RESTANTE DOS RELATÓRIOS (CÓDIGO ANTERIOR) ---
             df_temp = df_ativos_proc.copy()
