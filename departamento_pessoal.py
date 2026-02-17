@@ -555,16 +555,16 @@ def modal_rascunho_ponto(df_ativos):
         
         # Exemplo 1: Se o arquivo for um padrão fixo que você já tem na pasta
         try:
-            with open("Treinamento CLTs - Ponto por exceção", "rb") as f:
+            with open("Treinamento CLTs - Ponto por exceção.pptx", "rb") as f:
                 st.download_button(
                     label="📥 Baixar Anexo para o E-mail",
                     data=f,
-                    file_name="Treinamento CLTs - Ponto por exceção",
+                    file_name="Treinamento CLTs - Ponto por exceção.pptx",
                     mime="application/pdf",
                     use_container_width=True
                 )
         except FileNotFoundError:
-            st.error("⚠️ Arquivo 'MTreinamento CLTs - Ponto por exceção' não encontrado na pasta do sistema.")
+            st.error("⚠️ Arquivo 'MTreinamento CLTs - Ponto por exceção.pptx' não encontrado na pasta do sistema.")
 
         # Alerta visual para não esquecer de anexar no Outlook/Gmail
         st.warning("🚨 **NÃO ESQUEÇA:** Este e-mail exige o anexo")
