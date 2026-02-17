@@ -1379,14 +1379,16 @@ def render(df_ativos, df_desligados):
             # MOVA PARA CÁ: Bloco de Contratos a vencer e Investidores MEI
             st.markdown("### 📊 Relatórios Estatísticos")
 
-            # --- RELATÓRIO 3: CARGOS ---
+            # Reutilizando a lógica da coluna numérica
+            df_temp_cargo = df_ativos_proc.copy()
+            df_temp_cargo["Rem_Num"] = converter_remuneracao_para_float(df_temp_cargo["Remuneração"])
+
             with st.expander("👔 Estrutura de Cargos e Salários", expanded=False):
-                # Agrupando por Cargo e Área
-                df_cargo = df_ativos_proc.groupby(["Cargo", "Área", "CBO", "Descrição CBO"]).agg(
-                    Remuneração_Média=("Remuneração", lambda x: x.replace('[R$ .]', '', regex=True).astype(float).mean())
+                df_cargo = df_temp_cargo.groupby(["Cargo", "Área", "CBO", "Descrição CBO"]).agg(
+                    Remuneração_Média=("Rem_Num", "mean")
                 ).reset_index()
                 
-                df_cargo["Remuneração_Média"] = df_cargo["Remuneração_Média"].map('R$ {:,.2f}'.format)
+                df_cargo["Remuneração_Média"] = df_cargo["Remuneração_Média"].map('R$ {:,.2f}'.format).str.replace(',', 'X').str.replace('.', ',').str.replace('X', '.')
                 st.dataframe(df_cargo, use_container_width=True, hide_index=True)
                 
             # ==========================================
@@ -1439,28 +1441,28 @@ def render(df_ativos, df_desligados):
         with sub_finan:
             st.markdown("### 💰 Relatórios Financeiros")
             
-            # --- RELATÓRIO 1: CENTRO DE CUSTO ---
+            # Criando coluna numérica temporária para cálculos
+            df_temp = df_ativos_proc.copy()
+            df_temp["Rem_Num"] = converter_remuneracao_para_float(df_temp["Remuneração"])
+
             with st.expander("🏢 Visão por Centro de Custo", expanded=False):
-                # Agrupando os dados
-                df_cc = df_ativos_proc.groupby(["Código CC", "Descrição CC", "Área"]).agg(
+                df_cc = df_temp.groupby(["Código CC", "Descrição CC", "Área"]).agg(
                     Qtd_Investidores=("Nome", "count"),
-                    Total_Remuneracao=("Remuneração", lambda x: x.replace('[R$ .]', '', regex=True).astype(float).sum()) # Ajuste se sua coluna for string
+                    Total_Remuneracao=("Rem_Num", "sum")
                 ).reset_index()
                 
-                # Formatação para moeda
-                df_cc["Total_Remuneracao"] = df_cc["Total_Remuneracao"].map('R$ {:,.2f}'.format)
+                df_cc["Total_Remuneracao"] = df_cc["Total_Remuneracao"].map('R$ {:,.2f}'.format).str.replace(',', 'X').str.replace('.', ',').str.replace('X', '.')
                 st.dataframe(df_cc, use_container_width=True, hide_index=True)
 
-            # --- RELATÓRIO 2: MODELO DE CONTRATO ---
             with st.expander("📄 Visão por Modelo de Contrato", expanded=False):
-                df_mod = df_ativos_proc.groupby("Modelo de contrato").agg(
+                df_mod = df_temp.groupby("Modelo de contrato").agg(
                     Qtd_Investidores=("Nome", "count"),
-                    Total_Remuneracao=("Remuneração", lambda x: x.replace('[R$ .]', '', regex=True).astype(float).sum())
+                    Total_Remuneracao=("Rem_Num", "sum")
                 ).reset_index()
                 
-                df_mod["Total_Remuneracao"] = df_mod["Total_Remuneracao"].map('R$ {:,.2f}'.format)
+                df_mod["Total_Remuneracao"] = df_mod["Total_Remuneracao"].map('R$ {:,.2f}'.format).str.replace(',', 'X').str.replace('.', ',').str.replace('X', '.')
                 st.dataframe(df_mod, use_container_width=True, hide_index=True)
-
+                
         # --- SUB-ABA: OPERACIONAL ---
         with sub_oper:
             st.markdown("### 🔨 Relatórios Operacionais")
