@@ -91,7 +91,16 @@ def calcular_idade(dt_nasc):
         return f"{idade} anos"
     except:
         return ""
-        
+
+def converter_remuneracao_para_float(coluna):
+    # Transforma em string, remove R$, pontos e troca vírgula por ponto
+    col_limpa = coluna.astype(str).str.replace('R$', '', regex=False)\
+                                  .str.replace('.', '', regex=False)\
+                                  .str.replace(',', '.', regex=False)\
+                                  .str.strip()
+    # Converte para número, o que não for número vira NaN (vazio)
+    return pd.to_numeric(col_limpa, errors='coerce')
+    
 # ==========================================
 # LÓGICA DE ALERTAS (ATIVOS)
 # ==========================================
