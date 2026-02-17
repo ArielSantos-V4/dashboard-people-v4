@@ -171,6 +171,68 @@ def validar_clt(row):
             
     return eh_clt, tipo_encontrado
 
+@st.dialog("💰 Workflow: Pagamento de Comissão PJ", width="large")
+def modal_workflow_comissao(df_ativos, df_desligados):
+    # Unificando as bases para busca
+    df_total = pd.concat([df_ativos, df_desligados], ignore_index=True)
+    
+    lista_nomes = [""] + sorted(df_total["Nome"].dropna().unique())
+    nome_sel = st.selectbox("Selecione o Investidor:", lista_nomes, key="wf_com_nome")
+
+    if nome_sel:
+        res = df_total[df_total["Nome"] == nome_sel].iloc[0]
+        
+        # 1. Validação de Desligado
+        is_desligado = nome_sel in df_desligados["Nome"].values
+        if is_desligado:
+            st.warning(f"⚠️ {nome_sel} consta na base de DESLIGADOS.")
+            if not st.checkbox("Desejo continuar o processo para este ex-investidor", key="wf_com_des"):
+                return
+
+        # 2. Validação de Modelo PJ
+        modelo = str(res.get("Modelo de contrato", "")).upper()
+        if "PJ" not in modelo:
+            st.error(f"🚨 Alerta: Este investidor está registrado como {modelo}. Pagamento de comissão via NF é exclusivo para PJ.")
+        
+        # 3. Informações de Apoio (Cards Informativos)
+        st.markdown("---")
+        c1, c2, c3 = st.columns(3)
+        c1.metric("BP", res.get("BP", "N/A"))
+        c2.metric("Cód. CC", res.get("Código CC", "N/A"))
+        c3.metric("Razão Social", res.get("Razão social", "N/A")[:20] + "...")
+        st.caption(f"**Descrição CC:** {res.get('Descrição CC', 'N/A')}")
+        
+        st.markdown("---")
+        st.subheader("✅ Etapas do Processo")
+
+        # 4. Checklist de Workflow
+        step1 = st.checkbox("NF emitida com valor e tomador corretos?")
+        
+        # Etapa SAP com Lembrete e Link
+        st.markdown(f"""
+            <div style="margin-left: 25px; margin-bottom: 10px;">
+                <a href="https://vhv4cps4ci.sap.mktlab.app:44300/sap/bc/ui2/flp#ME21N-display?sap-ui-tech-hint=GUI" target="_blank" style="text-decoration: none;">
+                    🚀 Abrir SAP (ME21N)
+                </a><br>
+                <small style="color: #E30613;">💡 Lembrete: Material <b>115</b> (Despesas variáveis com PJ)</small>
+            </div>
+        """, unsafe_allow_html=True)
+        step2 = st.checkbox("Programação de pagamento realizada na SAP?")
+        
+        step3 = st.checkbox("Cadastro na planilha do financeiro realizado?")
+        step4 = st.checkbox("Nota Fiscal salva no Drive de Notas?")
+        step5 = st.checkbox("E-mail de confirmação enviado ao investidor?")
+
+        st.markdown("---")
+        
+        # 5. Conclusão
+        if step1 and step2 and step3 and step4 and step5:
+            if st.button("Finalizar Workflow", type="primary", use_container_width=True):
+                st.success(f"Workflow de comissão para {nome_sel} concluído com sucesso! 🎉")
+                # Opcional: st.balloons() para comemorar
+        else:
+            st.button("Finalizar Workflow", disabled=True, use_container_width=True, help="Conclua todas as etapas para finalizar.")
+            
 # ==========================================
 # MODAIS DE RELATÓRIO MASTER
 # ==========================================
@@ -1301,8 +1363,9 @@ def render(df_ativos, df_desligados):
                 if st.button("📝 Título Doc (Automação)", use_container_width=True, type="primary"): 
                     modal_titulo_doc(df_ativos_proc)
             
-            with st.expander("📋 Checklists", expanded=False):
-                st.caption("Apoio aos processos")
+            with st.expander("📋 Checklists / Workflow", expanded=True): # Deixei True para você testar
+                if st.button("💰 Comissão PJ", use_container_width=True):
+                    modal_workflow_comissao(df_ativos_proc, df_desligados_proc)
 
     with aba_conectividade:
         st.markdown("""
