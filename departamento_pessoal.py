@@ -138,7 +138,7 @@ def gravar_no_google_sheets(dados_lista):
         # O segredo: se a célula na dados_lista for "", o Google não sobrescreve a fórmula se ela for ArrayFormula
         range_nome = f"A{proxima_linha}:AL{proxima_linha}"
         
-        sheet.update(range_name=range_nome, values=[dados_lista], value_input_option="USER_ENTERED")
+        sheet.update(range_name=range_nome, values=[dados_lista], value_input_option="RAW")
         
     except Exception as e:
         raise Exception(f"Erro na gravação coordenada: {e}")
