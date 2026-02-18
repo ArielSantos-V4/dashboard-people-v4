@@ -298,7 +298,7 @@ def modal_cadastro_investidor():
     link_drive = c22.text_input("Link Drive Docs")
 
     st.markdown("---")
-    if st.button("🚀 Gravar na Planilha Master", use_container_width=True, type="primary"):
+    if st.button("🚀 Gravar na Planilha Master", use_container_width=True, type="primary", key="btn_gravar_master_modal"):
         if not nome_curto or not cpf or not cod_cc:
             st.warning("Preencha Nome, CPF e Código CC!")
         else:
@@ -317,7 +317,7 @@ def modal_cadastro_investidor():
                 "", "", # W, X
                 conta_contabil, area, cpf,
                 nascimento.strftime("%d/%m/%Y") if nascimento else "",
-                cep_input, "", "", "", # AD, AE, AF
+                cep_input = c23.text_input("CEP", key="cad_cep_input")
                 "Pendente", # AG
                 "", "", "", # AH, AI, AJ
                 link_drive, # AK
