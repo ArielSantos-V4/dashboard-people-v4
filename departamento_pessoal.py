@@ -7,20 +7,20 @@ from docx import Document
 from io import BytesIO
 import re
 import unicodedata
+import requests
+import gspread
+from google.oauth2.service_account import Credentials
 
 # ==========================================
-# PALETA DE CORES V4
+# PALETA DE CORES E ESTADO
 # ==========================================
 CORES_V4 = ["#E30613", "#8B0000", "#FF4C4C", "#404040", "#D3D3D3"]
 
-# ==========================================
-# GESTÃO DE ESTADO
-# ==========================================
 if "investidor_selecionado" not in st.session_state:
     st.session_state.investidor_selecionado = ""
 
 # ==========================================
-# FUNÇÕES AUXILIARES
+# FUNÇÕES DE APOIO (CONEXÃO E TRATAMENTO)
 # ==========================================
 def limpar_numero(valor):
     if valor == "" or pd.isna(valor): return ""
@@ -34,10 +34,6 @@ def formatar_cnpj(valor):
     v = limpar_numero(valor).zfill(14)
     return f"{v[:2]}.{v[2:5]}.{v[5:8]}/{v[8:12]}-{v[12:]}" if len(v) == 14 else v
 
-def formatar_matricula(valor):
-    v = limpar_numero(valor)
-    return v.zfill(6) if v.isdigit() else v
-
 def parse_data_br(coluna):
     return pd.to_datetime(coluna, dayfirst=True, errors="coerce")
 
@@ -45,66 +41,10 @@ def calcular_tempo_casa(data_inicio):
     if pd.isna(data_inicio) or data_inicio == "": return ""
     if not isinstance(data_inicio, pd.Timestamp):
         data_inicio = pd.to_datetime(data_inicio, errors='coerce')
-        if pd.isna(data_inicio): return ""
+    if pd.isna(data_inicio): return ""
     hoje = pd.Timestamp.today().normalize()
     diff = relativedelta(hoje, data_inicio)
     return f"{diff.years} anos, {diff.months} meses e {diff.days} dias"
-
-def email_para_nome_arquivo(email):
-    if not email: return ""
-    return unicodedata.normalize("NFKC", email).strip().lower().replace(" ", "")
-
-def substituir_texto_docx(doc, mapa):
-    def replace_runs(paragraph):
-        for run in paragraph.runs:
-            for k, v in mapa.items():
-                if k in run.text: run.text = run.text.replace(k, str(v))
-    
-    for p in doc.paragraphs: replace_runs(p)
-    for t in doc.tables:
-        for r in t.rows:
-            for c in r.cells:
-                for p in c.paragraphs: replace_runs(p)
-    for s in doc.sections:
-        for p in s.header.paragraphs: replace_runs(p)
-        for p in s.footer.paragraphs: replace_runs(p)
-
-def gerar_docx_com_substituicoes(caminho, mapa):
-    doc = Document(caminho)
-    substituir_texto_docx(doc, mapa)
-    buf = BytesIO()
-    doc.save(buf)
-    buf.seek(0)
-    return buf
-
-def calcular_idade(dt_nasc):
-    if pd.isna(dt_nasc) or dt_nasc == "": return ""
-    try:
-        # Se for string, tenta converter, se já for timestamp, usa direto
-        if not isinstance(dt_nasc, pd.Timestamp):
-            dt_nasc = pd.to_datetime(dt_nasc, dayfirst=True, errors='coerce')
-        
-        if pd.isna(dt_nasc): return ""
-        
-        hoje = pd.Timestamp.today()
-        idade = hoje.year - dt_nasc.year - ((hoje.month, hoje.day) < (dt_nasc.month, dt_nasc.day))
-        return f"{idade} anos"
-    except:
-        return ""
-
-def converter_remuneracao_para_float(coluna):
-    # Transforma em string, remove R$, pontos e troca vírgula por ponto
-    col_limpa = coluna.astype(str).str.replace('R$', '', regex=False)\
-                                  .str.replace('.', '', regex=False)\
-                                  .str.replace(',', '.', regex=False)\
-                                  .str.strip()
-    # Converte para número, o que não for número vira NaN (vazio)
-    return pd.to_numeric(col_limpa, errors='coerce')
-# ==========================================
-# FUNÇÕES AUXILIARES DE CADASTRO E API
-# ==========================================
-
-import requests
 
 def buscar_cep(cep_digitado):
     cep_limpo = str(cep_digitado).replace("-", "").replace(".", "").strip()
@@ -114,8 +54,7 @@ def buscar_cep(cep_digitado):
             if r.status_code == 200 and "erro" not in r.json():
                 dados = r.json()
                 return f"{dados['logradouro']}, {dados['bairro']}, {dados['localidade']}-{dados['uf']}"
-        except:
-            return None
+        except: return None
     return None
 
 def buscar_lista_cbo():
@@ -124,40 +63,16 @@ def buscar_lista_cbo():
         creds = Credentials.from_service_account_info(st.secrets["gcp_service_account"], scopes=scope)
         client = gspread.authorize(creds)
         spreadsheet = client.open_by_key("13EPwhiXgh8BkbhyrEy2aCy3cv1O8npxJ_hA-HmLZ-pY")
-        
-        # Localiza a aba pelo GID 1740390887
         aba_cbo = None
         for sheet in spreadsheet.worksheets():
             if str(sheet.id) == "1740390887":
                 aba_cbo = sheet
                 break
-        
         if aba_cbo:
-            # Pega todos os valores da Coluna A
             valores = aba_cbo.col_values(1)
-            # Remove o título "CBO" se existir e limpa vazios
-            lista = [str(x).strip() for x in valores if x and str(x).upper() != "CBO"]
-            return sorted(lista)
+            return sorted([str(x).strip() for x in valores if x and str(x).upper() != "CBO"])
         return []
-    except Exception as e:
-        print(f"Erro CBO: {e}")
-        return []
-        
-def gravar_no_google_sheets(dados_lista):
-    try:
-        scope = ["https://www.googleapis.com/auth/spreadsheets", "https://www.googleapis.com/auth/drive"]
-        creds = Credentials.from_service_account_info(st.secrets["gcp_service_account"], scopes=scope)
-        client = gspread.authorize(creds)
-        spreadsheet = client.open_by_key("13EPwhiXgh8BkbhyrEy2aCy3cv1O8npxJ_hA-HmLZ-pY")
-        sheet = spreadsheet.worksheet("Base de investidores")
-        
-        coluna_a = sheet.col_values(1)
-        proxima_linha = len(coluna_a) + 1
-        range_nome = f"A{proxima_linha}:AL{proxima_linha}"
-        
-        sheet.update(range_name=range_nome, values=[dados_lista], value_input_option="RAW")
-    except Exception as e:
-        raise Exception(f"Erro ao gravar na aba Base de investidores: {e}")
+    except: return []
 
 def buscar_base_vagas():
     try:
@@ -171,15 +86,24 @@ def buscar_base_vagas():
                 aba_vagas = sheet
                 break
         if aba_vagas is None: aba_vagas = spreadsheet.get_worksheet(1)
-        dados = aba_vagas.get_all_records()
-        return pd.DataFrame(dados)
-    except Exception as e:
-        st.error(f"Erro ao acessar aba de vagas: {e}")
-        return None
+        return pd.DataFrame(aba_vagas.get_all_records())
+    except: return None
 
+def gravar_no_google_sheets(dados_lista):
+    scope = ["https://www.googleapis.com/auth/spreadsheets", "https://www.googleapis.com/auth/drive"]
+    creds = Credentials.from_service_account_info(st.secrets["gcp_service_account"], scopes=scope)
+    client = gspread.authorize(creds)
+    spreadsheet = client.open_by_key("13EPwhiXgh8BkbhyrEy2aCy3cv1O8npxJ_hA-HmLZ-pY")
+    sheet = spreadsheet.worksheet("Base de investidores")
+    coluna_a = sheet.col_values(1)
+    proxima_linha = len(coluna_a) + 1
+    sheet.update(range_name=f"A{proxima_linha}:AL{proxima_linha}", values=[dados_lista], value_input_option="RAW")
+
+# ==========================================
+# MODAL DE CADASTRO
+# ==========================================
 @st.dialog("📝 Cadastro de Novo Investidor", width="large")
 def modal_cadastro_investidor(lista_nomes_ativos):
-    # --- BLOCO 1: DADOS PRINCIPAIS ---
     st.markdown("#### 👤 Dados Principais")
     c1, c2, c3 = st.columns([1, 1, 1])
     n_curto = c1.text_input("Nome", key="cad_n_curto")
@@ -189,7 +113,6 @@ def modal_cadastro_investidor(lista_nomes_ativos):
     c4, c5, c6 = st.columns(3)
     bp = c4.number_input("BP", step=1, value=0, key="cad_bp")
     matri = c5.number_input("Matrícula", step=1, value=0, key="cad_matri")
-    # Data formatada para Brasil
     dt_cont = c6.date_input("Data do Contrato", value=datetime.today(), format="DD/MM/YYYY", key="cad_dt_cont")
 
     c7, c8, c9 = st.columns(3)
@@ -198,7 +121,6 @@ def modal_cadastro_investidor(lista_nomes_ativos):
     e_corp = c9.text_input("E-mail Corporativo", key="cad_e_corp")
 
     c10, c11, c12 = st.columns(3)
-    # Opções específicas PJ
     mod_pj = c10.selectbox("Modalidade PJ", ["", "MEI", "SLU"], key="cad_mod_pj")
     ini_v4 = c11.date_input("Início na V4", value=datetime.today(), format="DD/MM/YYYY", key="cad_ini_v4")
     cnpj = c12.text_input("CNPJ", key="cad_cnpj")
@@ -208,12 +130,10 @@ def modal_cadastro_investidor(lista_nomes_ativos):
     cargo = c14.text_input("Cargo", key="cad_cargo")
     remun = c15.text_input("Remuneração", key="cad_remun")
     
-    # Lista Dinâmica CBO
     lista_cbo_res = buscar_lista_cbo()
     cbo_selecionado = st.selectbox("CBO (Selecione da lista)", options=[""] + lista_cbo_res, key="cad_cbo_list")
+
     st.markdown("---")
-    
-    # --- BLOCO 2: CENTRO DE CUSTO ---
     st.markdown("#### 🏢 Centro de Custo")
     cv1, cv2 = st.columns([0.85, 0.15])
     id_vaga = cv1.text_input("ID Vaga", placeholder="Digite o ID...", key="cad_id_vaga")
@@ -226,29 +146,14 @@ def modal_cadastro_investidor(lista_nomes_ativos):
 
     c16, c17 = st.columns(2)
     lista_senior = ["", "Trainee", "Junior", "Pleno", "Senior", "Coordenador", "Gerente", "Diretor", "C-Level"]
-    senior = c16.selectbox("Senioridade", options=lista_senior, key="cad_senior")"cad_senior")
-    
-    # Liderança baseada nos Ativos
-    # st.session_state.df_ativos precisa estar disponível aqui. Caso não esteja, usamos o df_ativos_proc do render.
-    # Vou assumir que você quer os nomes da coluna 'Nome' da aba ativa.
-    try:
-        # Puxa os nomes únicos da base de ativos carregada no seu app
-        opcoes_lider = [""] + sorted(st.session_state.get('lista_nomes_ativos', []))
-        if len(opcoes_lider) <= 1: # Caso a session_state esteja vazia
-             opcoes_lider = [""] + sorted(list(pd.read_csv("https://docs.google.com/spreadsheets/d/13EPwhiXgh8BkbhyrEy2aCy3cv1O8npxJ_hA-HmLZ-pY/export?format=csv&gid=0")['Nome'].dropna().unique()))
-    except:
-        opcoes_lider = [""] # Fallback
-
+    senior = c16.selectbox("Senioridade", options=lista_senior, key="cad_senior")
     lider = c17.selectbox("Liderança Direta", options=[""] + sorted(lista_nomes_ativos), key="cad_lider")
 
     st.markdown("---")
-
-    # --- BLOCO 3: DADOS PESSOAIS ---
     st.markdown("#### 🏠 Dados Pessoais")
     c18, c19, c20 = st.columns(3)
     cpf = c18.text_input("CPF", key="cad_cpf")
     nasc = c19.date_input("Data de Nascimento", value=None, format="DD/MM/YYYY", key="cad_nasc")
-    # Escolaridade solicitada
     lista_escolar = ["", "Ensino médio", "Ensino superior", "Pós graduação", "Mestrado", "Doutorado"]
     escolar = c20.selectbox("Escolaridade", options=lista_escolar, key="cad_escolar")
 
@@ -263,28 +168,16 @@ def modal_cadastro_investidor(lista_nomes_ativos):
     if end_info: c25.info(f"📍 {end_info}")
 
     st.markdown("---")
-    
     if st.button("🚀 Gravar na Planilha Master", use_container_width=True, type="primary", key="btn_final"):
         if not n_curto or not cpf:
             st.warning("Preencha Nome e CPF!")
         else:
-            linha = [
-                n_curto, n_completo, foto, bp, matri,
-                dt_cont.strftime("%d/%m/%Y"), "", "Ativo",
-                unid, mod_cont, e_corp, mod_pj,
-                ini_v4.strftime("%d/%m/%Y"), cnpj, raz_soc,
-                cargo, remun, cbo_selecionado, "", id_vaga,
-                "", "", senior, lider, "", "",
-                cpf, nasc.strftime("%d/%m/%Y") if nasc else "",
-                cep, escolar, e_pess, tel, "Pendente",
-                "", "", "", drive, ""
-            ]
+            linha = [n_curto, n_completo, foto, bp, matri, dt_cont.strftime("%d/%m/%Y"), "", "Ativo", unid, mod_cont, e_corp, mod_pj, ini_v4.strftime("%d/%m/%Y"), cnpj, raz_soc, cargo, remun, cbo_selecionado, "", id_vaga, "", "", senior, lider, "", "", cpf, nasc.strftime("%d/%m/%Y") if nasc else "", cep, escolar, e_pess, tel, "Pendente", "", "", "", drive, ""]
             try:
                 gravar_no_google_sheets(linha)
                 st.success("Cadastrado com sucesso!")
                 st.rerun()
-            except Exception as e:
-                st.error(f"Erro: {e}")
+            except Exception as e: st.error(f"Erro: {e}")
                     
 # ==========================================
 # LÓGICA DE ALERTAS (ATIVOS)
