@@ -136,13 +136,13 @@ def modal_cadastro_investidor(lista_nomes_ativos):
     st.markdown("#### 👤 Dados Principais")
     
     # Linha 1: Nome; Nome completo; Foto
-    c1, c2, c3 = st.columns([1, 1.5, 1.5])
+    c1, c2, c3 = st.columns([1.5, 1.5, 1])
     n_curto = c1.text_input("Nome", key="cad_n_curto")
     n_completo = c2.text_input("Nome Completo com acentuação", key="cad_n_comp")
     foto = c3.text_input("URL da Foto", key="cad_foto")
 
     # Linha 2: BP; Matrícula; Data contrato; Unidade
-    c4, c5, c6, c7 = st.columns(4)
+    c4, c5, c6, c7 = st.columns([0.5, 0.5, 0.5, 1])
     bp = c4.number_input("BP", step=1, value=0, key="cad_bp")
     # Matrícula como texto para permitir vazio
     matri = c5.text_input("Matrícula", key="cad_matri")
@@ -150,15 +150,15 @@ def modal_cadastro_investidor(lista_nomes_ativos):
     unid = c7.selectbox("Unidade/Atuação", ["Flagship", "Headquarters", "Híbrido", "Remoto", "Unidade São Leopoldo"], key="cad_unid")
 
     # Linha 3: Modelo; Email corp; Modalidade PJ; Início V4
-    c8, c9, c10, c11 = st.columns(4)
+    c8, c9, c10, c11, c12 = st.columns([0.5, 1.5, 0.3, 1, 1.2])
     mod_cont = c8.selectbox("Modelo de Contrato", ["CLT", "PJ", "Estágio"], key="cad_mod_cont")
     e_corp = c9.text_input("E-mail Corporativo", key="cad_e_corp")
     mod_pj = c10.selectbox("Modalidade PJ", ["", "MEI", "SLU"], key="cad_mod_pj")
     ini_v4 = c11.date_input("Início na V4", value=datetime.today(), format="DD/MM/YYYY", key="cad_ini_v4")
-
-    # Linha 4: CNPJ; Razão; Cargo; Remuneração; CBO
-    c12, c13, c14, c15, c15b = st.columns([1, 1.2, 1, 0.8, 1.2])
     cnpj = c12.text_input("CNPJ", key="cad_cnpj")
+    
+    # Linha 4: CNPJ; Razão; Cargo; Remuneração; CBO
+    c13, c14, c15, c15b = st.columns([1.5, 1.2, 1, 0.5])
     raz_soc = c13.text_input("Razão Social", key="cad_raz_soc")
     cargo = c14.text_input("Cargo", key="cad_cargo")
     remun = c15.text_input("Remuneração", placeholder="Ex: 5000,00", key="cad_remun")
