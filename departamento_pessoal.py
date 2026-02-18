@@ -188,20 +188,18 @@ def modal_cadastro_investidor():
     modalidade_pj = c8.selectbox("Modalidade PJ", ["", "MEI", "ME", "EPP", "Individual"])
     inicio_v4 = c9.date_input("Início na V4", value=datetime.today())
 
-    # --- BLOCO 3: VAGA E CARGO (Alinhamento e Filtro) ---
+    # --- BLOCO 3: VAGA E CARGO (Correção de Alinhamento) ---
     c10, c11 = st.columns([0.85, 0.15])
     
     with c10:
         id_vaga = st.text_input("ID Vaga", placeholder="Digite o ID...")
         
     with c11:
-        # Usamos " " (um espaço) no label para ele ocupar o mesmo espaço do "ID Vaga"
-        with st.popover("❓", use_container_width=True, help="Consultar base de vagas"):
+        with st.popover("❓", label=" ", use_container_width=True, help="Consultar base de vagas"):
             st.markdown("### 🔍 Consulta de Vagas")
             df_v = buscar_base_vagas()
             
             if df_v is not None:
-                # O filtro que você quer manter
                 busca_interna = st.text_input("Filtrar por Cargo ou ID", key="busca_vaga_modal")
                 
                 if busca_interna:
