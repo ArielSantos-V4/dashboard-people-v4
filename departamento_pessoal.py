@@ -152,7 +152,6 @@ def buscar_base_vagas():
         st.error(f"Erro ao acessar aba de vagas: {e}")
         return None
         
-
 @st.dialog("📝 Cadastro de Novo Investidor", width="large")
 def modal_cadastro_investidor():
     # Removi o st.markdown do título daqui de dentro, 
