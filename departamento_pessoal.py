@@ -206,7 +206,7 @@ def modal_cadastro_investidor():
             # Ele simula a altura do label "ID Vaga" da coluna ao lado
             st.markdown('<p style="margin-bottom: 30px;"></p>', unsafe_allow_html=True)
             
-            with st.popover("?", help="Consultar base de vagas", use_container_width=True):
+            with st.popover("❓", help="Consultar base de vagas", use_container_width=True):
                 st.write("### IDs de Vaga Disponíveis")
                 df_vagas = buscar_base_vagas()
                 if df_vagas is not None:
