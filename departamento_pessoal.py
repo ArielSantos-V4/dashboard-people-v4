@@ -183,63 +183,76 @@ def buscar_base_vagas():
         
 @st.dialog("📝 Cadastro de Novo Investidor", width="large")
 def modal_cadastro_investidor():
-    # --- BLOCO 1: IDENTIFICAÇÃO BÁSICA ---
-    c1, c2, c3 = st.columns([1, 1, 1])
+    # ==========================================
+    # BLOCO 1: DADOS PRINCIPAIS
+    # ==========================================
+    st.subheader("👤 Dados Principais")
+    
+    c1, c2, c3 = st.columns([1, 1.5, 1.5])
     nome_curto = c1.text_input("Nome", key="cad_nome_curto")
     nome_completo = c2.text_input("Nome Completo (Acentos)", key="cad_nome_completo")
     foto_link = c3.text_input("URL da Foto", key="cad_foto_link")
 
-    # --- BLOCO 2: CONTRATUAL E DATAS ---
     c4, c5, c6 = st.columns(3)
     bp = c4.number_input("BP", step=1, value=0, key="cad_bp")
     matricula = c5.number_input("Matrícula", step=1, value=0, key="cad_matricula")
     data_contrato = c6.date_input("Data do Contrato", value=datetime.today(), key="cad_dt_contrato")
 
     c7, c8, c9 = st.columns(3)
-    modelo = c7.selectbox("Modelo de Contrato", ["CLT", "PJ", "Estágio"], key="cad_modelo")
-    modalidade_pj = c8.selectbox("Modalidade PJ", ["", "MEI", "ME", "EPP", "Individual"], key="cad_mod_pj")
-    inicio_v4 = c9.date_input("Início na V4", value=datetime.today(), key="cad_inicio_v4")
+    unidade = c7.selectbox("Unidade/Atuação", ["Flagship", "Headquarters", "Híbrido", "Remoto", "Unidade São Leopoldo"], key="cad_unidade")
+    modelo = c8.selectbox("Modelo de Contrato", ["CLT", "PJ", "Estágio"], key="cad_modelo")
+    email_corp = c9.text_input("E-mail Corporativo", key="cad_email_corp")
 
-    # --- BLOCO 3: VAGA E CARGO ---
-    c10, c11 = st.columns([0.85, 0.15])
-    with c10:
-        id_vaga = st.text_input("ID Vaga", placeholder="Digite o ID...", key="cad_id_vaga")
-    with c11:
-        st.markdown('<p style="margin-bottom: 31px;"></p>', unsafe_allow_html=True)
-        with st.popover("❓", use_container_width=True, help="Consultar base de vagas"):
-            st.markdown("### 🔍 Consulta de Vagas")
-            df_v = buscar_base_vagas()
-            if df_v is not None:
-                busca_interna = st.text_input("Filtrar por Cargo ou ID", key="busca_vaga_modal_interna")
-                if busca_interna:
-                    mask = df_v.astype(str).apply(lambda x: x.str.contains(busca_interna, case=False).any(), axis=1)
-                    df_exibir = df_v[mask]
-                else:
-                    df_exibir = df_v
-                st.dataframe(df_exibir, use_container_width=True, hide_index=True, height=250)
+    c10, c11, c12 = st.columns(3)
+    modalidade_pj = c10.selectbox("Modalidade PJ", ["", "MEI", "ME", "EPP", "Individual"], key="cad_mod_pj")
+    inicio_v4 = c11.date_input("Início na V4", value=datetime.today(), key="cad_inicio_v4")
+    cnpj = c12.text_input("CNPJ", key="cad_cnpj")
 
-    c12, c13, c14 = st.columns(3)
-    cargo = c12.text_input("Cargo", key="cad_cargo")
-    remun = c13.text_input("Remuneração (Ex: 5000,00)", key="cad_remun")
-    cbo = c14.text_input("CBO (Apenas números)", key="cad_cbo")
-
-    # --- BLOCO 4: EMPRESA (PJ) ---
-    c15, c16 = st.columns(2)
-    cnpj = c15.text_input("CNPJ", key="cad_cnpj")
-    razao_social = c16.text_input("Razão Social", key="cad_razao")
-
-    # --- BLOCO 5: DADOS PESSOAIS E CONTATO ---
-    c17, c18, c19 = st.columns(3)
-    cpf = c17.text_input("CPF", key="cad_cpf")
-    nascimento = c18.date_input("Data de Nascimento", value=None, key="cad_nascimento")
-    escolaridade = c19.selectbox("Escolaridade", ["", "Ensino Médio", "Graduação Incompleta", "Graduação Completa", "Pós-Graduação"], key="cad_escolaridade")
-
-    c20, c21, c22 = st.columns(3)
-    email_pessoal = c20.text_input("E-mail Pessoal", key="cad_mail_pess")
-    tel_pessoal = c21.text_input("Telefone Pessoal", key="cad_tel_pess")
-    link_drive = c22.text_input("Link Drive Docs", key="cad_drive")
+    c13, c14, c15 = st.columns([1.5, 1, 0.5])
+    razao_social = c13.text_input("Razão Social", key="cad_razao")
+    cargo = c14.text_input("Cargo", key="cad_cargo")
+    remun = c15.text_input("Remun.", key="cad_remun")
     
-    # CEP com busca automática
+    cbo = st.text_input("CBO (Apenas números)", key="cad_cbo")
+
+    st.markdown("---")
+    
+    # ==========================================
+    # BLOCO 2: CENTRO DE CUSTO
+    # ==========================================
+    st.subheader("🏢 Centro de Custo")
+    
+    col_v1, col_v2 = st.columns([0.85, 0.15])
+    with col_v1:
+        id_vaga = st.text_input("ID Vaga", placeholder="Digite o ID...", key="cad_id_vaga")
+    with col_v2:
+        st.markdown('<p style="margin-bottom: 31px;"></p>', unsafe_allow_html=True)
+        with st.popover("❓", use_container_width=True):
+            df_v = buscar_base_vagas()
+            st.dataframe(df_v, hide_index=True)
+
+    c16, c17 = st.columns(2)
+    senioridade = c16.selectbox("Senioridade", ["", "Junior", "Pleno", "Senior", "Especialista", "Liderança"], key="cad_senioridade")
+    lideranca = c17.text_input("Liderança Direta", key="cad_lideranca")
+
+    st.markdown("---")
+
+    # ==========================================
+    # BLOCO 3: DADOS PESSOAIS
+    # ==========================================
+    st.subheader("👤 Dados Pessoais")
+    
+    c18, c19, c20 = st.columns(3)
+    cpf = c18.text_input("CPF", key="cad_cpf")
+    nascimento = c19.date_input("Data de Nascimento", value=None, key="cad_nascimento")
+    escolaridade = c20.selectbox("Escolaridade", ["", "Ensino Médio", "Graduação Incompleta", "Graduação Completa", "Pós-Graduação"], key="cad_escolaridade")
+
+    c21, c22 = st.columns(2)
+    email_pessoal = c21.text_input("E-mail Pessoal", key="cad_mail_pess")
+    tel_pessoal = c22.text_input("Telefone Pessoal", key="cad_tel_pess")
+    
+    link_drive = st.text_input("URL da Documentação (Drive)", key="cad_drive")
+    
     c23, c24 = st.columns([0.3, 0.7])
     cep_input = c23.text_input("CEP", key="cad_cep_input")
     end_resumo = buscar_cep(cep_input)
@@ -247,34 +260,52 @@ def modal_cadastro_investidor():
         c24.info(f"📍 {end_resumo}")
 
     st.markdown("---")
+    
+    # ==========================================
+    # BOTÃO DE GRAVAÇÃO
+    # ==========================================
     if st.button("🚀 Gravar na Planilha Master", use_container_width=True, type="primary", key="btn_gravar_master_modal"):
         if not nome_curto or not cpf:
             st.warning("Nome e CPF são obrigatórios!")
         else:
-            # Montagem da Linha respeitando a ordem das colunas da planilha
+            # MONTAGEM DA LINHA (Verifique se a ordem das colunas bate com seu Sheets)
             linha_final = [
-                nome_curto, nome_completo, foto_link, bp, matricula,
-                data_contrato.strftime("%d/%m/%Y"), 
-                "", # G: Término (Fórmula)
-                "Ativo", # H: Situação
-                "Remoto", # I: Unidade (Padrão, altere se necessário)
-                modelo, 
-                "", # K: E-mail corp
-                modalidade_pj, # L
+                nome_curto,         # A
+                nome_completo,      # B
+                foto_link,          # C
+                bp,                 # D
+                matricula,          # E
+                data_contrato.strftime("%d/%m/%Y"), # F
+                "",                 # G: Término (Fórmula)
+                "Ativo",            # H: Situação
+                unidade,            # I
+                modelo,             # J
+                email_corp,         # K
+                modalidade_pj,      # L
                 inicio_v4.strftime("%d/%m/%Y"), # M
-                cnpj, razao_social, cargo, remun, cbo, 
-                "", # S: Descrição CBO
-                id_vaga, 
-                "", "", # U, V: Código e Descrição CC
-                "", "", # W, X: Senioridade e Liderança
-                "", "", # Y, Z: Conta Contábil e Área
-                cpf, 
-                nascimento.strftime("%d/%m/%Y") if nascimento else "",
-                cep_input, escolaridade, email_pessoal, tel_pessoal,
-                "Pendente", # AG: Situação Plano
-                "", "", "", # AH, AI, AJ
-                link_drive, # AK
-                "" # AL: FotoView
+                cnpj,               # N
+                razao_social,       # O
+                cargo,              # P
+                remun,              # Q
+                cbo,                # R
+                "",                 # S: Descrição CBO (Fórmula)
+                id_vaga,            # T
+                "",                 # U: Código CC (Fórmula)
+                "",                 # V: Descrição CC (Fórmula)
+                senioridade,        # W
+                lideranca,          # X
+                "",                 # Y: Conta Contábil (Fórmula)
+                "",                 # Z: Área (Fórmula)
+                cpf,                # AA
+                nascimento.strftime("%d/%m/%Y") if nascimento else "", # AB
+                cep_input,          # AC
+                escolaridade,       # AD
+                email_pessoal,      # AE
+                tel_pessoal,        # AF
+                "Pendente",         # AG: Situação Plano
+                "", "", "",         # AH, AI, AJ
+                link_drive,         # AK
+                ""                  # AL: FotoView (Fórmula)
             ]
             
             try:
