@@ -188,34 +188,24 @@ def modal_cadastro_investidor():
     modalidade_pj = c8.selectbox("Modalidade PJ", ["", "MEI", "ME", "EPP", "Individual"])
     inicio_v4 = c9.date_input("Início na V4", value=datetime.today())
 
-    # --- BLOCO 3: VAGA E CARGO (Correção de Erro e Alinhamento) ---
+    # --- BLOCO 3: VAGA E CARGO ---
     c10, c11 = st.columns([0.85, 0.15])
-    
     with c10:
-        id_vaga = st.text_input("ID Vaga", placeholder="Digite o ID...")
-        
+        id_vaga = st.text_input("ID Vaga", placeholder="Digite o ID...", key="cad_id_vaga")
     with c11:
-        # Criamos um texto vazio com o mesmo espaço do label ao lado para alinhar
         st.markdown('<p style="margin-bottom: 31px;"></p>', unsafe_allow_html=True)
-        
-        # Removido o parâmetro 'label' que causou o erro
         with st.popover("❓", use_container_width=True, help="Consultar base de vagas"):
             st.markdown("### 🔍 Consulta de Vagas")
             df_v = buscar_base_vagas()
-            
             if df_v is not None:
-                busca_interna = st.text_input("Filtrar por Cargo ou ID", key="busca_vaga_modal")
-                
+                busca_interna = st.text_input("Filtrar por Cargo ou ID", key="busca_vaga_modal_interna")
                 if busca_interna:
                     mask = df_v.astype(str).apply(lambda x: x.str.contains(busca_interna, case=False).any(), axis=1)
                     df_exibir = df_v[mask]
                 else:
                     df_exibir = df_v
-                
                 st.dataframe(df_exibir, use_container_width=True, hide_index=True, height=250)
-            else:
-                st.error("Erro ao carregar base.")
-                
+
     c12, c13, c14 = st.columns(3)
     cargo = c12.text_input("Cargo", key="cad_cargo")
     remun = c13.text_input("Remuneração (Ex: 5000,00)", key="cad_remun")
