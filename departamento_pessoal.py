@@ -198,26 +198,26 @@ def modal_cadastro_investidor():
     # --- BLOCO 3: VAGA E CARGO (Alinhamento Corrigido) ---
     c10, c11 = st.columns([0.85, 0.15])
         
-        with c10:
-            id_vaga = st.text_input("ID Vaga", placeholder="Digite o ID...")
-            
-        with c11:
-            # Esse markdown cria um espaço invisível no topo para empurrar o botão
-            # Ele simula a altura do label "ID Vaga" da coluna ao lado
-            st.markdown('<p style="margin-bottom: 30px;"></p>', unsafe_allow_html=True)
-            
-            with st.popover("❓", help="Consultar base de vagas", use_container_width=True):
-                st.write("### IDs de Vaga Disponíveis")
-                df_vagas = buscar_base_vagas()
-                if df_vagas is not None:
-                    # Campo de busca dentro do popover para facilitar
-                    busca_v = st.text_input("🔍 Filtrar Vaga")
-                    if busca_v:
-                        df_vagas = df_vagas[df_vagas.astype(str).apply(lambda x: x.str.contains(busca_v, case=False).any(), axis=1)]
-                    
-                    st.dataframe(df_vagas, use_container_width=True, hide_index=True)
-                else:
-                    st.error("Erro ao carregar vagas.")
+    with c10:
+        id_vaga = st.text_input("ID Vaga", placeholder="Digite o ID...")
+        
+    with c11:
+        # Esse markdown cria um espaço invisível no topo para empurrar o botão
+        # Ele simula a altura do label "ID Vaga" da coluna ao lado
+        st.markdown('<p style="margin-bottom: 30px;"></p>', unsafe_allow_html=True)
+        
+        with st.popover("❓", help="Consultar base de vagas", use_container_width=True):
+            st.write("### IDs de Vaga Disponíveis")
+            df_vagas = buscar_base_vagas()
+            if df_vagas is not None:
+                # Campo de busca dentro do popover para facilitar
+                busca_v = st.text_input("🔍 Filtrar Vaga")
+                if busca_v:
+                    df_vagas = df_vagas[df_vagas.astype(str).apply(lambda x: x.str.contains(busca_v, case=False).any(), axis=1)]
+                
+                st.dataframe(df_vagas, use_container_width=True, hide_index=True)
+            else:
+                st.error("Erro ao carregar vagas.")
                     
     c12, c13, c14 = st.columns(3)
     cargo = c12.text_input("Cargo")
