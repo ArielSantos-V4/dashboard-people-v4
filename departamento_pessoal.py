@@ -196,7 +196,7 @@ def modal_cadastro_investidor():
     email_corp = c9.text_input("E-mail Corporativo")
 
     # --- BLOCO 3: VAGA E CARGO (Alinhamento Corrigido) ---
-        c10, c11 = st.columns([0.85, 0.15])
+    c10, c11 = st.columns([0.85, 0.15])
         
         with c10:
             id_vaga = st.text_input("ID Vaga", placeholder="Digite o ID...")
