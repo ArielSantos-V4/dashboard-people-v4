@@ -195,35 +195,30 @@ def modal_cadastro_investidor():
     unidade = c8.selectbox("Unidade/Atuação", ["Flagship", "Headquarters", "Híbrido", "Remoto", "Unidade São Leopoldo"])
     email_corp = c9.text_input("E-mail Corporativo")
 
-    # --- BLOCO 3: VAGA E CARGO ---
-    c10, c11 = st.columns([0.85, 0.15])
-    id_vaga = c10.text_input("ID Vaga")
-    with c11:
-            st.write(" ") 
-            with st.popover("❓", help="Consultar base de vagas"):
-                st.subheader("🔍 Consulta de Vagas")
+    # --- BLOCO 3: VAGA E CARGO (Alinhamento Corrigido) ---
+        c10, c11 = st.columns([0.85, 0.15])
+        
+        with c10:
+            id_vaga = st.text_input("ID Vaga", placeholder="Digite o ID...")
+            
+        with c11:
+            # Esse markdown cria um espaço invisível no topo para empurrar o botão
+            # Ele simula a altura do label "ID Vaga" da coluna ao lado
+            st.markdown('<p style="margin-bottom: 30px;"></p>', unsafe_allow_html=True)
+            
+            with st.popover("?", help="Consultar base de vagas", use_container_width=True):
+                st.write("### IDs de Vaga Disponíveis")
                 df_vagas = buscar_base_vagas()
-                
                 if df_vagas is not None:
-                    # Input de busca rápida dentro do popover
-                    busca_vaga = st.text_input("Filtrar por Cargo ou ID", placeholder="Ex: Closer...")
+                    # Campo de busca dentro do popover para facilitar
+                    busca_v = st.text_input("🔍 Filtrar Vaga")
+                    if busca_v:
+                        df_vagas = df_vagas[df_vagas.astype(str).apply(lambda x: x.str.contains(busca_v, case=False).any(), axis=1)]
                     
-                    df_v_filtrado = df_vagas.copy()
-                    if busca_vaga:
-                        # Busca em todas as colunas da aba de vagas
-                        mask = df_v_filtrado.astype(str).apply(lambda x: x.str.contains(busca_vaga, case=False).any(), axis=1)
-                        df_v_filtrado = df_v_filtrado[mask]
-                    
-                    # Exibição da tabela
-                    st.dataframe(
-                        df_v_filtrado, 
-                        use_container_width=True, 
-                        hide_index=True,
-                        height=300 # Altura fixa para não esticar o modal
-                    )
+                    st.dataframe(df_vagas, use_container_width=True, hide_index=True)
                 else:
-                    st.error("Não foi possível carregar os dados. Verifique o compartilhamento da planilha.")
-
+                    st.error("Erro ao carregar vagas.")
+                    
     c12, c13, c14 = st.columns(3)
     cargo = c12.text_input("Cargo")
     remun = c13.text_input("Remuneração (Ex: 5500,00)")
