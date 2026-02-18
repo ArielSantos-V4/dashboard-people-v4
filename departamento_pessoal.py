@@ -124,7 +124,8 @@ def gravar_no_google_sheets(dados_lista):
     coluna_a = sheet.col_values(1)
     proxima_linha = len(coluna_a) + 1
     sheet.update(range_name=f"A{proxima_linha}:AL{proxima_linha}", values=[dados_lista], value_input_option="USER_ENTERED")
-
+    range_nome = f"A{proxima_linha}:AN{proxima_linha}"
+    
 # ==========================================
 # MODAL DE CADASTRO
 # ==========================================
