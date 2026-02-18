@@ -118,6 +118,28 @@ def buscar_cep(cep_digitado):
             return None
     return None
 
+def buscar_lista_cbo():
+    try:
+        scope = ["https://www.googleapis.com/auth/spreadsheets", "https://www.googleapis.com/auth/drive"]
+        creds = Credentials.from_service_account_info(st.secrets["gcp_service_account"], scopes=scope)
+        client = gspread.authorize(creds)
+        spreadsheet = client.open_by_key("13EPwhiXgh8BkbhyrEy2aCy3cv1O8npxJ_hA-HmLZ-pY")
+        
+        # Busca pela aba CBO via GID 1740390887
+        aba_cbo = None
+        for sheet in spreadsheet.worksheets():
+            if str(sheet.id) == "1740390887":
+                aba_cbo = sheet
+                break
+        
+        if aba_cbo:
+            # Pega todos os valores da Coluna A (ignorando o cabeçalho se houver)
+            lista = aba_cbo.col_values(1)
+            return sorted(list(set([str(x) for x in lista if x]))) # Remove vazios e duplicados
+        return []
+    except:
+        return []
+        
 def gravar_no_google_sheets(dados_lista):
     try:
         scope = ["https://www.googleapis.com/auth/spreadsheets", "https://www.googleapis.com/auth/drive"]
@@ -164,7 +186,8 @@ def modal_cadastro_investidor():
     c4, c5, c6 = st.columns(3)
     bp = c4.number_input("BP", step=1, value=0, key="cad_bp")
     matri = c5.number_input("Matrícula", step=1, value=0, key="cad_matri")
-    dt_cont = c6.date_input("Data do Contrato", value=datetime.today(), key="cad_dt_cont")
+    # Data formatada para Brasil
+    dt_cont = c6.date_input("Data do Contrato", value=datetime.today(), format="DD/MM/YYYY", key="cad_dt_cont")
 
     c7, c8, c9 = st.columns(3)
     unid = c7.selectbox("Unidade/Atuação", ["Flagship", "Headquarters", "Híbrido", "Remoto", "Unidade São Leopoldo"], key="cad_unid")
@@ -172,16 +195,19 @@ def modal_cadastro_investidor():
     e_corp = c9.text_input("E-mail Corporativo", key="cad_e_corp")
 
     c10, c11, c12 = st.columns(3)
-    mod_pj = c10.selectbox("Modalidade PJ", ["", "MEI", "ME", "EPP", "Individual"], key="cad_mod_pj")
-    ini_v4 = c11.date_input("Início na V4", value=datetime.today(), key="cad_ini_v4")
+    # Opções específicas PJ
+    mod_pj = c10.selectbox("Modalidade PJ", ["", "MEI", "SLU"], key="cad_mod_pj")
+    ini_v4 = c11.date_input("Início na V4", value=datetime.today(), format="DD/MM/YYYY", key="cad_ini_v4")
     cnpj = c12.text_input("CNPJ", key="cad_cnpj")
 
-    c13, c14, c15 = st.columns([1.5, 1, 0.5])
+    c13, c14, c15 = st.columns([1.5, 1, 1.5])
     raz_soc = c13.text_input("Razão Social", key="cad_raz_soc")
     cargo = c14.text_input("Cargo", key="cad_cargo")
     remun = c15.text_input("Remuneração", key="cad_remun")
     
-    cbo = st.text_input("CBO (Apenas números)", key="cad_cbo")
+    # Lista Dinâmica CBO
+    lista_cbo = [""] + buscar_lista_cbo()
+    cbo_selecionado = st.selectbox("CBO (Selecione da lista)", options=lista_cbo, key="cad_cbo_list")
 
     st.markdown("---")
     
@@ -197,8 +223,22 @@ def modal_cadastro_investidor():
             if df_v is not None: st.dataframe(df_v, hide_index=True)
 
     c16, c17 = st.columns(2)
-    senior = c16.selectbox("Senioridade", ["", "Junior", "Pleno", "Senior", "Especialista", "Liderança"], key="cad_senior")
-    lider = c17.text_input("Liderança Direta", key="cad_lider")
+    # Senioridade sem acentos
+    lista_senior = ["", "Trainee", "junior", "pleno", "senior", "coordenador", "gerente", "diretor", "C-Level"]
+    senior = c16.selectbox("Senioridade", options=lista_senior, key="cad_senior")
+    
+    # Liderança baseada nos Ativos
+    # st.session_state.df_ativos precisa estar disponível aqui. Caso não esteja, usamos o df_ativos_proc do render.
+    # Vou assumir que você quer os nomes da coluna 'Nome' da aba ativa.
+    try:
+        # Puxa os nomes únicos da base de ativos carregada no seu app
+        opcoes_lider = [""] + sorted(st.session_state.get('lista_nomes_ativos', []))
+        if len(opcoes_lider) <= 1: # Caso a session_state esteja vazia
+             opcoes_lider = [""] + sorted(list(pd.read_csv("https://docs.google.com/spreadsheets/d/13EPwhiXgh8BkbhyrEy2aCy3cv1O8npxJ_hA-HmLZ-pY/export?format=csv&gid=0")['Nome'].dropna().unique()))
+    except:
+        opcoes_lider = [""] # Fallback
+
+    lider = c17.selectbox("Liderança Direta", options=opcoes_lider, key="cad_lider")
 
     st.markdown("---")
 
@@ -206,10 +246,12 @@ def modal_cadastro_investidor():
     st.markdown("#### 🏠 Dados Pessoais")
     c18, c19, c20 = st.columns(3)
     cpf = c18.text_input("CPF", key="cad_cpf")
-    nasc = c19.date_input("Data de Nascimento", value=None, key="cad_nasc")
-    escolar = c20.selectbox("Escolaridade", ["", "Ensino Médio", "Graduação Incompleta", "Graduação Completa", "Pós-Graduação"], key="cad_escolar")
+    nasc = c19.date_input("Data de Nascimento", value=None, format="DD/MM/YYYY", key="cad_nasc")
+    # Escolaridade solicitada
+    lista_escolar = ["", "Ensino médio", "Ensino superior", "Pós graduação", "Mestrado", "Doutorado"]
+    escolar = c20.selectbox("Escolaridade", options=lista_escolar, key="cad_escolar")
 
-    c21, c22, c23 = st.columns([1, 1, 1])
+    c21, c22, c23 = st.columns([1, 1, 1.5])
     e_pess = c21.text_input("E-mail Pessoal", key="cad_e_pess")
     tel = c22.text_input("Telefone Pessoal", key="cad_tel")
     drive = c23.text_input("URL Docs (Drive)", key="cad_drive")
@@ -230,7 +272,7 @@ def modal_cadastro_investidor():
                 dt_cont.strftime("%d/%m/%Y"), "", "Ativo",
                 unid, mod_cont, e_corp, mod_pj,
                 ini_v4.strftime("%d/%m/%Y"), cnpj, raz_soc,
-                cargo, remun, cbo, "", id_vaga,
+                cargo, remun, cbo_selecionado, "", id_vaga,
                 "", "", senior, lider, "", "",
                 cpf, nasc.strftime("%d/%m/%Y") if nasc else "",
                 cep, escolar, e_pess, tel, "Pendente",
