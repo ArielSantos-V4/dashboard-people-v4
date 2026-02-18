@@ -243,7 +243,7 @@ def modal_cadastro_investidor(lista_nomes_ativos):
                 e_corp, mod_pj, ini_v4.strftime("%d/%m/%Y"), cnpj, raz_soc, 
                 cargo, remun, cbo_selecionado, "", id_vaga, "", "", 
                 senior, lider, "", "", cpf, nasc.strftime("%d/%m/%Y") if nasc else "", 
-                cep, escolar, e_pess, tel, "", "Pendente", "", "", "", "", drive, ""
+                cep, escolar, e_pess, tel, "", "", "Pendente", "", "", "", "", drive, ""
             ]
             try:
                 gravar_no_google_sheets(linha)
