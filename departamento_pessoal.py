@@ -173,20 +173,20 @@ def buscar_base_vagas():
 def modal_cadastro_investidor():
     # --- BLOCO 1: IDENTIFICAÇÃO BÁSICA ---
     c1, c2, c3 = st.columns([1, 1, 1])
-    nome_curto = c1.text_input("Nome")
-    nome_completo = c2.text_input("Nome Completo (Acentos)")
-    foto_link = c3.text_input("URL da Foto")
+    nome_curto = c1.text_input("Nome", key="cad_nome_curto")
+    nome_completo = c2.text_input("Nome Completo (Acentos)", key="cad_nome_completo")
+    foto_link = c3.text_input("URL da Foto", key="cad_foto_link")
 
     # --- BLOCO 2: CONTRATUAL E DATAS ---
     c4, c5, c6 = st.columns(3)
-    bp = c4.number_input("BP", step=1, value=0)
-    matricula = c5.number_input("Matrícula", step=1, value=0)
-    data_contrato = c6.date_input("Data do Contrato", value=datetime.today())
+    bp = c4.number_input("BP", step=1, value=0, key="cad_bp")
+    matricula = c5.number_input("Matrícula", step=1, value=0, key="cad_matricula")
+    data_contrato = c6.date_input("Data do Contrato", value=datetime.today(), key="cad_dt_contrato")
 
     c7, c8, c9 = st.columns(3)
-    modelo = c7.selectbox("Modelo de Contrato", ["CLT", "PJ", "Estágio"])
-    modalidade_pj = c8.selectbox("Modalidade PJ", ["", "MEI", "ME", "EPP", "Individual"])
-    inicio_v4 = c9.date_input("Início na V4", value=datetime.today())
+    modelo = c7.selectbox("Modelo de Contrato", ["CLT", "PJ", "Estágio"], key="cad_modelo")
+    modalidade_pj = c8.selectbox("Modalidade PJ", ["", "MEI", "ME", "EPP", "Individual"], key="cad_mod_pj")
+    inicio_v4 = c9.date_input("Início na V4", value=datetime.today(), key="cad_inicio_v4")
 
     # --- BLOCO 3: VAGA E CARGO ---
     c10, c11 = st.columns([0.85, 0.15])
@@ -229,105 +229,46 @@ def modal_cadastro_investidor():
     
     # CEP com busca automática
     c23, c24 = st.columns([0.3, 0.7])
-    cep_input = c23.text_input("CEP")
+    cep_input = c23.text_input("CEP", key="cad_cep_input")
     end_resumo = buscar_cep(cep_input)
     if end_resumo:
         c24.info(f"📍 {end_resumo}")
 
     st.markdown("---")
-    if st.button("🚀 Gravar na Planilha Master", use_container_width=True, type="primary"):
+    if st.button("🚀 Gravar na Planilha Master", use_container_width=True, type="primary", key="btn_gravar_master_modal"):
         if not nome_curto or not cpf:
             st.warning("Nome e CPF são obrigatórios!")
         else:
             # Montagem da Linha respeitando a ordem das colunas da planilha
-            # As colunas de fórmulas (H, U, V, Y, Z, AL) enviamos como ""
             linha_final = [
                 nome_curto, nome_completo, foto_link, bp, matricula,
                 data_contrato.strftime("%d/%m/%Y"), 
                 "", # G: Término (Fórmula)
                 "Ativo", # H: Situação
-                unidade if 'unidade' in locals() else "Remoto", # I: Unidade
+                "Remoto", # I: Unidade (Padrão, altere se necessário)
                 modelo, 
-                "", # K: E-mail corp (vazio p/ gerar)
+                "", # K: E-mail corp
                 modalidade_pj, # L
                 inicio_v4.strftime("%d/%m/%Y"), # M
                 cnpj, razao_social, cargo, remun, cbo, 
-                "", # S: Descrição CBO (Fórmula/Pular)
+                "", # S: Descrição CBO
                 id_vaga, 
-                "", "", # U, V: Código e Descrição CC (Fórmulas)
+                "", "", # U, V: Código e Descrição CC
                 "", "", # W, X: Senioridade e Liderança
-                "", "", # Y, Z: Conta Contábil e Área (Fórmulas)
+                "", "", # Y, Z: Conta Contábil e Área
                 cpf, 
                 nascimento.strftime("%d/%m/%Y") if nascimento else "",
                 cep_input, escolaridade, email_pessoal, tel_pessoal,
                 "Pendente", # AG: Situação Plano
                 "", "", "", # AH, AI, AJ
                 link_drive, # AK
-                "" # AL: FotoView (Fórmula)
+                "" # AL: FotoView
             ]
             
             try:
                 gravar_no_google_sheets(linha_final)
                 st.success("Investidor cadastrado com sucesso!")
                 st.rerun()
-            except Exception as e:
-                st.error(f"Erro ao gravar: {e}")
-                    
-    c12, c13, c14 = st.columns(3)
-    cargo = c12.text_input("Cargo")
-    remun = c13.text_input("Remuneração (Ex: 5500,00)")
-    area = c14.text_input("Área")
-
-    # --- BLOCO 4: FINANCEIRO E LOCALIZAÇÃO ---
-    c15, c16, c17 = st.columns(3)
-    cod_cc = c15.text_input("Código CC")
-    desc_cc = c16.text_input("Descrição CC")
-    conta_contabil = c17.text_input("Conta Contábil")
-
-    # CEP Inteligente
-    c18, c19 = st.columns([0.3, 0.7])
-    cep_input = c18.text_input("CEP (Apenas números)")
-    endereco_resumo = buscar_cep(cep_input)
-    if endereco_resumo:
-        c19.info(f"📍 {endereco_resumo}")
-
-    # --- DADOS FINAIS ---
-    c20, c21, c22 = st.columns(3)
-    cpf = c20.text_input("CPF")
-    nascimento = c21.date_input("Data de Nascimento", value=None)
-    link_drive = c22.text_input("Link Drive Docs")
-
-    st.markdown("---")
-    if st.button("🚀 Gravar na Planilha Master", use_container_width=True, type="primary", key="btn_gravar_master_modal"):
-        if not nome_curto or not cpf or not cod_cc:
-            st.warning("Preencha Nome, CPF e Código CC!")
-        else:
-            linha_final = [
-                nome_curto, nome_completo, foto_link, bp, matricula,
-                data_contrato.strftime("%d/%m/%Y"), 
-                "", # G: Término (Calculado na gravação)
-                "Ativo", # H: Situação
-                unidade, modelo, email_corp, 
-                "", # L
-                data_contrato.strftime("%d/%m/%Y"), # M
-                "", "", # N, O
-                cargo, remun, 
-                "", "", # R, S
-                id_vaga, cod_cc, desc_cc,
-                "", "", # W, X
-                conta_contabil, area, cpf,
-                nascimento.strftime("%d/%m/%Y") if nascimento else "",
-                cep_input = c23.text_input("CEP", key="cad_cep_input")
-                "Pendente", # AG
-                "", "", "", # AH, AI, AJ
-                link_drive, # AK
-                "" # AL
-            ]
-            
-            try:
-                gravar_no_google_sheets(linha_final)
-                st.success(f"Sucesso! {nome_curto} foi adicionado.")
-                st.rerun() # Fecha o modal e atualiza a página
             except Exception as e:
                 st.error(f"Erro ao gravar: {e}")
                     
