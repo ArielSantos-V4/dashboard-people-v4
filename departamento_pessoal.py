@@ -178,7 +178,10 @@ def modal_cadastro_investidor(lista_nomes_ativos):
         with st.popover("❓", use_container_width=True):
             df_v = buscar_base_vagas()
             if df_v is not None: st.dataframe(df_v, hide_index=True)
-    
+                st.dataframe(df_v, hide_index=True, use_container_width=True)
+            else:
+                st.error("Não foi possível carregar as vagas.")
+                
     lista_senior = ["", "Trainee", "Junior", "Pleno", "Senior", "Coordenador", "Gerente", "Diretor", "C-Level"]
     senior = cv3.selectbox("Senioridade", options=lista_senior, key="cad_senior")
     lider = cv4.selectbox("Liderança Direta", options=[""] + sorted(lista_nomes_ativos), key="cad_lider")
