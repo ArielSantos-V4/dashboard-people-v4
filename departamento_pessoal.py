@@ -100,9 +100,11 @@ def converter_remuneracao_para_float(coluna):
                                   .str.strip()
     # Converte para número, o que não for número vira NaN (vazio)
     return pd.to_numeric(col_limpa, errors='coerce')
-# ... logo abaixo de converter_remuneracao_para_float ...
+# ==========================================
+# FUNÇÕES AUXILIARES DE CADASTRO E API
+# ==========================================
 
-import requests # Adicione este import no topo do seu arquivo também!
+import requests
 
 def buscar_cep(cep_digitado):
     cep_limpo = str(cep_digitado).replace("-", "").replace(".", "").strip()
@@ -115,205 +117,131 @@ def buscar_cep(cep_digitado):
         except:
             return None
     return None
-    
-import gspread
-from google.oauth2.service_account import Credentials
 
 def gravar_no_google_sheets(dados_lista):
     try:
         scope = ["https://www.googleapis.com/auth/spreadsheets", "https://www.googleapis.com/auth/drive"]
         creds = Credentials.from_service_account_info(st.secrets["gcp_service_account"], scopes=scope)
         client = gspread.authorize(creds)
-        
         spreadsheet = client.open_by_key("13EPwhiXgh8BkbhyrEy2aCy3cv1O8npxJ_hA-HmLZ-pY")
-        
-        # --- ALTERAÇÃO AQUI: Seleciona pelo nome exato da aba ---
         sheet = spreadsheet.worksheet("Base de investidores")
         
-        # Descobre a próxima linha baseada na coluna A
         coluna_a = sheet.col_values(1)
         proxima_linha = len(coluna_a) + 1
-        
-        # Define o intervalo (ex: A até AL na nova linha)
         range_nome = f"A{proxima_linha}:AL{proxima_linha}"
         
-        # Grava os dados
         sheet.update(range_name=range_nome, values=[dados_lista], value_input_option="RAW")
-        
     except Exception as e:
         raise Exception(f"Erro ao gravar na aba Base de investidores: {e}")
-        
-import gspread
-from google.oauth2.service_account import Credentials
-import pandas as pd
 
 def buscar_base_vagas():
     try:
-        # 1. Usamos as credenciais que JÁ ESTÃO no seu Streamlit
         scope = ["https://www.googleapis.com/auth/spreadsheets", "https://www.googleapis.com/auth/drive"]
         creds = Credentials.from_service_account_info(st.secrets["gcp_service_account"], scopes=scope)
         client = gspread.authorize(creds)
-        
-        # 2. Abrimos a planilha pelo ID
         spreadsheet = client.open_by_key("13EPwhiXgh8BkbhyrEy2aCy3cv1O8npxJ_hA-HmLZ-pY")
-        
-        # 3. Acessamos a aba de vagas (Pode usar o nome exato da aba entre aspas)
-        # Se a aba se chamar "Vagas", use worksheet("Vagas")
-        # Como não sabemos o nome, vamos pegar pelo índice ou pelo GID
-        # Vou tentar pegar a aba que tem o GID 1415557248
         aba_vagas = None
         for sheet in spreadsheet.worksheets():
             if str(sheet.id) == "1415557248":
                 aba_vagas = sheet
                 break
-        
-        if aba_vagas is None:
-            # Se não achar pelo GID, pega a segunda aba (índice 1) como backup
-            aba_vagas = spreadsheet.get_worksheet(1)
-
-        # 4. Transformamos os dados em DataFrame
+        if aba_vagas is None: aba_vagas = spreadsheet.get_worksheet(1)
         dados = aba_vagas.get_all_records()
-        df_vagas = pd.DataFrame(dados)
-        
-        return df_vagas
-        
+        return pd.DataFrame(dados)
     except Exception as e:
-        st.error(f"Erro ao acessar aba de vagas via API: {e}")
+        st.error(f"Erro ao acessar aba de vagas: {e}")
         return None
-        
+
 @st.dialog("📝 Cadastro de Novo Investidor", width="large")
 def modal_cadastro_investidor():
-    # ==========================================
-    # BLOCO 1: DADOS PRINCIPAIS
-    # ==========================================
-    st.subheader("👤 Dados Principais")
-    
-    c1, c2, c3 = st.columns([1, 1.5, 1.5])
-    nome_curto = c1.text_input("Nome", key="cad_nome_curto")
-    nome_completo = c2.text_input("Nome Completo (Acentos)", key="cad_nome_completo")
-    foto_link = c3.text_input("URL da Foto", key="cad_foto_link")
+    # --- BLOCO 1: DADOS PRINCIPAIS ---
+    st.markdown("#### 👤 Dados Principais")
+    c1, c2, c3 = st.columns([1, 1, 1])
+    n_curto = c1.text_input("Nome (Curto)", key="cad_n_curto")
+    n_completo = c2.text_input("Nome Completo (Acentos)", key="cad_n_comp")
+    foto = c3.text_input("URL da Foto", key="cad_foto")
 
     c4, c5, c6 = st.columns(3)
     bp = c4.number_input("BP", step=1, value=0, key="cad_bp")
-    matricula = c5.number_input("Matrícula", step=1, value=0, key="cad_matricula")
-    data_contrato = c6.date_input("Data do Contrato", value=datetime.today(), key="cad_dt_contrato")
+    matri = c5.number_input("Matrícula", step=1, value=0, key="cad_matri")
+    dt_cont = c6.date_input("Data do Contrato", value=datetime.today(), key="cad_dt_cont")
 
     c7, c8, c9 = st.columns(3)
-    unidade = c7.selectbox("Unidade/Atuação", ["Flagship", "Headquarters", "Híbrido", "Remoto", "Unidade São Leopoldo"], key="cad_unidade")
-    modelo = c8.selectbox("Modelo de Contrato", ["CLT", "PJ", "Estágio"], key="cad_modelo")
-    email_corp = c9.text_input("E-mail Corporativo", key="cad_email_corp")
+    unid = c7.selectbox("Unidade/Atuação", ["Flagship", "Headquarters", "Híbrido", "Remoto", "Unidade São Leopoldo"], key="cad_unid")
+    mod_cont = c8.selectbox("Modelo de Contrato", ["CLT", "PJ", "Estágio"], key="cad_mod_cont")
+    e_corp = c9.text_input("E-mail Corporativo", key="cad_e_corp")
 
     c10, c11, c12 = st.columns(3)
-    modalidade_pj = c10.selectbox("Modalidade PJ", ["", "MEI", "ME", "EPP", "Individual"], key="cad_mod_pj")
-    inicio_v4 = c11.date_input("Início na V4", value=datetime.today(), key="cad_inicio_v4")
+    mod_pj = c10.selectbox("Modalidade PJ", ["", "MEI", "ME", "EPP", "Individual"], key="cad_mod_pj")
+    ini_v4 = c11.date_input("Início na V4", value=datetime.today(), key="cad_ini_v4")
     cnpj = c12.text_input("CNPJ", key="cad_cnpj")
 
     c13, c14, c15 = st.columns([1.5, 1, 0.5])
-    razao_social = c13.text_input("Razão Social", key="cad_razao")
+    raz_soc = c13.text_input("Razão Social", key="cad_raz_soc")
     cargo = c14.text_input("Cargo", key="cad_cargo")
-    remun = c15.text_input("Remun.", key="cad_remun")
+    remun = c15.text_input("Remuneração", key="cad_remun")
     
     cbo = st.text_input("CBO (Apenas números)", key="cad_cbo")
 
     st.markdown("---")
     
-    # ==========================================
-    # BLOCO 2: CENTRO DE CUSTO
-    # ==========================================
-    st.subheader("🏢 Centro de Custo")
-    
-    col_v1, col_v2 = st.columns([0.85, 0.15])
-    with col_v1:
-        id_vaga = st.text_input("ID Vaga", placeholder="Digite o ID...", key="cad_id_vaga")
-    with col_v2:
-        st.markdown('<p style="margin-bottom: 31px;"></p>', unsafe_allow_html=True)
+    # --- BLOCO 2: CENTRO DE CUSTO ---
+    st.markdown("#### 🏢 Centro de Custo")
+    cv1, cv2 = st.columns([0.85, 0.15])
+    id_vaga = cv1.text_input("ID Vaga", placeholder="Digite o ID...", key="cad_id_vaga")
+    with cv2:
+        st.write("") 
+        st.markdown('<p style="margin-bottom: 7px;"></p>', unsafe_allow_html=True)
         with st.popover("❓", use_container_width=True):
             df_v = buscar_base_vagas()
-            st.dataframe(df_v, hide_index=True)
+            if df_v is not None: st.dataframe(df_v, hide_index=True)
 
     c16, c17 = st.columns(2)
-    senioridade = c16.selectbox("Senioridade", ["", "Junior", "Pleno", "Senior", "Especialista", "Liderança"], key="cad_senioridade")
-    lideranca = c17.text_input("Liderança Direta", key="cad_lideranca")
+    senior = c16.selectbox("Senioridade", ["", "Junior", "Pleno", "Senior", "Especialista", "Liderança"], key="cad_senior")
+    lider = c17.text_input("Liderança Direta", key="cad_lider")
 
     st.markdown("---")
 
-    # ==========================================
-    # BLOCO 3: DADOS PESSOAIS
-    # ==========================================
-    st.subheader("👤 Dados Pessoais")
-    
+    # --- BLOCO 3: DADOS PESSOAIS ---
+    st.markdown("#### 🏠 Dados Pessoais")
     c18, c19, c20 = st.columns(3)
     cpf = c18.text_input("CPF", key="cad_cpf")
-    nascimento = c19.date_input("Data de Nascimento", value=None, key="cad_nascimento")
-    escolaridade = c20.selectbox("Escolaridade", ["", "Ensino Médio", "Graduação Incompleta", "Graduação Completa", "Pós-Graduação"], key="cad_escolaridade")
+    nasc = c19.date_input("Data de Nascimento", value=None, key="cad_nasc")
+    escolar = c20.selectbox("Escolaridade", ["", "Ensino Médio", "Graduação Incompleta", "Graduação Completa", "Pós-Graduação"], key="cad_escolar")
 
-    c21, c22 = st.columns(2)
-    email_pessoal = c21.text_input("E-mail Pessoal", key="cad_mail_pess")
-    tel_pessoal = c22.text_input("Telefone Pessoal", key="cad_tel_pess")
-    
-    link_drive = st.text_input("URL da Documentação (Drive)", key="cad_drive")
-    
-    c23, c24 = st.columns([0.3, 0.7])
-    cep_input = c23.text_input("CEP", key="cad_cep_input")
-    end_resumo = buscar_cep(cep_input)
-    if end_resumo:
-        c24.info(f"📍 {end_resumo}")
+    c21, c22, c23 = st.columns([1, 1, 1])
+    e_pess = c21.text_input("E-mail Pessoal", key="cad_e_pess")
+    tel = c22.text_input("Telefone Pessoal", key="cad_tel")
+    drive = c23.text_input("URL Docs (Drive)", key="cad_drive")
+
+    c24, c25 = st.columns([0.3, 0.7])
+    cep = c24.text_input("CEP", key="cad_cep")
+    end_info = buscar_cep(cep)
+    if end_info: c25.info(f"📍 {end_info}")
 
     st.markdown("---")
     
-    # ==========================================
-    # BOTÃO DE GRAVAÇÃO
-    # ==========================================
-    if st.button("🚀 Gravar na Planilha Master", use_container_width=True, type="primary", key="btn_gravar_master_modal"):
-        if not nome_curto or not cpf:
-            st.warning("Nome e CPF são obrigatórios!")
+    if st.button("🚀 Gravar na Planilha Master", use_container_width=True, type="primary", key="btn_final"):
+        if not n_curto or not cpf:
+            st.warning("Preencha Nome e CPF!")
         else:
-            # MONTAGEM DA LINHA (Verifique se a ordem das colunas bate com seu Sheets)
-            linha_final = [
-                nome_curto,         # A
-                nome_completo,      # B
-                foto_link,          # C
-                bp,                 # D
-                matricula,          # E
-                data_contrato.strftime("%d/%m/%Y"), # F
-                "",                 # G: Término (Fórmula)
-                "Ativo",            # H: Situação
-                unidade,            # I
-                modelo,             # J
-                email_corp,         # K
-                modalidade_pj,      # L
-                inicio_v4.strftime("%d/%m/%Y"), # M
-                cnpj,               # N
-                razao_social,       # O
-                cargo,              # P
-                remun,              # Q
-                cbo,                # R
-                "",                 # S: Descrição CBO (Fórmula)
-                id_vaga,            # T
-                "",                 # U: Código CC (Fórmula)
-                "",                 # V: Descrição CC (Fórmula)
-                senioridade,        # W
-                lideranca,          # X
-                "",                 # Y: Conta Contábil (Fórmula)
-                "",                 # Z: Área (Fórmula)
-                cpf,                # AA
-                nascimento.strftime("%d/%m/%Y") if nascimento else "", # AB
-                cep_input,          # AC
-                escolaridade,       # AD
-                email_pessoal,      # AE
-                tel_pessoal,        # AF
-                "Pendente",         # AG: Situação Plano
-                "", "", "",         # AH, AI, AJ
-                link_drive,         # AK
-                ""                  # AL: FotoView (Fórmula)
+            linha = [
+                n_curto, n_completo, foto, bp, matri,
+                dt_cont.strftime("%d/%m/%Y"), "", "Ativo",
+                unid, mod_cont, e_corp, mod_pj,
+                ini_v4.strftime("%d/%m/%Y"), cnpj, raz_soc,
+                cargo, remun, cbo, "", id_vaga,
+                "", "", senior, lider, "", "",
+                cpf, nasc.strftime("%d/%m/%Y") if nasc else "",
+                cep, escolar, e_pess, tel, "Pendente",
+                "", "", "", drive, ""
             ]
-            
             try:
-                gravar_no_google_sheets(linha_final)
-                st.success("Investidor cadastrado com sucesso!")
+                gravar_no_google_sheets(linha)
+                st.success("Cadastrado com sucesso!")
                 st.rerun()
             except Exception as e:
-                st.error(f"Erro ao gravar: {e}")
+                st.error(f"Erro: {e}")
                     
 # ==========================================
 # LÓGICA DE ALERTAS (ATIVOS)
