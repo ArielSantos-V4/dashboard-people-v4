@@ -171,53 +171,99 @@ def buscar_base_vagas():
         
 @st.dialog("📝 Cadastro de Novo Investidor", width="large")
 def modal_cadastro_investidor():
-    # Removi o st.markdown do título daqui de dentro, 
-    # pois o @st.dialog já cria o título no topo da janela.
-
-    # DICA: Remova o 'with st.form' se for usar dentro do dialog, 
-    # ou mantenha se quiser o botão de 'clear_on_submit'. 
-    # Para o dialog, o formulário simples costuma funcionar melhor:
-
-    # --- BLOCO 1: IDENTIFICAÇÃO ---
+    # --- BLOCO 1: IDENTIFICAÇÃO BÁSICA ---
     c1, c2, c3 = st.columns([1, 1, 1])
-    nome_curto = c1.text_input("Nome (Como será chamado)")
-    nome_completo = c2.text_input("Nome Completo (Com acentos)")
+    nome_curto = c1.text_input("Nome (Curto)")
+    nome_completo = c2.text_input("Nome Completo (Acentos)")
     foto_link = c3.text_input("URL da Foto (Link Drive/Web)")
 
-    # --- BLOCO 2: CONTRATUAL ---
+    # --- BLOCO 2: CONTRATUAL E DATAS ---
     c4, c5, c6 = st.columns(3)
-    bp = c4.number_input("BP (Número)", step=1, value=0)
-    matricula = c5.number_input("Matrícula (Número)", step=1, value=0)
+    bp = c4.number_input("BP", step=1, value=0)
+    matricula = c5.number_input("Matrícula", step=1, value=0)
     data_contrato = c6.date_input("Data do Contrato", value=datetime.today())
 
     c7, c8, c9 = st.columns(3)
     modelo = c7.selectbox("Modelo de Contrato", ["CLT", "PJ", "Estágio"])
-    unidade = c8.selectbox("Unidade/Atuação", ["Flagship", "Headquarters", "Híbrido", "Remoto", "Unidade São Leopoldo"])
-    email_corp = c9.text_input("E-mail Corporativo")
+    modalidade_pj = c8.selectbox("Modalidade PJ", ["", "MEI", "ME", "EPP", "Individual"])
+    inicio_v4 = c9.date_input("Início na V4", value=datetime.today())
 
-    # --- BLOCO 3: VAGA E CARGO (Alinhamento Corrigido) ---
+    # --- BLOCO 3: VAGA E CARGO ---
     c10, c11 = st.columns([0.85, 0.15])
-        
     with c10:
         id_vaga = st.text_input("ID Vaga", placeholder="Digite o ID...")
-        
     with c11:
-        # Esse markdown cria um espaço invisível no topo para empurrar o botão
-        # Ele simula a altura do label "ID Vaga" da coluna ao lado
-        st.markdown('<p style="margin-bottom: 30px;"></p>', unsafe_allow_html=True)
-        
-        with st.popover("❓", help="Consultar base de vagas", use_container_width=True):
-            st.write("### IDs de Vaga Disponíveis")
-            df_vagas = buscar_base_vagas()
-            if df_vagas is not None:
-                # Campo de busca dentro do popover para facilitar
-                busca_v = st.text_input("🔍 Filtrar Vaga")
-                if busca_v:
-                    df_vagas = df_vagas[df_vagas.astype(str).apply(lambda x: x.str.contains(busca_v, case=False).any(), axis=1)]
-                
-                st.dataframe(df_vagas, use_container_width=True, hide_index=True)
-            else:
-                st.error("Erro ao carregar vagas.")
+        st.write("") # Espaçador simples para alinhamento
+        with st.popover("❓", use_container_width=True):
+            df_v = buscar_base_vagas()
+            st.dataframe(df_v, hide_index=True)
+
+    c12, c13, c14 = st.columns(3)
+    cargo = c12.text_input("Cargo")
+    remun = c13.text_input("Remuneração (Ex: 5000,00)")
+    cbo = c14.text_input("CBO (Apenas números)")
+
+    # --- BLOCO 4: EMPRESA (PJ) ---
+    c15, c16 = st.columns(2)
+    cnpj = c15.text_input("CNPJ")
+    razao_social = c16.text_input("Razão Social")
+
+    # --- BLOCO 5: DADOS PESSOAIS E CONTATO ---
+    c17, c18, c19 = st.columns(3)
+    cpf = c17.text_input("CPF")
+    nascimento = c18.date_input("Data de Nascimento", value=None)
+    escolaridade = c19.selectbox("Escolaridade", ["", "Ensino Médio", "Graduação Incompleta", "Graduação Completa", "Pós-Graduação"])
+
+    c20, c21, c22 = st.columns(3)
+    email_pessoal = c20.text_input("E-mail Pessoal")
+    tel_pessoal = c21.text_input("Telefone Pessoal")
+    link_drive = c22.text_input("Link Drive Docs")
+
+    # CEP com busca automática
+    c23, c24 = st.columns([0.3, 0.7])
+    cep_input = c23.text_input("CEP")
+    end_resumo = buscar_cep(cep_input)
+    if end_resumo:
+        c24.info(f"📍 {end_resumo}")
+
+    st.markdown("---")
+    if st.button("🚀 Gravar na Planilha Master", use_container_width=True, type="primary"):
+        if not nome_curto or not cpf:
+            st.warning("Nome e CPF são obrigatórios!")
+        else:
+            # Montagem da Linha respeitando a ordem das colunas da planilha
+            # As colunas de fórmulas (H, U, V, Y, Z, AL) enviamos como ""
+            linha_final = [
+                nome_curto, nome_completo, foto_link, bp, matricula,
+                data_contrato.strftime("%d/%m/%Y"), 
+                "", # G: Término (Fórmula)
+                "Ativo", # H: Situação
+                unidade if 'unidade' in locals() else "Remoto", # I: Unidade
+                modelo, 
+                "", # K: E-mail corp (vazio p/ gerar)
+                modalidade_pj, # L
+                inicio_v4.strftime("%d/%m/%Y"), # M
+                cnpj, razao_social, cargo, remun, cbo, 
+                "", # S: Descrição CBO (Fórmula/Pular)
+                id_vaga, 
+                "", "", # U, V: Código e Descrição CC (Fórmulas)
+                "", "", # W, X: Senioridade e Liderança
+                "", "", # Y, Z: Conta Contábil e Área (Fórmulas)
+                cpf, 
+                nascimento.strftime("%d/%m/%Y") if nascimento else "",
+                cep_input, escolaridade, email_pessoal, tel_pessoal,
+                "Pendente", # AG: Situação Plano
+                "", "", "", # AH, AI, AJ
+                link_drive, # AK
+                "" # AL: FotoView (Fórmula)
+            ]
+            
+            try:
+                gravar_no_google_sheets(linha_final)
+                st.success("Investidor cadastrado com sucesso!")
+                st.rerun()
+            except Exception as e:
+                st.error(f"Erro ao gravar: {e}")
                     
     c12, c13, c14 = st.columns(3)
     cargo = c12.text_input("Cargo")
