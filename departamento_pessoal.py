@@ -188,39 +188,32 @@ def modal_cadastro_investidor():
     modalidade_pj = c8.selectbox("Modalidade PJ", ["", "MEI", "ME", "EPP", "Individual"])
     inicio_v4 = c9.date_input("Início na V4", value=datetime.today())
 
-    # --- BLOCO 3: VAGA E CARGO ---
+    # --- BLOCO 3: VAGA E CARGO (Alinhamento e Filtro) ---
     c10, c11 = st.columns([0.85, 0.15])
+    
     with c10:
         id_vaga = st.text_input("ID Vaga", placeholder="Digite o ID...")
+        
     with c11:
-        st.write("") # Calço para alinhar com o input ao lado
+        # Usamos " " (um espaço) no label para ele ocupar o mesmo espaço do "ID Vaga"
         with st.popover("❓", use_container_width=True, help="Consultar base de vagas"):
-            st.subheader("🔍 Consulta de Vagas")
+            st.markdown("### 🔍 Consulta de Vagas")
+            df_v = buscar_base_vagas()
             
-            # Chamada da função que já ajustamos com a API
-            df_vagas = buscar_base_vagas()
-            
-            if df_vagas is not None:
-                # FILTRO: O usuário digita aqui dentro
-                termo_busca = st.text_input("Filtrar por Cargo ou ID", key="filtro_vagas_modal")
+            if df_v is not None:
+                # O filtro que você quer manter
+                busca_interna = st.text_input("Filtrar por Cargo ou ID", key="busca_vaga_modal")
                 
-                if termo_busca:
-                    # Filtra em todas as colunas (converte tudo para texto e ignora maiúsculas/minúsculas)
-                    mask = df_vagas.astype(str).apply(lambda x: x.str.contains(termo_busca, case=False).any(), axis=1)
-                    df_exibir = df_vagas[mask]
+                if busca_interna:
+                    mask = df_v.astype(str).apply(lambda x: x.str.contains(busca_interna, case=False).any(), axis=1)
+                    df_exibir = df_v[mask]
                 else:
-                    df_exibir = df_vagas
-
-                # Exibição da tabela filtrada
-                st.dataframe(
-                    df_exibir, 
-                    use_container_width=True, 
-                    hide_index=True,
-                    height=250 # Altura fixa para não desformatar o modal
-                )
+                    df_exibir = df_v
+                
+                st.dataframe(df_exibir, use_container_width=True, hide_index=True, height=250)
             else:
-                st.error("Não foi possível carregar a base de vagas.")
-
+                st.error("Erro ao carregar base.")
+                
     c12, c13, c14 = st.columns(3)
     cargo = c12.text_input("Cargo")
     remun = c13.text_input("Remuneração (Ex: 5000,00)")
