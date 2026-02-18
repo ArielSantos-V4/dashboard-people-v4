@@ -121,10 +121,17 @@ def gravar_no_google_sheets(dados_lista):
     client = gspread.authorize(creds)
     spreadsheet = client.open_by_key("13EPwhiXgh8BkbhyrEy2aCy3cv1O8npxJ_hA-HmLZ-pY")
     sheet = spreadsheet.worksheet("Base de investidores")
+    
+    # 1. Descobre a próxima linha
     coluna_a = sheet.col_values(1)
     proxima_linha = len(coluna_a) + 1
-    sheet.update(range_name=f"A{proxima_linha}:AL{proxima_linha}", values=[dados_lista], value_input_option="USER_ENTERED")
+    
+    # 2. Define o range correto até a coluna AN (40 colunas)
+    # A coluna AN é a quadragésima coluna da planilha.
     range_nome = f"A{proxima_linha}:AN{proxima_linha}"
+    
+    # 3. Executa o update usando a variável range_nome que acabamos de criar
+    sheet.update(range_name=range_nome, values=[dados_lista], value_input_option="USER_ENTERED")
     
 # ==========================================
 # MODAL DE CADASTRO
