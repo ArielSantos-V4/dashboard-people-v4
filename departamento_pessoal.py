@@ -171,24 +171,23 @@ def modal_cadastro_investidor(lista_nomes_ativos):
     # BLOCO 2: CENTRO DE CUSTO
     # ==========================================
     st.markdown("#### 🏢 Centro de Custo")
-    # Aumentamos um pouco o espaço do Popover (0.3)
+    # Layout ajustado para o Popover e campos
     cv1, cv2, cv3, cv4 = st.columns([0.7, 0.3, 1, 1])
     
     id_vaga = cv1.text_input("ID Vaga", placeholder="ID...", key="cad_id_vaga")
     
     with cv2:
         st.markdown('<p style="margin-bottom: 30px;"></p>', unsafe_allow_html=True)
-        # O Popover vai expandir conforme o uso_container_width do que está dentro
         with st.popover("❓", use_container_width=True):
             st.markdown("##### 🔍 Base de Vagas Ativas")
             df_v = buscar_base_vagas()
             if df_v is not None:
-                # O truque: use_container_width=True aqui força o popover a abrir mais
                 st.dataframe(df_v, hide_index=True, use_container_width=True)
             else:
                 st.error("Não foi possível carregar as vagas.")
     
     lista_senior = ["", "Trainee", "Junior", "Pleno", "Senior", "Coordenador", "Gerente", "Diretor", "C-Level"]
+    # CORREÇÃO: Removido o duplicado que causava o erro de sintaxe/indentação
     senior = cv3.selectbox("Senioridade", options=lista_senior, key="cad_senior")
     lider = cv4.selectbox("Liderança Direta", options=[""] + sorted(lista_nomes_ativos), key="cad_lider")
 
