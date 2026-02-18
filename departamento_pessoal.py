@@ -217,26 +217,26 @@ def modal_cadastro_investidor():
                 st.error("Erro ao carregar base.")
                 
     c12, c13, c14 = st.columns(3)
-    cargo = c12.text_input("Cargo")
-    remun = c13.text_input("Remuneração (Ex: 5000,00)")
-    cbo = c14.text_input("CBO (Apenas números)")
+    cargo = c12.text_input("Cargo", key="cad_cargo")
+    remun = c13.text_input("Remuneração (Ex: 5000,00)", key="cad_remun")
+    cbo = c14.text_input("CBO (Apenas números)", key="cad_cbo")
 
     # --- BLOCO 4: EMPRESA (PJ) ---
     c15, c16 = st.columns(2)
-    cnpj = c15.text_input("CNPJ")
-    razao_social = c16.text_input("Razão Social")
+    cnpj = c15.text_input("CNPJ", key="cad_cnpj")
+    razao_social = c16.text_input("Razão Social", key="cad_razao")
 
     # --- BLOCO 5: DADOS PESSOAIS E CONTATO ---
     c17, c18, c19 = st.columns(3)
-    cpf = c17.text_input("CPF")
-    nascimento = c18.date_input("Data de Nascimento", value=None)
-    escolaridade = c19.selectbox("Escolaridade", ["", "Ensino Médio", "Graduação Incompleta", "Graduação Completa", "Pós-Graduação"])
+    cpf = c17.text_input("CPF", key="cad_cpf")
+    nascimento = c18.date_input("Data de Nascimento", value=None, key="cad_nascimento")
+    escolaridade = c19.selectbox("Escolaridade", ["", "Ensino Médio", "Graduação Incompleta", "Graduação Completa", "Pós-Graduação"], key="cad_escolaridade")
 
     c20, c21, c22 = st.columns(3)
-    email_pessoal = c20.text_input("E-mail Pessoal")
-    tel_pessoal = c21.text_input("Telefone Pessoal")
-    link_drive = c22.text_input("Link Drive Docs")
-
+    email_pessoal = c20.text_input("E-mail Pessoal", key="cad_mail_pess")
+    tel_pessoal = c21.text_input("Telefone Pessoal", key="cad_tel_pess")
+    link_drive = c22.text_input("Link Drive Docs", key="cad_drive")
+    
     # CEP com busca automática
     c23, c24 = st.columns([0.3, 0.7])
     cep_input = c23.text_input("CEP")
