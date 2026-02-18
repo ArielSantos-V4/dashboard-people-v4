@@ -125,7 +125,7 @@ def buscar_lista_cbo():
         client = gspread.authorize(creds)
         spreadsheet = client.open_by_key("13EPwhiXgh8BkbhyrEy2aCy3cv1O8npxJ_hA-HmLZ-pY")
         
-        # Busca pela aba CBO via GID 1740390887
+        # Localiza a aba pelo GID 1740390887
         aba_cbo = None
         for sheet in spreadsheet.worksheets():
             if str(sheet.id) == "1740390887":
@@ -133,11 +133,14 @@ def buscar_lista_cbo():
                 break
         
         if aba_cbo:
-            # Pega todos os valores da Coluna A (ignorando o cabeçalho se houver)
-            lista = aba_cbo.col_values(1)
-            return sorted(list(set([str(x) for x in lista if x]))) # Remove vazios e duplicados
+            # Pega todos os valores da Coluna A
+            valores = aba_cbo.col_values(1)
+            # Remove o título "CBO" se existir e limpa vazios
+            lista = [str(x).strip() for x in valores if x and str(x).upper() != "CBO"]
+            return sorted(lista)
         return []
-    except:
+    except Exception as e:
+        print(f"Erro CBO: {e}")
         return []
         
 def gravar_no_google_sheets(dados_lista):
@@ -175,12 +178,12 @@ def buscar_base_vagas():
         return None
 
 @st.dialog("📝 Cadastro de Novo Investidor", width="large")
-def modal_cadastro_investidor():
+def modal_cadastro_investidor(lista_nomes_ativos):
     # --- BLOCO 1: DADOS PRINCIPAIS ---
     st.markdown("#### 👤 Dados Principais")
     c1, c2, c3 = st.columns([1, 1, 1])
-    n_curto = c1.text_input("Nome (Curto)", key="cad_n_curto")
-    n_completo = c2.text_input("Nome Completo (Acentos)", key="cad_n_comp")
+    n_curto = c1.text_input("Nome", key="cad_n_curto")
+    n_completo = c2.text_input("Nome Completo com acentuação", key="cad_n_comp")
     foto = c3.text_input("URL da Foto", key="cad_foto")
 
     c4, c5, c6 = st.columns(3)
@@ -206,9 +209,8 @@ def modal_cadastro_investidor():
     remun = c15.text_input("Remuneração", key="cad_remun")
     
     # Lista Dinâmica CBO
-    lista_cbo = [""] + buscar_lista_cbo()
-    cbo_selecionado = st.selectbox("CBO (Selecione da lista)", options=lista_cbo, key="cad_cbo_list")
-
+    lista_cbo_res = buscar_lista_cbo()
+    cbo_selecionado = st.selectbox("CBO (Selecione da lista)", options=[""] + lista_cbo_res, key="cad_cbo_list")
     st.markdown("---")
     
     # --- BLOCO 2: CENTRO DE CUSTO ---
@@ -223,9 +225,8 @@ def modal_cadastro_investidor():
             if df_v is not None: st.dataframe(df_v, hide_index=True)
 
     c16, c17 = st.columns(2)
-    # Senioridade sem acentos
-    lista_senior = ["", "Trainee", "junior", "pleno", "senior", "coordenador", "gerente", "diretor", "C-Level"]
-    senior = c16.selectbox("Senioridade", options=lista_senior, key="cad_senior")
+    lista_senior = ["", "Trainee", "Junior", "Pleno", "Senior", "Coordenador", "Gerente", "Diretor", "C-Level"]
+    senior = c16.selectbox("Senioridade", options=lista_senior, key="cad_senior")"cad_senior")
     
     # Liderança baseada nos Ativos
     # st.session_state.df_ativos precisa estar disponível aqui. Caso não esteja, usamos o df_ativos_proc do render.
@@ -238,7 +239,7 @@ def modal_cadastro_investidor():
     except:
         opcoes_lider = [""] # Fallback
 
-    lider = c17.selectbox("Liderança Direta", options=opcoes_lider, key="cad_lider")
+    lider = c17.selectbox("Liderança Direta", options=[""] + sorted(lista_nomes_ativos), key="cad_lider")
 
     st.markdown("---")
 
@@ -1689,12 +1690,15 @@ def render(df_ativos, df_desligados):
         # Agora dividido em 4 colunas
         c_cad, c_form, c_mail, c_div = st.columns(4)
         
+        # Dentro da aba_acoes no render:
         with c_cad:
             st.markdown("##### 📥 Cadastros")
             with st.expander("👤 Investidor", expanded=True):
-                # Em vez de chamar a função direto, criamos o botão de gatilho
+                # Pegamos os nomes da coluna 'Nome' do dataframe de ativos que já foi processado
+                nomes_para_lideranca = df_ativos["Nome"].dropna().unique().tolist()
+                
                 if st.button("➕ Cadastrar Novo Investidor", use_container_width=True, type="primary"):
-                    modal_cadastro_investidor()
+                    modal_cadastro_investidor(nomes_para_lideranca)
         
         with c_form:
             st.markdown("##### 📝 Gerar Formulários")
