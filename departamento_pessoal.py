@@ -150,7 +150,7 @@ def modal_cadastro_investidor(lista_nomes_ativos):
     unid = c7.selectbox("Unidade/Atuação", ["Flagship", "Headquarters", "Híbrido", "Remoto", "Unidade São Leopoldo"], key="cad_unid")
 
     # Linha 3: Modelo; Email corp; Modalidade PJ; Início V4
-    c8, c9, c10, c11, c12 = st.columns([0.5, 1.5, 0.3, 1, 1.2])
+    c8, c9, c10, c11, c12 = st.columns([0.5, 1.4, 0.5, 0.8, 1.2])
     mod_cont = c8.selectbox("Modelo de Contrato", ["CLT", "PJ", "Estágio"], key="cad_mod_cont")
     e_corp = c9.text_input("E-mail Corporativo", key="cad_e_corp")
     mod_pj = c10.selectbox("Modalidade PJ", ["", "MEI", "SLU"], key="cad_mod_pj")
