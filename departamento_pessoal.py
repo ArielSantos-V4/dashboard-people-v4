@@ -193,10 +193,33 @@ def modal_cadastro_investidor():
     with c10:
         id_vaga = st.text_input("ID Vaga", placeholder="Digite o ID...")
     with c11:
-        st.write("") # Espaçador simples para alinhamento
-        with st.popover("❓", use_container_width=True):
-            df_v = buscar_base_vagas()
-            st.dataframe(df_v, hide_index=True)
+        st.write("") # Calço para alinhar com o input ao lado
+        with st.popover("❓", use_container_width=True, help="Consultar base de vagas"):
+            st.subheader("🔍 Consulta de Vagas")
+            
+            # Chamada da função que já ajustamos com a API
+            df_vagas = buscar_base_vagas()
+            
+            if df_vagas is not None:
+                # FILTRO: O usuário digita aqui dentro
+                termo_busca = st.text_input("Filtrar por Cargo ou ID", key="filtro_vagas_modal")
+                
+                if termo_busca:
+                    # Filtra em todas as colunas (converte tudo para texto e ignora maiúsculas/minúsculas)
+                    mask = df_vagas.astype(str).apply(lambda x: x.str.contains(termo_busca, case=False).any(), axis=1)
+                    df_exibir = df_vagas[mask]
+                else:
+                    df_exibir = df_vagas
+
+                # Exibição da tabela filtrada
+                st.dataframe(
+                    df_exibir, 
+                    use_container_width=True, 
+                    hide_index=True,
+                    height=250 # Altura fixa para não desformatar o modal
+                )
+            else:
+                st.error("Não foi possível carregar a base de vagas.")
 
     c12, c13, c14 = st.columns(3)
     cargo = c12.text_input("Cargo")
