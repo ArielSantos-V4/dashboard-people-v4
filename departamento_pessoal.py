@@ -42,7 +42,24 @@ def converter_remuneracao_para_float(coluna):
                                   .str.strip()
     # Converte para número, o que não for número vira NaN (vazio)
     return pd.to_numeric(col_limpa, errors='coerce')
-    
+
+def calcular_idade(dt_nasc):
+    if pd.isna(dt_nasc) or dt_nasc == "": 
+        return ""
+    try:
+        # Se for string, tenta converter. Se já for data (Timestamp), usa direto.
+        if not isinstance(dt_nasc, pd.Timestamp):
+            dt_nasc = pd.to_datetime(dt_nasc, dayfirst=True, errors='coerce')
+        
+        if pd.isna(dt_nasc): 
+            return ""
+        
+        hoje = pd.Timestamp.today()
+        idade = hoje.year - dt_nasc.year - ((hoje.month, hoje.day) < (dt_nasc.month, dt_nasc.day))
+        return f"{idade} anos"
+    except:
+        return ""
+        
 def parse_data_br(coluna):
     return pd.to_datetime(coluna, dayfirst=True, errors="coerce")
 
