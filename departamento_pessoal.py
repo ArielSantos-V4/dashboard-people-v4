@@ -34,6 +34,15 @@ def formatar_cnpj(valor):
     v = limpar_numero(valor).zfill(14)
     return f"{v[:2]}.{v[2:5]}.{v[5:8]}/{v[8:12]}-{v[12:]}" if len(v) == 14 else v
 
+def converter_remuneracao_para_float(coluna):
+    # Transforma em string, remove R$, pontos e troca vírgula por ponto
+    col_limpa = coluna.astype(str).str.replace('R$', '', regex=False)\
+                                  .str.replace('.', '', regex=False)\
+                                  .str.replace(',', '.', regex=False)\
+                                  .str.strip()
+    # Converte para número, o que não for número vira NaN (vazio)
+    return pd.to_numeric(col_limpa, errors='coerce')
+    
 def parse_data_br(coluna):
     return pd.to_datetime(coluna, dayfirst=True, errors="coerce")
 
@@ -1583,11 +1592,10 @@ def render(df_ativos, df_desligados):
         # Agora dividido em 4 colunas
         c_cad, c_form, c_mail, c_div = st.columns(4)
         
-        # Dentro da aba_acoes no render:
         with c_cad:
             st.markdown("##### 📥 Cadastros")
             with st.expander("👤 Investidor", expanded=True):
-                # Pegamos os nomes da coluna 'Nome' do dataframe de ativos que já foi processado
+                # Esta linha pega os nomes dos investidores ativos para a lista de liderança
                 nomes_para_lideranca = df_ativos["Nome"].dropna().unique().tolist()
                 
                 if st.button("➕ Cadastrar Novo Investidor", use_container_width=True, type="primary"):
