@@ -123,87 +123,112 @@ def gravar_no_google_sheets(dados_lista):
     sheet = spreadsheet.worksheet("Base de investidores")
     coluna_a = sheet.col_values(1)
     proxima_linha = len(coluna_a) + 1
-    sheet.update(range_name=f"A{proxima_linha}:AL{proxima_linha}", values=[dados_lista], value_input_option="RAW")
+    sheet.update(range_name=f"A{proxima_linha}:AL{proxima_linha}", values=[dados_lista], value_input_option="USER_ENTERED")
 
 # ==========================================
 # MODAL DE CADASTRO
 # ==========================================
 @st.dialog("📝 Cadastro de Novo Investidor", width="large")
 def modal_cadastro_investidor(lista_nomes_ativos):
+    # ==========================================
+    # BLOCO 1: DADOS PRINCIPAIS
+    # ==========================================
     st.markdown("#### 👤 Dados Principais")
-    c1, c2, c3 = st.columns([1, 1, 1])
+    
+    # Linha 1: Nome; Nome completo; Foto
+    c1, c2, c3 = st.columns([1, 1.5, 1.5])
     n_curto = c1.text_input("Nome", key="cad_n_curto")
     n_completo = c2.text_input("Nome Completo com acentuação", key="cad_n_comp")
     foto = c3.text_input("URL da Foto", key="cad_foto")
 
-    c4, c5, c6 = st.columns(3)
+    # Linha 2: BP; Matrícula; Data contrato; Unidade
+    c4, c5, c6, c7 = st.columns(4)
     bp = c4.number_input("BP", step=1, value=0, key="cad_bp")
-    matri = c5.number_input("Matrícula", step=1, value=0, key="cad_matri")
+    # Matrícula como texto para permitir vazio
+    matri = c5.text_input("Matrícula (Opcional)", key="cad_matri")
     dt_cont = c6.date_input("Data do Contrato", value=datetime.today(), format="DD/MM/YYYY", key="cad_dt_cont")
-
-    c7, c8, c9 = st.columns(3)
     unid = c7.selectbox("Unidade/Atuação", ["Flagship", "Headquarters", "Híbrido", "Remoto", "Unidade São Leopoldo"], key="cad_unid")
+
+    # Linha 3: Modelo; Email corp; Modalidade PJ; Início V4
+    c8, c9, c10, c11 = st.columns(4)
     mod_cont = c8.selectbox("Modelo de Contrato", ["CLT", "PJ", "Estágio"], key="cad_mod_cont")
     e_corp = c9.text_input("E-mail Corporativo", key="cad_e_corp")
-
-    c10, c11, c12 = st.columns(3)
     mod_pj = c10.selectbox("Modalidade PJ", ["", "MEI", "SLU"], key="cad_mod_pj")
     ini_v4 = c11.date_input("Início na V4", value=datetime.today(), format="DD/MM/YYYY", key="cad_ini_v4")
-    cnpj = c12.text_input("CNPJ", key="cad_cnpj")
 
-    c13, c14, c15 = st.columns([1.5, 1, 1.5])
+    # Linha 4: CNPJ; Razão; Cargo; Remuneração; CBO
+    c12, c13, c14, c15, c15b = st.columns([1, 1.2, 1, 0.8, 1.2])
+    cnpj = c12.text_input("CNPJ", key="cad_cnpj")
     raz_soc = c13.text_input("Razão Social", key="cad_raz_soc")
     cargo = c14.text_input("Cargo", key="cad_cargo")
-    remun = c15.text_input("Remuneração", key="cad_remun")
-    
+    remun = c15.text_input("Remuneração", placeholder="Ex: 5000,00", key="cad_remun")
     lista_cbo_res = buscar_lista_cbo()
-    cbo_selecionado = st.selectbox("CBO (Selecione da lista)", options=[""] + lista_cbo_res, key="cad_cbo_list")
+    cbo_selecionado = c15b.selectbox("CBO", options=[""] + lista_cbo_res, key="cad_cbo_list")
 
     st.markdown("---")
+    
+    # ==========================================
+    # BLOCO 2: CENTRO DE CUSTO
+    # ==========================================
     st.markdown("#### 🏢 Centro de Custo")
-    cv1, cv2 = st.columns([0.85, 0.15])
-    id_vaga = cv1.text_input("ID Vaga", placeholder="Digite o ID...", key="cad_id_vaga")
+    cv1, cv2, cv3, cv4 = st.columns([0.8, 0.2, 1, 1])
+    id_vaga = cv1.text_input("ID Vaga", placeholder="ID...", key="cad_id_vaga")
     with cv2:
-        st.write("") 
-        st.markdown('<p style="margin-bottom: 7px;"></p>', unsafe_allow_html=True)
+        st.markdown('<p style="margin-bottom: 30px;"></p>', unsafe_allow_html=True)
         with st.popover("❓", use_container_width=True):
             df_v = buscar_base_vagas()
             if df_v is not None: st.dataframe(df_v, hide_index=True)
-
-    c16, c17 = st.columns(2)
+    
     lista_senior = ["", "Trainee", "Junior", "Pleno", "Senior", "Coordenador", "Gerente", "Diretor", "C-Level"]
-    senior = c16.selectbox("Senioridade", options=lista_senior, key="cad_senior")
-    lider = c17.selectbox("Liderança Direta", options=[""] + sorted(lista_nomes_ativos), key="cad_lider")
+    senior = cv3.selectbox("Senioridade", options=lista_senior, key="cad_senior")
+    lider = cv4.selectbox("Liderança Direta", options=[""] + sorted(lista_nomes_ativos), key="cad_lider")
 
     st.markdown("---")
+
+    # ==========================================
+    # BLOCO 3: DADOS PESSOAIS
+    # ==========================================
     st.markdown("#### 🏠 Dados Pessoais")
-    c18, c19, c20 = st.columns(3)
-    cpf = c18.text_input("CPF", key="cad_cpf")
-    nasc = c19.date_input("Data de Nascimento", value=None, format="DD/MM/YYYY", key="cad_nasc")
+    cp1, cp2, cp3, cp4 = st.columns(4)
+    cpf = cp1.text_input("CPF", key="cad_cpf")
+    # Range de data de nascimento ajustado (1950 até hoje)
+    nasc = cp2.date_input("Nascimento", value=None, format="DD/MM/YYYY", 
+                          min_value=date(1950, 1, 1), max_value=date.today(), key="cad_nasc")
     lista_escolar = ["", "Ensino médio", "Ensino superior", "Pós graduação", "Mestrado", "Doutorado"]
-    escolar = c20.selectbox("Escolaridade", options=lista_escolar, key="cad_escolar")
+    escolar = cp3.selectbox("Escolaridade", options=lista_escolar, key="cad_escolar")
+    e_pess = cp4.text_input("E-mail Pessoal", key="cad_e_pess")
 
-    c21, c22, c23 = st.columns([1, 1, 1.5])
-    e_pess = c21.text_input("E-mail Pessoal", key="cad_e_pess")
-    tel = c22.text_input("Telefone Pessoal", key="cad_tel")
-    drive = c23.text_input("URL Docs (Drive)", key="cad_drive")
-
-    c24, c25 = st.columns([0.3, 0.7])
-    cep = c24.text_input("CEP", key="cad_cep")
+    cp5, cp6, cp7 = st.columns([1, 2, 1])
+    tel = cp5.text_input("Telefone Pessoal", key="cad_tel")
+    drive = cp6.text_input("URL Drive (Documentos)", key="cad_drive")
+    cep = cp7.text_input("CEP", key="cad_cep")
+    
     end_info = buscar_cep(cep)
-    if end_info: c25.info(f"📍 {end_info}")
+    if end_info: st.info(f"📍 {end_info}")
 
     st.markdown("---")
-    if st.button("🚀 Gravar na Planilha Master", use_container_width=True, type="primary", key="btn_final"):
+    
+    if st.button("🚀 Gravar na Planilha", use_container_width=True, type="primary"):
         if not n_curto or not cpf:
-            st.warning("Preencha Nome e CPF!")
+            st.warning("Nome e CPF são obrigatórios!")
         else:
-            linha = [n_curto, n_completo, foto, bp, matri, dt_cont.strftime("%d/%m/%Y"), "", "Ativo", unid, mod_cont, e_corp, mod_pj, ini_v4.strftime("%d/%m/%Y"), cnpj, raz_soc, cargo, remun, cbo_selecionado, "", id_vaga, "", "", senior, lider, "", "", cpf, nasc.strftime("%d/%m/%Y") if nasc else "", cep, escolar, e_pess, tel, "Pendente", "", "", "", drive, ""]
+            # Tratamento da matrícula (se vazio vira "")
+            matri_final = matri if matri else ""
+            
+            linha = [
+                n_curto, n_completo, foto, bp, matri_final, 
+                dt_cont.strftime("%d/%m/%Y"), "", "Ativo", unid, mod_cont, 
+                e_corp, mod_pj, ini_v4.strftime("%d/%m/%Y"), cnpj, raz_soc, 
+                cargo, remun, cbo_selecionado, "", id_vaga, "", "", 
+                senior, lider, "", "", cpf, nasc.strftime("%d/%m/%Y") if nasc else "", 
+                cep, escolar, e_pess, tel, "", "Pendente", "", "", "", "", drive, ""
+            ]
             try:
                 gravar_no_google_sheets(linha)
-                st.success("Cadastrado com sucesso!")
+                st.success("Investidor cadastrado com sucesso!")
                 st.rerun()
-            except Exception as e: st.error(f"Erro: {e}")
+            except Exception as e:
+                st.error(f"Erro ao gravar: {e}")
                     
 # ==========================================
 # LÓGICA DE ALERTAS (ATIVOS)
