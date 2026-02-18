@@ -171,7 +171,7 @@ def modal_cadastro_investidor(lista_nomes_ativos):
     # BLOCO 2: CENTRO DE CUSTO
     # ==========================================
     st.markdown("#### 🏢 Centro de Custo")
-    cv1, cv2, cv3, cv4 = st.columns([0.8, 0.2, 1, 1])
+    cv1, cv2, cv3, cv4 = st.columns([0.5, 0.2, 0.8, 1.3])
     id_vaga = cv1.text_input("ID Vaga", placeholder="ID...", key="cad_id_vaga")
     with cv2:
         st.markdown('<p style="margin-bottom: 30px;"></p>', unsafe_allow_html=True)
@@ -189,7 +189,7 @@ def modal_cadastro_investidor(lista_nomes_ativos):
     # BLOCO 3: DADOS PESSOAIS
     # ==========================================
     st.markdown("#### 🏠 Dados Pessoais")
-    cp1, cp2, cp3, cp4 = st.columns(4)
+    cp1, cp2, cp3, cp4 = st.columns([1, 0.8, 1, 1.3])
     cpf = cp1.text_input("CPF", key="cad_cpf")
     # Range de data de nascimento ajustado (1950 até hoje)
     nasc = cp2.date_input("Nascimento", value=None, format="DD/MM/YYYY", 
