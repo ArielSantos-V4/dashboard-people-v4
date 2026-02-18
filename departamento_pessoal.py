@@ -120,17 +120,24 @@ import gspread
 from google.oauth2.service_account import Credentials
 
 def gravar_no_google_sheets(dados_lista):
-    # 1. Configura o escopo e as credenciais (puxando do Secrets do Streamlit)
-    scope = ["https://www.googleapis.com/auth/spreadsheets", "https://www.googleapis.com/auth/drive"]
-    creds = Credentials.from_service_account_info(st.secrets["gcp_service_account"], scopes=scope)
-    client = gspread.authorize(creds)
-    
-    # 2. Abre a planilha pelo ID que você tem
-    sheet = client.open_by_key("SEU_ID_DA_PLANILHA_AQUI").sheet1 # Ou o nome da aba
-    
-    # 3. Adiciona a nova linha
-    sheet.append_row(dados_lista, value_input_option="USER_ENTERED")
+    try:
+        scope = ["https://www.googleapis.com/auth/spreadsheets", "https://www.googleapis.com/auth/drive"]
+        creds = Credentials.from_service_account_info(st.secrets["gcp_service_account"], scopes=scope)
+        client = gspread.authorize(creds)
+        
+        spreadsheet = client.open_by_key("13EPwhiXgh8BkbhyrEy2aCy3cv1O8npxJ_hA-HmLZ-pY")
 
+        sheet = spreadsheet.sheet1 
+        
+        sheet.append_row(dados_lista, value_input_option="USER_ENTERED")
+        
+    except Exception as e:
+        raise Exception(f"Erro ao inserir dados: {e}")
+        
+    except Exception as e:
+        # Isso vai nos dizer se o erro é no ID, no nome da aba ou permissão
+        raise Exception(f"Erro interno no Sheets: {e}")
+        
 import gspread
 from google.oauth2.service_account import Credentials
 import pandas as pd
