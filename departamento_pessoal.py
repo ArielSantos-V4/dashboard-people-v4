@@ -131,25 +131,42 @@ def gravar_no_google_sheets(dados_lista):
     # 3. Adiciona a nova linha
     sheet.append_row(dados_lista, value_input_option="USER_ENTERED")
 
+import gspread
+from google.oauth2.service_account import Credentials
 import pandas as pd
-import streamlit as st
-from datetime import datetime, timedelta
 
 def buscar_base_vagas():
     try:
-        # Link direto com ID e GID já inseridos
-        url_vagas = "https://docs.google.com/spreadsheets/d/13EPwhiXgh8BkbhyrEy2aCy3cv1O8npxJ_hA-HmLZ-pY/export?format=csv&gid=1415557248"
+        # 1. Usamos as credenciais que JÁ ESTÃO no seu Streamlit
+        scope = ["https://www.googleapis.com/auth/spreadsheets", "https://www.googleapis.com/auth/drive"]
+        creds = Credentials.from_service_account_info(st.secrets["gcp_service_account"], scopes=scope)
+        client = gspread.authorize(creds)
         
-        # Lendo o CSV diretamente
-        df_vagas = pd.read_csv(url_vagas)
+        # 2. Abrimos a planilha pelo ID
+        spreadsheet = client.open_by_key("13EPwhiXgh8BkbhyrEy2aCy3cv1O8npxJ_hA-HmLZ-pY")
         
-        # Opcional: Limpar colunas totalmente vazias que o Sheets às vezes gera
-        df_vagas = df_vagas.dropna(how='all', axis=0).dropna(how='all', axis=1)
+        # 3. Acessamos a aba de vagas (Pode usar o nome exato da aba entre aspas)
+        # Se a aba se chamar "Vagas", use worksheet("Vagas")
+        # Como não sabemos o nome, vamos pegar pelo índice ou pelo GID
+        # Vou tentar pegar a aba que tem o GID 1415557248
+        aba_vagas = None
+        for sheet in spreadsheet.worksheets():
+            if str(sheet.id) == "1415557248":
+                aba_vagas = sheet
+                break
+        
+        if aba_vagas is None:
+            # Se não achar pelo GID, pega a segunda aba (índice 1) como backup
+            aba_vagas = spreadsheet.get_worksheet(1)
+
+        # 4. Transformamos os dados em DataFrame
+        dados = aba_vagas.get_all_records()
+        df_vagas = pd.DataFrame(dados)
         
         return df_vagas
+        
     except Exception as e:
-        # Mostra o erro exato na tela para sabermos se é permissão ou link
-        st.error(f"Erro ao acessar aba de vagas: {e}")
+        st.error(f"Erro ao acessar aba de vagas via API: {e}")
         return None
         
 @st.dialog("📝 Cadastro de Novo Investidor", width="large")
