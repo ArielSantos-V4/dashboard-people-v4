@@ -145,7 +145,7 @@ def modal_cadastro_investidor(lista_nomes_ativos):
     c4, c5, c6, c7 = st.columns(4)
     bp = c4.number_input("BP", step=1, value=0, key="cad_bp")
     # Matrícula como texto para permitir vazio
-    matri = c5.text_input("Matrícula (Opcional)", key="cad_matri")
+    matri = c5.text_input("Matrícula", key="cad_matri")
     dt_cont = c6.date_input("Data do Contrato", value=datetime.today(), format="DD/MM/YYYY", key="cad_dt_cont")
     unid = c7.selectbox("Unidade/Atuação", ["Flagship", "Headquarters", "Híbrido", "Remoto", "Unidade São Leopoldo"], key="cad_unid")
 
