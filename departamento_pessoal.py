@@ -173,9 +173,9 @@ def buscar_base_vagas():
 def modal_cadastro_investidor():
     # --- BLOCO 1: IDENTIFICAÇÃO BÁSICA ---
     c1, c2, c3 = st.columns([1, 1, 1])
-    nome_curto = c1.text_input("Nome (Curto)")
+    nome_curto = c1.text_input("Nome")
     nome_completo = c2.text_input("Nome Completo (Acentos)")
-    foto_link = c3.text_input("URL da Foto (Link Drive/Web)")
+    foto_link = c3.text_input("URL da Foto")
 
     # --- BLOCO 2: CONTRATUAL E DATAS ---
     c4, c5, c6 = st.columns(3)
