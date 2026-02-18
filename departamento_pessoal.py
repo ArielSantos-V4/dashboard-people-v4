@@ -126,22 +126,22 @@ def gravar_no_google_sheets(dados_lista):
         client = gspread.authorize(creds)
         
         spreadsheet = client.open_by_key("13EPwhiXgh8BkbhyrEy2aCy3cv1O8npxJ_hA-HmLZ-pY")
-        sheet = spreadsheet.sheet1 
-
-        # 1. Descobrimos a próxima linha disponível de um jeito seguro
-        # Pegamos a lista de nomes (Coluna A) e vemos onde termina
+        
+        # --- ALTERAÇÃO AQUI: Seleciona pelo nome exato da aba ---
+        sheet = spreadsheet.worksheet("Base de investidores")
+        
+        # Descobre a próxima linha baseada na coluna A
         coluna_a = sheet.col_values(1)
         proxima_linha = len(coluna_a) + 1
-
-        # 2. Em vez de append_row, vamos usar o update
-        # Isso atualiza da coluna A até a AL na linha específica
-        # O segredo: se a célula na dados_lista for "", o Google não sobrescreve a fórmula se ela for ArrayFormula
+        
+        # Define o intervalo (ex: A até AL na nova linha)
         range_nome = f"A{proxima_linha}:AL{proxima_linha}"
         
+        # Grava os dados
         sheet.update(range_name=range_nome, values=[dados_lista], value_input_option="RAW")
         
     except Exception as e:
-        raise Exception(f"Erro na gravação coordenada: {e}")
+        raise Exception(f"Erro ao gravar na aba Base de investidores: {e}")
         
 import gspread
 from google.oauth2.service_account import Credentials
