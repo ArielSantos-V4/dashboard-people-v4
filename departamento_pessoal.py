@@ -83,6 +83,7 @@ def buscar_cep(cep_digitado):
         except: return None
     return None
 
+@st.cache_data(ttl=600)
 def buscar_lista_cbo():
     try:
         scope = ["https://www.googleapis.com/auth/spreadsheets", "https://www.googleapis.com/auth/drive"]
@@ -100,6 +101,7 @@ def buscar_lista_cbo():
         return []
     except: return []
 
+@st.cache_data(ttl=300)
 def buscar_base_vagas():
     try:
         scope = ["https://www.googleapis.com/auth/spreadsheets", "https://www.googleapis.com/auth/drive"]
