@@ -188,14 +188,18 @@ def modal_cadastro_investidor():
     modalidade_pj = c8.selectbox("Modalidade PJ", ["", "MEI", "ME", "EPP", "Individual"])
     inicio_v4 = c9.date_input("Início na V4", value=datetime.today())
 
-    # --- BLOCO 3: VAGA E CARGO (Correção de Alinhamento) ---
+    # --- BLOCO 3: VAGA E CARGO (Correção de Erro e Alinhamento) ---
     c10, c11 = st.columns([0.85, 0.15])
     
     with c10:
         id_vaga = st.text_input("ID Vaga", placeholder="Digite o ID...")
         
     with c11:
-        with st.popover("❓", label=" ", use_container_width=True, help="Consultar base de vagas"):
+        # Criamos um texto vazio com o mesmo espaço do label ao lado para alinhar
+        st.markdown('<p style="margin-bottom: 31px;"></p>', unsafe_allow_html=True)
+        
+        # Removido o parâmetro 'label' que causou o erro
+        with st.popover("❓", use_container_width=True, help="Consultar base de vagas"):
             st.markdown("### 🔍 Consulta de Vagas")
             df_v = buscar_base_vagas()
             
