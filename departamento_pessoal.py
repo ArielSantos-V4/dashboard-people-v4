@@ -1660,7 +1660,7 @@ def render(df_ativos, df_desligados):
         
         with c_cad:
             st.markdown("##### 📥 Cadastros")
-            with st.expander("👤 Investidor", expanded=True):
+            with st.expander("👤 Investidor", expanded=False):
                 # Esta linha pega os nomes dos investidores ativos para a lista de liderança
                 nomes_para_lideranca = df_ativos["Nome"].dropna().unique().tolist()
                 
@@ -1681,7 +1681,7 @@ def render(df_ativos, df_desligados):
 
         with c_mail:
             st.markdown("##### ✉️ E-mail / Mensagens")
-            with st.expander("📩 Rascunhos Admissão", expanded=True):
+            with st.expander("📩 Rascunhos Admissão", expanded=False):
                 if st.button("📝 Formalização CLT (Ponto)", use_container_width=True, type="primary"):
                     modal_rascunho_ponto(df_ativos_proc)
             with st.expander("📩 Rascunhos Desligamento", expanded=False):
@@ -1689,7 +1689,7 @@ def render(df_ativos, df_desligados):
 
         with c_div:
             st.markdown("##### 📂 Diversos")
-            with st.expander("📋 Checklists / Workflow", expanded=True):
+            with st.expander("📋 Checklists / Workflow", expanded=False):
                 if st.button("💰 Comissão PJ", use_container_width=True, type="primary"):
                     modal_workflow_comissao(df_ativos_proc, df_desligados_proc)
             
