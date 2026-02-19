@@ -988,11 +988,25 @@ def modal_consulta_investidor(df_consulta, nome, tipo_base="ativo"):
 # RENDER PRINCIPAL
 # ==========================================
 def render(df_ativos, df_desligados):
-    
     if "authenticated" not in st.session_state or not st.session_state.authenticated:
         st.warning("Faça login na tela inicial.")
         st.stop()
         
+    # --- 1. PREPARAÇÃO DOS DADOS (MOVIDO PARA O TOPO) ---
+    def preparar_dataframe(df_raw):
+        df = df_raw.copy()
+        cols_data = ["Início na V4", "Data de nascimento", "Data do contrato", "Térm previsto", "Data de rescisão"]
+        for col in cols_data:
+            if col in df.columns:
+                df[f"{col}_dt"] = parse_data_br(df[col])
+                df[col] = df[f"{col}_dt"].dt.strftime("%d/%m/%Y").fillna("")
+        return df
+
+    # Criamos as variáveis processadas aqui, antes de qualquer visual
+    df_ativos_proc = preparar_dataframe(df_ativos)
+    df_desligados_proc = preparar_dataframe(df_desligados)
+
+    # --- 2. CABEÇALHO (LOGO E TÍTULO) ---
     c_logo, c_texto = st.columns([0.5, 6]) 
     with c_logo: st.image("LOGO VERMELHO.png", width=100) 
     with c_texto:
@@ -1003,9 +1017,8 @@ def render(df_ativos, df_desligados):
             </div>
         """, unsafe_allow_html=True)
 
-    # --- INÍCIO DO BLOCO DE ANIVERSARIANTES DO DIA (LOGO ABAIXO DO BEM-VINDO) ---
+    # --- 3. BLOCO DE ANIVERSARIANTES (AGORA VAI FUNCIONAR!) ---
     hoje = datetime.now()
-    # Filtra aniversariantes do dia usando as colunas de data processadas
     df_niver = df_ativos_proc[df_ativos_proc['Data de nascimento_dt'].notna()].copy()
     df_niver['dia_nasc'] = df_niver['Data de nascimento_dt'].dt.day
     df_niver['mes_nasc'] = df_niver['Data de nascimento_dt'].dt.month
@@ -1022,12 +1035,10 @@ def render(df_ativos, df_desligados):
         st.session_state.idx_niver = st.session_state.idx_niver % len(aniversariantes_hoje)
         pessoa = aniversariantes_hoje[st.session_state.idx_niver]
         
-        # Extração de dados
         primeiro_nome = pessoa['Nome'].split()[0]
         idade_val = calcular_idade(pessoa['Data de nascimento_dt'])
         foto_url = pessoa.get('Foto', '')
 
-        # Estilização do Card de Aniversário
         st.markdown(f"""
             <div style="background-color: #f8f9fa; padding: 15px; border-radius: 10px; border-left: 5px solid #E30613; margin-bottom: 20px; box-shadow: 2px 2px 5px rgba(0,0,0,0.05);">
                 <div style="display: flex; align-items: center;">
@@ -1042,7 +1053,6 @@ def render(df_ativos, df_desligados):
             </div>
         """, unsafe_allow_html=True)
 
-        # Botão de navegação caso haja mais de um aniversariante
         if len(aniversariantes_hoje) > 1:
             c_vazio, c_botao = st.columns([4, 1])
             with c_botao:
