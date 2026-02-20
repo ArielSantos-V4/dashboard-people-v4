@@ -1016,49 +1016,6 @@ def render(df_ativos, df_desligados):
                 <span style="color: grey; font-size: 1.1rem; margin-top: 2px;">V4 Company</span>
             </div>
         """, unsafe_allow_html=True)
-
-    # --- 3. BLOCO DE ANIVERSARIANTES (AGORA VAI FUNCIONAR!) ---
-    hoje = datetime.now()
-    df_niver = df_ativos_proc[df_ativos_proc['Data de nascimento_dt'].notna()].copy()
-    df_niver['dia_nasc'] = df_niver['Data de nascimento_dt'].dt.day
-    df_niver['mes_nasc'] = df_niver['Data de nascimento_dt'].dt.month
-
-    aniversariantes_hoje = df_niver[
-        (df_niver['dia_nasc'] == hoje.day) & 
-        (df_niver['mes_nasc'] == hoje.month)
-    ].to_dict('records')
-
-    if aniversariantes_hoje:
-        if "idx_niver" not in st.session_state:
-            st.session_state.idx_niver = 0
-        
-        st.session_state.idx_niver = st.session_state.idx_niver % len(aniversariantes_hoje)
-        pessoa = aniversariantes_hoje[st.session_state.idx_niver]
-        
-        primeiro_nome = pessoa['Nome'].split()[0]
-        idade_val = calcular_idade(pessoa['Data de nascimento_dt'])
-        foto_url = pessoa.get('Foto', '')
-
-        st.markdown(f"""
-            <div style="background-color: #f8f9fa; padding: 15px; border-radius: 10px; border-left: 5px solid #E30613; margin-bottom: 20px; box-shadow: 2px 2px 5px rgba(0,0,0,0.05);">
-                <div style="display: flex; align-items: center;">
-                    <div style="margin-right: 20px;">
-                        {"<img src='" + foto_url + "' style='width:75px; height:75px; border-radius:50%; object-fit:cover; border: 2px solid #E30613;'>" if foto_url and str(foto_url).startswith("http") else "<div style='width:75px; height:75px; border-radius:50%; background-color:#ddd; display:flex; align-items:center; justify-content:center; font-size:30px;'>🎂</div>"}
-                    </div>
-                    <div style="flex-grow: 1;">
-                        <h3 style="margin: 0; color: #E30613; font-size: 1.4rem;">Parabéns, {primeiro_nome}! 🎉</h3>
-                        <p style="margin: 0; color: #404040; font-size: 1.1rem;">Hoje completando <b>{idade_val}</b>. Vida longa!</p>
-                    </div>
-                </div>
-            </div>
-        """, unsafe_allow_html=True)
-
-        if len(aniversariantes_hoje) > 1:
-            c_vazio, c_botao = st.columns([4, 1])
-            with c_botao:
-                if st.button(f"Próximo ({st.session_state.idx_niver + 1}/{len(aniversariantes_hoje)}) ➡️", key="btn_niver_diag"):
-                    st.session_state.idx_niver += 1
-                    st.rerun()
                     
     aba_dashboard, aba_rolling, aba_analytics, aba_acoes, aba_conectividade = st.tabs(["📊 Dashboard", "👥 Rolling", "📈 Analytics", "⚡ Ações", "🔗 Conectividade"])
     
