@@ -1595,8 +1595,6 @@ def render(df_ativos, df_desligados):
                             # Formatação simples para moeda se necessário
                             df_fin = df_liderados[['Nome', 'Cargo', 'Remuneração']].copy()
                             st.table(df_fin) # Usando table para uma visualização mais fixa e limpa
-                else:
-                    st.info("Selecione um líder acima para carregar a lista de liderados.")
                     
             # ==========================================
             # 2. CONTRATOS A VENCER
