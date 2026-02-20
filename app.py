@@ -172,7 +172,7 @@ else:
                 col_card, col_futuro = st.columns([0.8, 3.2])
                 
                 with col_card:
-                    # Container do Quadrado (Borda e Título inclusos)
+                    # 1. Iniciamos o Quadrado com a borda
                     st.markdown(f"""
                         <div style="
                             border: 1px solid #ddd; 
@@ -196,14 +196,15 @@ else:
                             </div>
                     """, unsafe_allow_html=True)
         
-                    # Botão de Navegação (se houver mais de um)
+                    # 2. BOTÃO DE NAVEGAÇÃO (Aparece se houver mais de um)
                     if len(aniv_hoje) > 1:
-                        # O botão fica dentro da largura do quadrado por causa da coluna
+                        st.write("") # Pequeno respiro
                         if st.button("Próximo ➔", key="btn_niver_final", use_container_width=True):
                             st.session_state.idx_niver_land += 1
                             st.rerun()
                     
-                    st.markdown("</div>", unsafe_allow_html=True) # Fecha o quadrado
+                    # 3. FECHAMOS O QUADRADO
+                    st.markdown("</div>", unsafe_allow_html=True)
         
     elif pagina == "💼 Departamento Pessoal":
         departamento_pessoal.render(df_ativos, df_desligados)
