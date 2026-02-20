@@ -1587,12 +1587,15 @@ def render(df_ativos, df_desligados):
                             st.metric("Liderados", len(df_liderados))
             
                         # 3. Configuração de Visibilidade das Colunas
-                        # Criamos a lista de colunas incluindo a remuneração
-                        colunas_exibir = [
-                            'Nome', 'E-mail corporativo', 'Cargo', 
-                            'Modelo de contrato', 'CC', 'Descrição CC', 
-                            'Área', 'Senioridade', 'Remuneração'
-                        ]
+                        config_colunas = {}
+                        
+                        if 'Remuneração' in cols_finais:
+                            # Usamos NumberColumn para formatar como Real e controlar a visibilidade
+                            config_colunas['Remuneração'] = st.column_config.NumberColumn(
+                                "Remuneração",
+                                format="R$ %.2f",
+                                visible=mostrar_salario # O toggle controla se ela aparece ou não
+                            )
                         
                         # Filtramos apenas as que existem no seu DF
                         cols_finais = [c for c in colunas_exibir if c in df_liderados.columns]
