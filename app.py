@@ -172,7 +172,13 @@ else:
                 col_card, col_futuro = st.columns([0.8, 3.2])
                 
                 with col_card:
-                    # Iniciamos o quadrado com borda e o título
+                    # Pegamos os dados da pessoa atual
+                    p = aniv_hoje[st.session_state.idx_niver_land]
+                    nome_p = p['Nome'].split()[0]
+                    nasc_p = p.get('Data de nascimento', '')
+                    foto_p = p.get('Foto', '')
+        
+                    # MONTAGEM DO QUADRADO COMPACTO (TUDO EM UM SÓ MARKDOWN)
                     st.markdown(f"""
                         <div style="
                             border: 1px solid #ddd; 
@@ -180,31 +186,31 @@ else:
                             padding: 12px; 
                             width: fit-content; 
                             background-color: white;
+                            box-shadow: 2px 2px 5px rgba(0,0,0,0.05);
                         ">
                             <p style='margin: 0 0 10px 0; font-weight: bold; color: #E30613; font-size: 0.75rem; text-transform: uppercase;'>
                                 🎂 Aniversariantes do Dia
                             </p>
-                            
                             <div style="display: flex; align-items: center;">
                                 <div style="margin-right: 12px;">
-                                    {"<img src='" + foto_p + "' style='width:55px; height:55px; border-radius:8px; object-fit:cover;'>" if foto_p and str(foto_p).startswith("http") else "<div style='width:55px; height:55px; border-radius:8px; background-color:#78909c; display:flex; align-items:center; justify-content:center; color:white; font-weight:bold; font-size:18px;'>" + nome_p[0] + "</div>"}
+                                    {"<img src='" + foto_p + "' style='width:55px; height:55px; border-radius:8px; object-fit:cover;'>" if foto_p and str(foto_p).startswith("http") else "<div style='width:55px; height:55px; border-radius:8px; background-color:#78909c; display:flex; align-items:center; justify-content:center; color:white; font-weight:bold; font-size:20px;'>" + nome_p[0] + "</div>"}
                                 </div>
                                 <div style="min-width: 100px;">
                                     <p style='margin: 0; font-weight: bold; font-size: 0.95rem; line-height: 1.2;'>{nome_p}</p>
                                     <p style='margin: 0; font-size: 0.75rem; color: gray;'>📅 {nasc_p}</p>
                                 </div>
                             </div>
+                        </div>
                     """, unsafe_allow_html=True)
         
-                    # Botão de navegação caso haja mais de um aniversariante
+                    # Botão de navegação (fora do quadrado para não bugar o clique)
                     if len(aniv_hoje) > 1:
-                        st.write("") # Respiro técnico para o botão não colar no HTML
-                        if st.button("Próximo ➔", key="btn_niver_final", use_container_width=True):
-                            st.session_state.idx_niver_land += 1
-                            st.rerun()
-                    
-                    # Fechamos a div do quadrado
-                    st.markdown("</div>", unsafe_allow_html=True)
+                        # Criamos uma mini-coluna para o botão não ser mais largo que o quadrado
+                        c_btn, _ = st.columns([1, 1])
+                        with c_btn:
+                            if st.button("Próximo ➔", key="btn_niver_final_v2"):
+                                st.session_state.idx_niver_land += 1
+                                st.rerun()
         
     elif pagina == "💼 Departamento Pessoal":
         departamento_pessoal.render(df_ativos, df_desligados)
