@@ -401,7 +401,7 @@ def render(df):
     # 4. ABA AÇÕES
     # ----------------------------------------------------
     with aba_acoes:
-         st.markdown("""
+        st.markdown("""
             <div style="background-color: #f1f3f5; padding: 12px; border-radius: 6px; border-left: 5px solid #404040; margin-bottom: 20px;">
                 <span style="color: #404040; font-size: 14px;">Gere formulários e rascunhos de e-mail pré-preenchidos.</span>
             </div>
