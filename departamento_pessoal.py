@@ -1326,13 +1326,14 @@ def render(df_ativos, df_desligados):
             </div>
         """, unsafe_allow_html=True)
         
-        # --- SELETOR DE VISUALIZAÇÃO ---
-        modo_visualizacao = st.radio(
-            "Selecione a base:",
-            ["Investidores Ativos", "Investidores Desligados"], 
-            horizontal=True,
-            label_visibility="collapsed" 
-        )
+        # --- SELETOR DE VISUALIZAÇÃO (Trocado de Radio para Toggle) ---
+        status_v4 = st.toggle("Visualizar Funcionários **ATIVOS**", value=True)
+        
+        # Lógica para definir o modo com base no interruptor
+        if status_v4:
+            modo_visualizacao = "Investidores Ativos"
+        else:
+            modo_visualizacao = "Investidores Desligados"
         
         st.markdown("---")
 
