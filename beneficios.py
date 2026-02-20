@@ -241,48 +241,55 @@ def modal_exclusao_subfatura():
     if col2.button("✅ Gerar", use_container_width=True, key="btn_exclusao"):
         dados = df_desligados[df_desligados["Nome"] == nome_escolhido].iloc[0]
         
-        razao_social = str(dados.get("Razão social", ""))
+        # 1. Preparação dos dados
+        razao_social = str(dados.get("Razão social", "")).upper()
         cnpj = formatar_cnpj(dados.get("CNPJ", ""))
         cpf = normalizar_cpf(dados.get("CPF", ""))
         email_pessoal = str(dados.get("E-mail pessoal", ""))
         email_arquivo = email_para_nome_arquivo(email_pessoal)
-        modelo_contrato = str(dados.get("Modelo de contrato", ""))
+        
+        hoje = date.today()
+        data_assinatura = f"{hoje.day} de {MESES_PT[hoje.month]} de {hoje.year}"
 
-        if "PJ" not in modelo_contrato.upper():
-            st.warning(f"⚠️ **{nome_escolhido}** não possui contrato PJ. Modelo atual: **{modelo_contrato}**")
+        # 2. Mapa com as chaves EXATAS que você pediu
+        mapa = {
+            "{{razao_social}}": razao_social,
+            "{{cnpj}}": cnpj,
+            "{{data_exclusao}}": data_exclusao.strftime("%d/%m/%Y"),
+            "{{data}}": data_assinatura
+        }
 
         try:
+            # Carrega o modelo
             doc = Document("Exclusão Subfatura.docx")
-            data_exclusao_formatada = data_exclusao.strftime("%d/%m/%Y")
-            hoje = date.today()
-            data_assinatura = f"{hoje.day} de {MESES_PT[hoje.month]} de {hoje.year}"
 
-            mapa = {
-                "{RAZAO_SOCIAL}": razao_social,
-                "{CNPJ}": cnpj,
-                "{DATA_EXCLUSAO}": data_exclusao_formatada,
-                "{DATA}": data_assinatura
-            }
+            # 3. Executa a substituição em parágrafos, tabelas e cabeçalhos
+            for p in doc.paragraphs:
+                for chave, valor in mapa.items():
+                    if chave in p.text:
+                        # Substitui no parágrafo inteiro para evitar quebras do Word
+                        p.text = p.text.replace(chave, valor)
 
-            substituir_texto(doc.paragraphs, mapa)
             for table in doc.tables:
                 for row in table.rows:
                     for cell in row.cells:
-                        substituir_texto(cell.paragraphs, mapa)
-            for section in doc.sections:
-                substituir_texto(section.header.paragraphs, mapa)
+                        for p in cell.paragraphs:
+                            for chave, valor in mapa.items():
+                                if chave in p.text:
+                                    p.text = p.text.replace(chave, valor)
 
+            # 4. Salva e disponibiliza para download
             cpf_limpo = re.sub(r"\D", "", cpf)
             nome_arquivo = f"{nome_escolhido} __ {cpf_limpo} __ {email_arquivo} __ Exclusão Subfatura.docx"
             doc.save(nome_arquivo)
 
             with open(nome_arquivo, "rb") as f:
-                st.download_button("⬇️ Download", f, file_name=nome_arquivo, mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document", use_container_width=True)
+                st.download_button("⬇️ Download Documento", f, file_name=nome_arquivo, use_container_width=True, type="primary")
             
-            st.link_button("🔁 Converter PDF", "https://www.ilovepdf.com/pt/word_para_pdf", use_container_width=True)
-            st.success("Exclusão Subfatura gerada com sucesso ✅")
+            st.success("Documento gerado com sucesso! ✅")
+            
         except Exception as e:
-            st.error(f"Erro ao gerar documento: {e}")
+            st.error(f"Erro ao processar o Word: {e}")
 
 # ==========================================
 # FUNÇÃO PRINCIPAL (RENDER)
