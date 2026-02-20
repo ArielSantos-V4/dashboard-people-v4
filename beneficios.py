@@ -360,22 +360,19 @@ def render(df):
     # ----------------------------------------------------
     with aba_analytics:
         st.markdown("### 📊 Relatórios Operacionais")
-        # Aqui as tabelas ocupam a tela toda agora!
-        abas_rel = st.tabs(["⏰ Pendentes", "📂 Aguardando docs", "📩 Enviar para DBL", "🆗 Aguardando ativação"])
+        st.markdown("### 📊 Relatórios Operacionais")
+        tabs_rel = st.tabs(["⏰ Pendentes", "📂 Aguardando docs", "📩 Enviar para DBL", "🆗 Ativação"])
         
-        with abas_rel[0]:
+        with tabs_rel[0]:
             df_p = df[(df["Situação no plano"] == "Pendente") & (df["Modalidade PJ"] != "MEI")]
             st.dataframe(df_p[["Nome", "E-mail corporativo", "Modelo de contrato", "Solicitar documentação"]], use_container_width=True, hide_index=True)
-        
-        with abas_rel[1]:
+        with tabs_rel[1]:
             df_d = df[df["Situação no plano"] == "Aguardando docs"]
             st.dataframe(df_d[["Nome", "E-mail corporativo", "Enviar no EB"]], use_container_width=True, hide_index=True)
-            
-        with abas_rel[2]:
+        with tabs_rel[2]:
             df_dbl = df[df["Situação no plano"] == "Enviar à DBL"]
             st.dataframe(df_dbl[["Nome", "E-mail corporativo", "Enviar no EB"]], use_container_width=True, hide_index=True)
-            
-        with abas_rel[3]:
+        with tabs_rel[3]:
             df_act = df[df["Situação no plano"] == "Aguardando DBL"]
             st.dataframe(df_act[["Nome", "E-mail corporativo", "Modelo de contrato"]], use_container_width=True, hide_index=True)
 
@@ -384,19 +381,14 @@ def render(df):
     # ----------------------------------------------------
     with aba_acoes:
         st.markdown("### ⚙️ Gestão de Documentos")
-        st.write("Selecione a ação que deseja realizar:")
-        
         c1, c2 = st.columns(2)
         with c1:
             if st.button("📄 Gerar Inclusão Subfatura", use_container_width=True):
                 modal_inclusao_subfatura(df)
-            
             if st.button("📄 Gerar Termo de Subestipulante", use_container_width=True):
                 modal_subestipulante(df)
-        
         with c2:
             if st.button("📄 Gerar Termo de Não Adesão", use_container_width=True):
                 modal_nao_adesao(df)
-            
             if st.button("📄 Gerar Exclusão Subfatura", use_container_width=True):
                 modal_exclusao_subfatura()
