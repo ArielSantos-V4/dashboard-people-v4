@@ -470,19 +470,41 @@ def render(df):
     with aba_acoes:
         st.markdown("""
             <div style="background-color: #f1f3f5; padding: 12px; border-radius: 6px; border-left: 5px solid #404040; margin-bottom: 20px;">
-                <span style="color: #404040; font-size: 14px;">Gere formulários e rascunhos de e-mail pré-preenchidos.</span>
+                <span style="color: #404040; font-size: 14px;">Realize cadastros de benefícios, gere formulários e rascunhos de e-mail pré-preenchidos.</span>
             </div>
         """, unsafe_allow_html=True)
-        
-        st.markdown("### ⚙️ Gestão de Documentos")
-        c1, c2 = st.columns(2)
-        with c1:
-            if st.button("📄 Gerar Inclusão Subfatura", use_container_width=True):
-                modal_inclusao_subfatura(df)
-            if st.button("📄 Gerar Termo de Subestipulante", use_container_width=True):
-                modal_subestipulante(df)
-        with c2:
-            if st.button("📄 Gerar Termo de Não Adesão", use_container_width=True):
-                modal_nao_adesao(df)
-            if st.button("📄 Gerar Exclusão Subfatura", use_container_width=True):
-                modal_exclusao_subfatura()
+
+        # Divisão em 4 colunas igual ao DP
+        c_cad, c_form, c_mail, c_div = st.columns(4)
+
+        with c_cad:
+            st.markdown("##### 📥 Cadastros")
+            with st.expander("👤 Beneficiário", expanded=False):
+                st.caption("Em breve: Atalho para atualização de dados de saúde/odonto.")
+
+        with c_form:
+            st.markdown("##### 📝 Gerar Formulários")
+            
+            # Expander 1: Inclusão PJ
+            with st.expander("🌱 Inclusão PJ", expanded=False):
+                if st.button("📄 Inclusão Subfatura", use_container_width=True):
+                    modal_inclusao_subfatura(df)
+                if st.button("📄 Termo Subestipulante", use_container_width=True):
+                    modal_subestipulante(df)
+            
+            # Expander 2: Exclusão / Não Adesão
+            with st.expander("🚪 Exclusão/Não Adesão PJ", expanded=False):
+                if st.button("📄 Termo de Não Adesão", use_container_width=True):
+                    modal_nao_adesao(df)
+                if st.button("📄 Exclusão Subfatura", use_container_width=True):
+                    modal_exclusao_subfatura()
+
+        with c_mail:
+            st.markdown("##### ✉️ E-mails / Mensagens")
+            with st.expander("📩 Comunicados", expanded=False):
+                st.caption("Em breve: Rascunho de e-mail de boas-vindas ao plano.")
+
+        with c_div:
+            st.markdown("##### 📂 Diversos")
+            with st.expander("🛠️ Ferramentas", expanded=False):
+                st.caption("Em breve: Calculadora de coparticipação ou conferência de fatura.")
