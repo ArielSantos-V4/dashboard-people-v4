@@ -302,7 +302,6 @@ def render(df):
     # 1. ABA DASHBOARD
     # ----------------------------------------------------
     with aba_dashboard:
-        # --- SEÇÃO DE FILTROS ---
         st.markdown("""
             <div style="background-color: #f1f3f5; padding: 12px; border-radius: 6px; border-left: 5px solid #404040; margin-bottom: 20px;">
                 <span style="color: #404040; font-size: 14px;">
@@ -349,7 +348,6 @@ def render(df):
     # 2. ABA CARTEIRINHAS
     # ----------------------------------------------------
     with aba_carteirinhas:
-        # Texto Explicativo
         st.markdown("""
             <div style="background-color: #f1f3f5; padding: 12px; border-radius: 6px; border-left: 5px solid #404040; margin-bottom: 20px;">
                 <span style="color: #404040; font-size: 14px;">
@@ -408,6 +406,7 @@ def render(df):
                 <span style="color: #404040; font-size: 14px;">Gere formulários e rascunhos de e-mail pré-preenchidos.</span>
             </div>
         """, unsafe_allow_html=True)
+        
         st.markdown("### ⚙️ Gestão de Documentos")
         c1, c2 = st.columns(2)
         with c1:
