@@ -1563,7 +1563,7 @@ def render(df_ativos, df_desligados):
                 st.markdown("<br>", unsafe_allow_html=True)
                 
                 # 1. Filtros e Contador
-                lista_lideres = sorted(df_ativos_proc['Liderança'].unique().tolist())
+                lista_lideres = sorted(df_ativos_proc['Liderança direta'].unique().tolist())
                 
                 c1, c2 = st.columns([3, 1])
                 with c1:
@@ -1571,7 +1571,7 @@ def render(df_ativos, df_desligados):
                 
                 # Filtragem
                 if lider_sel != "Selecione...":
-                    df_liderados = df_ativos_proc[df_ativos_proc['Liderança'] == lider_sel].copy()
+                    df_liderados = df_ativos_proc[df_ativos_proc['Liderança direta'] == lider_sel].copy()
                     
                     with c2:
                         st.metric("Time de " + lider_sel.split()[0], f"{len(df_liderados)} pessoas")
