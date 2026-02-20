@@ -169,7 +169,7 @@ else:
                 st.markdown("<br>", unsafe_allow_html=True)
                 
                 # Criamos colunas: a primeira é pequena para o card, a segunda sobra para o futuro
-                col_card, col_futuro = st.columns([1.2, 2.8])
+                col_card, col_futuro = st.columns([1, 1.5])
                 
                 with col_card:
                     # Título com margem inferior para desgrudar do card
