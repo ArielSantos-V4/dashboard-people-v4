@@ -252,7 +252,7 @@ def modal_exclusao_subfatura():
             st.warning(f"⚠️ **{nome_escolhido}** não possui contrato PJ. Modelo atual: **{modelo_contrato}**")
 
         try:
-            doc = Document("Exclusao_Subfatura.docx")
+            doc = Document("Exclusão Subfatura.docx")
             data_exclusao_formatada = data_exclusao.strftime("%d/%m/%Y")
             hoje = date.today()
             data_assinatura = f"{hoje.day} de {MESES_PT[hoje.month]} de {hoje.year}"
