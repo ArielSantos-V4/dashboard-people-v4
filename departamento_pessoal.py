@@ -1558,68 +1558,47 @@ def render(df_ativos, df_desligados):
                 df_cargo["Remuneração_Média"] = df_cargo["Remuneração_Média"].map('R$ {:,.2f}'.format).str.replace(',', 'X').str.replace('.', ',').str.replace('X', '.')
                 st.dataframe(df_cargo, use_container_width=True, hide_index=True)
 
-            # --- RELATÓRIO DE LIDERADOS ---
+            # --- RELATÓRIO DE LIDERADOS POR LIDERANÇA ---
             with st.expander("👤 Liderados por Liderança", expanded=False):
                 col_lider = 'Liderança direta'
                 
                 if col_lider in df_ativos_proc.columns:
-                    # 1. Filtros e Toggle no Topo
+                    st.markdown("<br>", unsafe_allow_html=True)
+                    
+                    # 1. Filtros e Contador
                     lista_lideres = sorted([l for l in df_ativos_proc[col_lider].unique() if l and str(l).strip() != ""])
                     
-                    c1, c2, c3 = st.columns([2.5, 1, 1])
+                    c1, c2 = st.columns([3, 1])
                     with c1:
-                        lider_sel = st.selectbox("Selecione o Líder", ["Selecione..."] + lista_lideres, key="sel_lider_report")
+                        lider_sel = st.selectbox("Selecione o Líder para visualizar o time", ["Selecione..."] + lista_lideres, key="sel_lider_report")
                     
-                    with c3:
-                        st.write("") # Espaçador
-                        mostrar_salario = st.toggle("Ver Salários", value=False)
-            
-                    # 2. Só processamos se um líder for selecionado
                     if lider_sel != "Selecione...":
+                        # Filtragem dos liderados
                         df_liderados = df_ativos_proc[df_ativos_proc[col_lider] == lider_sel].copy()
                         
                         with c2:
-                            st.metric("Liderados", len(df_liderados))
+                            st.metric("Total Liderados", f"{len(df_liderados)}")
             
-                        # 1. Definimos as colunas que queremos
+                        # 2. Definição das colunas cadastrais (Sem Remuneração)
                         colunas_exibir = [
                             'Nome', 'E-mail corporativo', 'Cargo', 
                             'Modelo de contrato', 'CC', 'Descrição CC', 
-                            'Área', 'Senioridade', 'Remuneração'
+                            'Área', 'Senioridade'
                         ]
                         
-                        # Filtramos as que existem
+                        # Filtra apenas as que existem na planilha para evitar erros
                         cols_finais = [c for c in colunas_exibir if c in df_liderados.columns]
             
-                        # 2. Criamos o dicionário de configuração SEM instanciar a classe Column
-                        # Isso evita o TypeError em qualquer versão do Streamlit
-                        configuracao_das_colunas = {
-                            "Remuneração": st.column_config.TextColumn(
-                                "Remuneração",
-                                width="medium",
-                                help="Valor da remuneração mensal",
-                                required=False
-                            )
-                        }
-            
-                        # 3. Se o toggle estiver DESLIGADO, removemos a Remuneração da lista de exibição
-                        # Em vez de tentar esconder via 'visible=False' (que dá erro em algumas versões), 
-                        # simplesmente tiramos ela da lista de colunas do dataframe.
-                        colunas_para_mostrar = [c for c in cols_finais if c != 'Remuneração']
-                        
-                        if mostrar_salario:
-                            colunas_para_mostrar = cols_finais
-                            # Formatação manual para garantir que apareça bonito
-                            if 'Remuneração' in df_liderados.columns:
-                                df_liderados['Remuneração'] = pd.to_numeric(df_liderados['Remuneração'], errors='coerce').map('R$ {:,.2f}'.format)
-            
-                        # 4. Exibição final
+                        # 3. Exibição da Tabela
                         st.dataframe(
-                            df_liderados[colunas_para_mostrar],
+                            df_liderados[cols_finais],
                             use_container_width=True,
-                            hide_index=True,
-                            column_config=configuracao_das_colunas
+                            hide_index=True
                         )
+                    else:
+                        st.info("Selecione um líder acima para visualizar a relação de liderados.")
+                else:
+                    st.error(f"Coluna '{col_lider}' não encontrada na base de dados.")
                     
             # ==========================================
             # 2. CONTRATOS A VENCER
