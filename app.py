@@ -172,33 +172,40 @@ else:
                 col_card, col_futuro = st.columns([0.8, 3.2])
                 
                 with col_card:
-                    # Título com o espaçamento que você pediu
-                    st.markdown("<p style='margin-bottom: 25px; font-weight: bold; color: #E30613; font-size: 0.85rem;'>🎂 ANIVERSARIANTES DO DIA</p>", unsafe_allow_html=True)
-                    
-                    # Abrimos uma div para limitar a largura do que vem abaixo
-                    # Ajuste o '250px' para mais ou menos, conforme o tamanho do seu texto
-                    st.markdown('<div style="max-width: 250px;">', unsafe_allow_html=True)
-                    
-                    with st.container(border=True):
-                        # Usamos proporção menor nas colunas internas para não espalhar
-                        c_img, c_txt = st.columns([1, 2.5])
-                        
-                        with c_img:
-                            if foto_p and str(foto_p).startswith("http"):
-                                st.markdown(f'<img src="{foto_p}" style="width:55px; height:55px; border-radius:10px; object-fit:cover;">', unsafe_allow_html=True)
-                            else:
-                                st.markdown(f'<div style="width:55px; height:55px; border-radius:10px; background-color:#78909c; display:flex; align-items:center; justify-content:center; color:white; font-weight:bold; font-size:18px;">{nome_p[0]}</div>', unsafe_allow_html=True)
-                        
-                        with c_txt:
-                            # Ajuste de margens para o texto ficar colado na foto
-                            st.markdown(f"<div style='margin-left: -15px;'><b>{nome_p}</b><br><span style='font-size: 0.8rem; color: gray;'>📅 {nasc_p}</span></div>", unsafe_allow_html=True)
+                    # 1. Definimos a largura máxima do quadrado aqui (ex: 280px)
+                    # 2. Criamos o quadrado com borda e padding usando uma <div>
+                    st.markdown(f"""
+                        <div style="
+                            border: 1px solid #ddd; 
+                            border-radius: 10px; 
+                            padding: 15px; 
+                            max-width: 280px; 
+                            background-color: white;
+                        ">
+                            <p style='margin: 0 0 15px 0; font-weight: bold; color: #E30613; font-size: 0.85rem;'>
+                                🎂 ANIVERSARIANTES DO DIA
+                            </p>
+                            
+                            <div style="display: flex; align-items: center; margin-bottom: 15px;">
+                                <div style="margin-right: 15px;">
+                                    {"<img src='" + foto_p + "' style='width:60px; height:60px; border-radius:10px; object-fit:cover;'>" if foto_p and str(foto_p).startswith("http") else "<div style='width:60px; height:60px; border-radius:10px; background-color:#78909c; display:flex; align-items:center; justify-content:center; color:white; font-weight:bold; font-size:20px;'>" + nome_p[0] + "</div>"}
+                                </div>
+                                <div>
+                                    <p style='margin: 0; font-weight: bold; font-size: 1rem;'>{nome_p}</p>
+                                    <p style='margin: 0; font-size: 0.8rem; color: gray;'>📅 {nasc_p}</p>
+                                </div>
+                            </div>
+                    """, unsafe_allow_html=True)
         
-                        if len(aniv_hoje) > 1:
-                            if st.button("Próximo ➔", key="btn_niver_slim", use_container_width=True):
-                                st.session_state.idx_niver_land += 1
-                                st.rerun()
+                    # O BOTÃO PRECISA CONTINUAR SENDO STREAMLIT PARA FUNCIONAR
+                    if len(aniv_hoje) > 1:
+                        # Criamos uma coluna pequena só para o botão não esticar demais
+                        if st.button("Próximo ➔", key="btn_niver_slim", use_container_width=True):
+                            st.session_state.idx_niver_land += 1
+                            st.rerun()
                     
-                    st.markdown('</div>', unsafe_allow_html=True) # Fechamos a div de largura fixa
+                    # FECHAMOS A DIV DO QUADRADO
+                    st.markdown("</div>", unsafe_allow_html=True)
         
     elif pagina == "💼 Departamento Pessoal":
         departamento_pessoal.render(df_ativos, df_desligados)
