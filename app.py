@@ -1,7 +1,8 @@
 import streamlit as st
 
+# Configuração da página deve ser SEMPRE o primeiro comando Streamlit
 st.set_page_config(
-    page_title="People | V4 Company",
+    page_title="V4 People Hub",
     layout="wide",
     page_icon="LOGO VERMELHO.png"
 )
@@ -13,6 +14,9 @@ import pandas as pd
 import gspread
 from google.oauth2.service_account import Credentials
 
+# ==============================
+# CARREGAMENTO DE DADOS (ATUALIZADO)
+# ==============================
 @st.cache_data(ttl=600)
 def load_google_sheet():
     creds = Credentials.from_service_account_info(
@@ -21,16 +25,21 @@ def load_google_sheet():
     )
 
     client = gspread.authorize(creds)
-
+    
+    # Abre a planilha pelo ID
     sheet = client.open_by_key("13EPwhiXgh8BkbhyrEy2aCy3cv1O8npxJ_hA-HmLZ-pY")
-    worksheet = sheet.get_worksheet(5)
+    
+    # --- CARREGA ATIVOS (Pelo GID) ---
+    worksheet_ativos = sheet.get_worksheet_by_id(2056973316)
+    data_ativos = worksheet_ativos.get_all_records()
+    df_ativos = pd.DataFrame(data_ativos)
 
-    data = worksheet.get_all_records()
-    df = pd.DataFrame(data)
+    # --- CARREGA DESLIGADOS (Pelo GID) ---
+    worksheet_desligados = sheet.get_worksheet_by_id(1422602176)
+    data_desligados = worksheet_desligados.get_all_records()
+    df_desligados = pd.DataFrame(data_desligados)
 
-    return df
-
-df = load_google_sheet()
+    return df_ativos, df_desligados
 
 # ==============================
 # FUNÇÃO LOGIN
@@ -48,40 +57,53 @@ if "authenticated" not in st.session_state:
     st.session_state.authenticated = False
 
 # ==============================
-# LOGIN
+# TELA DE LOGIN
 # ==============================
 if not st.session_state.authenticated:
 
-    st.title("🔐 Login")
+    col1, col2, col3 = st.columns([1, 1, 1])
+    with col2:
+        st.markdown("<br><br>", unsafe_allow_html=True)
+        st.image("LOGO VERMELHO.png", width=100)
+        st.markdown("### Acesso Restrito")
 
-    usuario = st.text_input("Usuário")
-    senha = st.text_input("Senha", type="password")
+        usuario = st.text_input("Usuário")
+        senha = st.text_input("Senha", type="password")
 
-    if st.button("Entrar"):
-
-        users = st.secrets["users"]
-
-        if usuario in users and verificar_senha(senha, users[usuario]["password"]):
-            st.session_state.authenticated = True
-            st.session_state.user_name = users[usuario]["name"]
-            st.rerun()
-        else:
-            st.error("Usuário ou senha inválidos")
-   
+        if st.button("Entrar", use_container_width=True):
+            if "users" in st.secrets:
+                users = st.secrets["users"]
+                
+                if usuario in users and verificar_senha(senha, users[usuario]["password"]):
+                    st.session_state.authenticated = True
+                    st.session_state.user_name = users[usuario]["name"]
+                    st.rerun()
+                else:
+                    st.error("Usuário ou senha inválidos")
+            else:
+                st.error("Erro de configuração: Usuários não encontrados nos Secrets.")
+    
 # ==============================
-# ÁREA AUTENTICADA
+# ÁREA AUTENTICADA (SISTEMA)
 # ==============================
 else:
+    # Carrega os dados
+    with st.spinner("Sincronizando dados com Google Sheets..."):
+        try:
+            df_ativos, df_desligados = load_google_sheet()
+        except Exception as e:
+            st.error(f"Erro ao conectar com a planilha: {e}")
+            st.stop()
 
     # --------------------------------------------------
     # SIDEBAR
     # --------------------------------------------------
-    st.sidebar.success(
-        f"Bem-vindo(a), {st.session_state.get('user_name', 'Usuário')}"
-    )
+    st.sidebar.markdown("<br>", unsafe_allow_html=True)
+    
+    st.sidebar.success(f"Olá, {st.session_state.get('user_name', 'Gestor')}")
 
     pagina = st.sidebar.radio(
-        "Menu",
+        "Navegação",
         [
             "🏠 Início",
             "💼 Departamento Pessoal",
@@ -89,30 +111,38 @@ else:
         ]
     )
 
-    if st.sidebar.button("Logout"):
+    st.sidebar.markdown("---")
+    
+    # --- BOTÃO DE ATUALIZAR DADOS ---
+    if st.sidebar.button("🔄 Atualizar Dados"):
+        st.cache_data.clear()
+        st.rerun()
+
+    # --- BOTÃO DE LOGOUT ---
+    if st.sidebar.button("Sair"):
         st.session_state.authenticated = False
         st.rerun()
 
-    st.sidebar.divider()
-
     # --------------------------------------------------
-    # PÁGINAS
+    # ROTEAMENTO DE PÁGINAS
     # --------------------------------------------------
 
     if pagina == "🏠 Início":
-
+        st.markdown("<br>", unsafe_allow_html=True)
+        c1, c2 = st.columns([0.5, 4])
+        with c1: st.image("LOGO VERMELHO.png", width=80)
+        with c2: st.title("V4 People Hub")
+        
+        # MENSAGEM DE BOAS-VINDAS CUSTOMIZADA (SEM AZUL)
         st.markdown("""
-            <div style="height:85vh;display:flex;flex-direction:column;
-                        justify-content:center;align-items:center;">
-                <h1 style="font-size:60px;">People</h1>
-                <p style="font-size:22px;color:gray;">V4 Company</p>
+            <div style="background-color: #fff; padding: 20px; border-left: 6px solid #E30613; box-shadow: 2px 2px 10px rgba(0,0,0,0.1); border-radius: 5px;">
+                <h3 style="color: #333; margin: 0;">👋 Bem-vindo ao Sistema Operacional do time C&B</h3>
+                <p style="color: #666; margin-top: 5px;">Selecione um módulo no menu lateral para iniciar.</p>
             </div>
         """, unsafe_allow_html=True)
-
-
+                
     elif pagina == "💼 Departamento Pessoal":
-        departamento_pessoal.render(df)
+        departamento_pessoal.render(df_ativos, df_desligados)
     
     elif pagina == "🎁 Benefícios":
-        beneficios.render(df)
-
+        beneficios.render(df_ativos)
