@@ -1327,13 +1327,28 @@ def render(df_ativos, df_desligados):
         """, unsafe_allow_html=True)
         
         # --- SELETOR DE VISUALIZAÇÃO (Trocado de Radio para Toggle) ---
-        status_v4 = st.toggle("Visualizar Funcionários **ATIVOS**", value=True)
+        st.write("Selecione a base:")
         
-        # Lógica para definir o modo com base no interruptor
-        if status_v4:
-            modo_visualizacao = "Investidores Ativos"
-        else:
-            modo_visualizacao = "Investidores Desligados"
+        # 1. Criamos o Toggle
+        status_v4 = st.toggle("Alternar Base", value=True, label_visibility="collapsed")
+        
+        # 2. Definimos as cores com base no estado do Toggle
+        # Ativo (True) -> Ativos Preto (#000), Desligados Cinza (#ccc)
+        # Inativo (False) -> Ativos Cinza (#ccc), Desligados Preto (#000)
+        cor_ativos = "#000000" if status_v4 else "#cccccc"
+        cor_desligados = "#cccccc" if not status_v4 else "#000000"
+        
+        # 3. Exibimos os nomes com as cores dinâmicas
+        st.markdown(f"""
+            <div style="display: flex; gap: 20px; font-weight: bold; font-size: 1.1rem; margin-top: -10px;">
+                <span style="color: {cor_ativos}; transition: 0.3s;">Ativos</span>
+                <span style="color: #ccc;">/</span>
+                <span style="color: {cor_desligados}; transition: 0.3s;">Desligados</span>
+            </div>
+        """, unsafe_allow_html=True)
+
+        # 4. Mantemos a compatibilidade com o restante do seu código
+        modo_visualizacao = "Investidores Ativos" if status_v4 else "Investidores Desligados"
         
         st.markdown("---")
 
