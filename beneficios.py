@@ -302,6 +302,15 @@ def render(df):
     # 1. ABA DASHBOARD
     # ----------------------------------------------------
     with aba_dashboard:
+        # --- SEÇÃO DE FILTROS ---
+        st.markdown("""
+            <div style="background-color: #f1f3f5; padding: 12px; border-radius: 6px; border-left: 5px solid #404040; margin-bottom: 20px;">
+                <span style="color: #404040; font-size: 14px;">
+                    Acompanhe abaixo os principais indicadores (KPIs) e gráficos demográficos referentes exclusivamente ao <b>plano médico e dental.
+                </span>
+            </div>
+        """, unsafe_allow_html=True)
+        
         st.markdown("<br>", unsafe_allow_html=True)
         if "Situação no plano" in df.columns:
             total_vidas = len(df[df["Situação no plano"] == "Ativo"])
@@ -340,6 +349,15 @@ def render(df):
     # 2. ABA CARTEIRINHAS
     # ----------------------------------------------------
     with aba_carteirinhas:
+        # Texto Explicativo
+        st.markdown("""
+            <div style="background-color: #f1f3f5; padding: 12px; border-radius: 6px; border-left: 5px solid #404040; margin-bottom: 20px;">
+                <span style="color: #404040; font-size: 14px;">
+                    Realize consultas de carteirinhas de maneira rápida.
+                </span>
+            </div>
+        """, unsafe_allow_html=True)
+        
         st.markdown("### 🔎 Consulta de Carteirinhas")
         nome_ben = st.selectbox("Buscar investidor", [""] + sorted(df["Nome"].dropna().unique()), key="sel_ben_cart_v4")
         
@@ -359,6 +377,12 @@ def render(df):
     # 3. ABA ANALYTICS
     # ----------------------------------------------------
     with aba_analytics:
+        st.markdown("""
+            <div style="background-color: #f1f3f5; padding: 12px; border-radius: 6px; border-left: 5px solid #404040; margin-bottom: 20px;">
+                <span style="color: #404040; font-size: 14px;">Utilize as abas abaixo para extrair relatórios e acompanhar indicadores os processos de inclusão.</span>
+            </div>
+        """, unsafe_allow_html=True)
+        
         st.markdown("### 📊 Relatórios Operacionais")
         tabs_rel = st.tabs(["⏰ Pendentes", "📂 Aguardando docs", "📩 Enviar para DBL", "🆗 Ativação"])
         
@@ -379,6 +403,11 @@ def render(df):
     # 4. ABA AÇÕES
     # ----------------------------------------------------
     with aba_acoes:
+         st.markdown("""
+            <div style="background-color: #f1f3f5; padding: 12px; border-radius: 6px; border-left: 5px solid #404040; margin-bottom: 20px;">
+                <span style="color: #404040; font-size: 14px;">Gere formulários e rascunhos de e-mail pré-preenchidos.</span>
+            </div>
+        """, unsafe_allow_html=True)
         st.markdown("### ⚙️ Gestão de Documentos")
         c1, c2 = st.columns(2)
         with c1:
