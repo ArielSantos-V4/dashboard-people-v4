@@ -290,18 +290,18 @@ def render(df):
             </div>
         """, unsafe_allow_html=True)
     
-    # --- AS 4 ABAS SOLICITADAS ---
-    aba_dash, aba_cart, aba_anlt, aba_aco = st.tabs([
+    # --- CRIAÇÃO DAS 4 ABAS (Nomes corrigidos para evitar NameError) ---
+    aba_dashboard, aba_carteirinhas, aba_analytics, aba_acoes = st.tabs([
         "📊 Dashboard", 
         "💳 Carteirinhas", 
         "📈 Analytics", 
-        "⚡ Ações"
+        "⚙️ Ações"
     ])
     
     # ----------------------------------------------------
     # 1. ABA DASHBOARD
     # ----------------------------------------------------
-    with aba_dash:
+    with aba_dashboard:
         st.markdown("<br>", unsafe_allow_html=True)
         if "Situação no plano" in df.columns:
             total_vidas = len(df[df["Situação no plano"] == "Ativo"])
@@ -325,23 +325,23 @@ def render(df):
                     tooltip=["Situação", "Quantidade"]
                 )
                 st.altair_chart(grafico_pizza, use_container_width=True)
-
             with col_g2:
                 st.subheader("Vidas por Operadora")
-                df_oper = df[df["Operadora Médico"].notna() & (df["Operadora Médico"] != "")]
-                df_oper_count = df_oper["Operadora Médico"].value_counts().reset_index()
-                df_oper_count.columns = ["Operadora", "Quantidade"]
-                grafico_barras = alt.Chart(df_oper_count).mark_bar(color="#E30613").encode(
-                    x=alt.X("Operadora:N", sort="-y"), y="Quantidade:Q"
-                )
-                st.altair_chart(grafico_barras, use_container_width=True)
+                if "Operadora Médico" in df.columns:
+                    df_oper = df[df["Operadora Médico"].notna() & (df["Operadora Médico"] != "")]
+                    df_oper_count = df_oper["Operadora Médico"].value_counts().reset_index()
+                    df_oper_count.columns = ["Operadora", "Quantidade"]
+                    grafico_barras = alt.Chart(df_oper_count).mark_bar(color="#E30613").encode(
+                        x=alt.X("Operadora:N", sort="-y"), y="Quantidade:Q"
+                    )
+                    st.altair_chart(grafico_barras, use_container_width=True)
 
     # ----------------------------------------------------
     # 2. ABA CARTEIRINHAS
     # ----------------------------------------------------
-    with aba_cart:
-        st.markdown("### 🔎 Consulta Rápida")
-        nome_ben = st.selectbox("Buscar investidor", [""] + sorted(df["Nome"].dropna().unique()), key="sel_ben_cart")
+    with aba_carteirinhas:
+        st.markdown("### 🔎 Consulta de Carteirinhas")
+        nome_ben = st.selectbox("Buscar investidor", [""] + sorted(df["Nome"].dropna().unique()), key="sel_ben_cart_v4")
         
         if nome_ben:
             dados = df[df["Nome"] == nome_ben].iloc[0]
@@ -356,10 +356,9 @@ def render(df):
         st.dataframe(df[df["Situação no plano"] == "Ativo"][["Nome", "Carteirinha médico", "Carteirinha odonto"]], use_container_width=True, hide_index=True)
 
     # ----------------------------------------------------
-    # 3. ABA ANALYTICS (Agora só com as Tabelas/Relatórios)
+    # 3. ABA ANALYTICS
     # ----------------------------------------------------
     with aba_analytics:
-        st.markdown("### 📊 Relatórios Operacionais")
         st.markdown("### 📊 Relatórios Operacionais")
         tabs_rel = st.tabs(["⏰ Pendentes", "📂 Aguardando docs", "📩 Enviar para DBL", "🆗 Ativação"])
         
@@ -377,7 +376,7 @@ def render(df):
             st.dataframe(df_act[["Nome", "E-mail corporativo", "Modelo de contrato"]], use_container_width=True, hide_index=True)
 
     # ----------------------------------------------------
-    # 4. ABA AÇÕES (Aqui estão os seus botões!)
+    # 4. ABA AÇÕES
     # ----------------------------------------------------
     with aba_acoes:
         st.markdown("### ⚙️ Gestão de Documentos")
