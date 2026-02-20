@@ -172,7 +172,7 @@ else:
                 col_card, col_futuro = st.columns([0.8, 3.2])
                 
                 with col_card:
-                    # 1. Iniciamos o Quadrado com a borda
+                    # Iniciamos o quadrado com borda e o título
                     st.markdown(f"""
                         <div style="
                             border: 1px solid #ddd; 
@@ -181,8 +181,8 @@ else:
                             width: fit-content; 
                             background-color: white;
                         ">
-                            <p style='margin: 0 0 10px 0; font-weight: bold; color: #E30613; font-size: 0.75rem;'>
-                                🎂 ANIVERSARIANTES DO DIA
+                            <p style='margin: 0 0 10px 0; font-weight: bold; color: #E30613; font-size: 0.75rem; text-transform: uppercase;'>
+                                🎂 Aniversariantes do Dia
                             </p>
                             
                             <div style="display: flex; align-items: center;">
@@ -196,14 +196,14 @@ else:
                             </div>
                     """, unsafe_allow_html=True)
         
-                    # 2. BOTÃO DE NAVEGAÇÃO (Aparece se houver mais de um)
+                    # Botão de navegação caso haja mais de um aniversariante
                     if len(aniv_hoje) > 1:
-                        st.write("") # Pequeno respiro
+                        st.write("") # Respiro técnico para o botão não colar no HTML
                         if st.button("Próximo ➔", key="btn_niver_final", use_container_width=True):
                             st.session_state.idx_niver_land += 1
                             st.rerun()
                     
-                    # 3. FECHAMOS O QUADRADO
+                    # Fechamos a div do quadrado
                     st.markdown("</div>", unsafe_allow_html=True)
         
     elif pagina == "💼 Departamento Pessoal":
