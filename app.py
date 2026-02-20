@@ -1,4 +1,5 @@
 import streamlit as st
+from datetime import datetime
 
 # Configuração da página deve ser SEMPRE o primeiro comando Streamlit
 st.set_page_config(
@@ -140,7 +141,54 @@ else:
                 <p style="color: #666; margin-top: 5px;">Selecione um módulo no menu lateral para iniciar.</p>
             </div>
         """, unsafe_allow_html=True)
+
+    # --- BLOCO DE ANIVERSARIANTES NA LANDING PAGE (app.py) ---
+        # 1. Primeiro, precisamos garantir que temos os dados processados
+        # Se o df_ativos já estiver carregado no app.py, usamos ele:
+        if 'df_ativos' in locals() or 'df_ativos' in globals():
+            hoje = datetime.now()
+            
+            # Processamento rápido para o app.py
+            df_niver = df_ativos.copy()
+            # Converte a coluna de nascimento para data (caso ainda não esteja)
+            df_niver['dt_nasc'] = pd.to_datetime(df_niver['Data de nascimento'], dayfirst=True, errors='coerce')
+            
+            df_niver = df_niver[df_niver['dt_nasc'].notna()]
+            df_niver['dia'] = df_niver['dt_nasc'].dt.day
+            df_niver['mes'] = df_niver['dt_nasc'].dt.month
+        
+            aniv_hoje = df_niver[(df_niver['dia'] == hoje.day) & (df_niver['mes'] == hoje.month)].to_dict('records')
+        
+            if aniv_hoje:
+                if "idx_niver_land" not in st.session_state:
+                    st.session_state.idx_niver_land = 0
                 
+                st.session_state.idx_niver_land = st.session_state.idx_niver_land % len(aniv_hoje)
+                p = aniv_hoje[st.session_state.idx_niver_land]
+                
+                nome_p = p['Nome'].split()[0]
+                foto_p = p.get('Foto', '')
+                
+                # Estilo fixo na Landing Page
+                st.markdown("---")
+                c1, c2 = st.columns([1, 4])
+                
+                with c1:
+                    if foto_p and str(foto_p).startswith("http"):
+                        st.markdown(f'<img src="{foto_p}" style="width:100px; height:100px; border-radius:50%; object-fit:cover; border: 3px solid #E30613;">', unsafe_allow_html=True)
+                    else:
+                        st.markdown('<div style="width:100px; height:100px; border-radius:50%; background-color:#f1f3f5; display:flex; align-items:center; justify-content:center; border: 2px solid #ddd; font-size:40px;">🎂</div>', unsafe_allow_html=True)
+                
+                with c2:
+                    st.subheader(f"🎉 Aniversariante do dia: {nome_p}!")
+                    st.write("Que tal deixar um parabéns hoje?")
+                    
+                    if len(aniv_hoje) > 1:
+                        if st.button(f"Ver próximo ({st.session_state.idx_niver_land + 1}/{len(aniv_hoje)})", key="btn_niver_landing"):
+                            st.session_state.idx_niver_land += 1
+                            st.rerun()
+                st.markdown("---")
+        
     elif pagina == "💼 Departamento Pessoal":
         departamento_pessoal.render(df_ativos, df_desligados)
     
