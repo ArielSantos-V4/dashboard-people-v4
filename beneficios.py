@@ -305,23 +305,38 @@ def render(df):
         st.markdown("""
             <div style="background-color: #f1f3f5; padding: 12px; border-radius: 6px; border-left: 5px solid #404040; margin-bottom: 20px;">
                 <span style="color: #404040; font-size: 14px;">
-                    Acompanhe abaixo os principais indicadores (KPIs) e gráficos demográficos referentes exclusivamente ao <b>plano médico e dental.
+                    Acompanhe abaixo os principais indicadores (KPIs) e gráficos demográficos referentes exclusivamente ao <b>plano médico e dental.</b>
                 </span>
             </div>
         """, unsafe_allow_html=True)
         
-        st.markdown("<br>", unsafe_allow_html=True)
         if "Situação no plano" in df.columns:
+            # --- CÁLCULOS DOS KPIs ---
+            total_investidores = len(df)
             total_vidas = len(df[df["Situação no plano"] == "Ativo"])
             pendencias = len(df[df["Situação no plano"].isin(["Pendente", "Aguardando docs", "Enviar à DBL"])])
             em_processo = len(df[df["Situação no plano"] == "Aguardando DBL"])
             
+            # Novo KPI: Taxa de Adesão
+            taxa_adesao = (total_vidas / total_investidores * 100) if total_investidores > 0 else 0
+            # Novo KPI: Total Odonto
+            total_odonto = len(df[df["Operadora Odonto"].notna() & (df["Operadora Odonto"] != "")])
+
+            # --- PRIMEIRA LINHA DE MÉTRICAS ---
             c1, c2, c3 = st.columns(3)
-            c1.metric("Vidas Ativas", total_vidas)
-            c2.metric("Pendências", pendencias, delta_color="inverse")
-            c3.metric("Em ativação", em_processo)
+            c1.metric("Vidas Ativas (Saúde)", total_vidas)
+            c2.metric("Pendências Totais", pendencias, delta_color="inverse")
+            c3.metric("Em ativação (DBL)", em_processo)
+            
+            # --- SEGUNDA LINHA DE MÉTRICAS (NOVAS) ---
+            c4, c5, c6 = st.columns(3)
+            c4.metric("Taxa de Adesão Geral", f"{taxa_adesao:.1f}%")
+            c5.metric("Vidas Ativas (Odonto)", total_odonto)
+            c6.metric("Total na Base", total_investidores)
             
             st.markdown("---")
+
+            # --- LINHA 1 DE GRÁFICOS (OS QUE VOCÊ JÁ TINHA) ---
             col_g1, col_g2 = st.columns(2)
             with col_g1:
                 st.subheader("Situação no plano")
@@ -333,6 +348,7 @@ def render(df):
                     tooltip=["Situação", "Quantidade"]
                 )
                 st.altair_chart(grafico_pizza, use_container_width=True)
+
             with col_g2:
                 st.subheader("Vidas por Operadora")
                 if "Operadora Médico" in df.columns:
@@ -343,6 +359,35 @@ def render(df):
                         x=alt.X("Operadora:N", sort="-y"), y="Quantidade:Q"
                     )
                     st.altair_chart(grafico_barras, use_container_width=True)
+
+            # --- LINHA 2 DE GRÁFICOS (NOVOS) ---
+            st.markdown("<br>", unsafe_allow_html=True)
+            col_g3, col_g4 = st.columns(2)
+            
+            with col_g3:
+                st.subheader("Adesão por Área")
+                if "Área" in df.columns:
+                    # Filtra apenas ativos para ver quem realmente usa por área
+                    df_area = df[df["Situação no plano"] == "Ativo"]["Área"].value_counts().head(10).reset_index()
+                    df_area.columns = ["Área", "Vidas"]
+                    grafico_area = alt.Chart(df_area).mark_bar(color="#404040").encode(
+                        x=alt.X("Vidas:Q"),
+                        y=alt.Y("Área:N", sort="-x"),
+                        tooltip=["Área", "Vidas"]
+                    )
+                    st.altair_chart(grafico_area, use_container_width=True)
+
+            with col_g4:
+                st.subheader("Adesão por Modelo de Contrato")
+                if "Modelo de contrato" in df.columns:
+                    df_mod = df[df["Situação no plano"] == "Ativo"]["Modelo de contrato"].value_counts().reset_index()
+                    df_mod.columns = ["Modelo", "Vidas"]
+                    grafico_modelo = alt.Chart(df_mod).mark_bar(color="#8B0000").encode(
+                        x=alt.X("Modelo:N", sort="-y"),
+                        y=alt.Y("Vidas:Q"),
+                        tooltip=["Modelo", "Vidas"]
+                    )
+                    st.altair_chart(grafico_modelo, use_container_width=True)
 
     # ----------------------------------------------------
     # 2. ABA CARTEIRINHAS
