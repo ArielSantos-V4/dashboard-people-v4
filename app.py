@@ -178,39 +178,53 @@ else:
                     nasc_p = p.get('Data de nascimento', '')
                     foto_p = p.get('Foto', '')
         
-                    # Abrimos o Quadrado (Container com borda)
-                    # Aumentei para 300px para não ficar "espremido"
+                    # 1. Quadrado Superior (HTML)
                     st.markdown(f"""
                         <div style="
                             border: 1px solid #ddd; 
-                            border-radius: 12px; 
-                            padding: 18px; 
-                            width: 300px; 
+                            border-radius: 10px 10px 0 0; 
+                            padding: 15px; 
+                            width: 250px; 
                             background-color: white;
-                            box-shadow: 2px 2px 8px rgba(0,0,0,0.05);
+                            border-bottom: none;
+                            margin-bottom: 0px;
                         ">
-                            <p style='margin: 0 0 15px 0; font-weight: bold; color: #E30613; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px;'>
-                                🎂 Aniversariantes do Dia
+                            <p style='margin: 0 0 12px 0; font-weight: bold; color: #E30613; font-size: 0.8rem; text-transform: uppercase;'>
+                                🎂 Aniversariantes
                             </p>
-                            <div style="display: flex; align-items: center; margin-bottom: 18px;">
-                                <div style="margin-right: 15px;">
-                                    {"<img src='" + foto_p + "' style='width:65px; height:65px; border-radius:10px; object-fit:cover;'>" if foto_p and str(foto_p).startswith("http") else "<div style='width:65px; height:65px; border-radius:10px; background-color:#78909c; display:flex; align-items:center; justify-content:center; color:white; font-weight:bold; font-size:22px;'>" + nome_p[0] + "</div>"}
+                            <div style="display: flex; align-items: center;">
+                                <div style="margin-right: 12px;">
+                                    {"<img src='" + foto_p + "' style='width:55px; height:55px; border-radius:8px; object-fit:cover;'>" if foto_p and str(foto_p).startswith("http") else "<div style='width:55px; height:55px; border-radius:8px; background-color:#78909c; display:flex; align-items:center; justify-content:center; color:white; font-weight:bold; font-size:20px;'>" + nome_p[0] + "</div>"}
                                 </div>
                                 <div>
-                                    <p style='margin: 0; font-weight: bold; font-size: 1.1rem; line-height: 1.2;'>{nome_p}</p>
-                                    <p style='margin: 0; font-size: 0.85rem; color: gray;'>📅 {nasc_p}</p>
+                                    <p style='margin: 0; font-weight: bold; font-size: 1rem; line-height: 1.1;'>{nome_p}</p>
+                                    <p style='margin: 0; font-size: 0.75rem; color: gray;'>📅 {nasc_p}</p>
                                 </div>
                             </div>
+                        </div>
                     """, unsafe_allow_html=True)
         
-                    # O Segredo: O botão é chamado AQUI, antes de fechar a DIV principal
+                    # 2. Área do Botão (Encaixada perfeitamente)
                     if len(aniv_hoje) > 1:
-                        if st.button("Próximo ➔", key="btn_niver_final_v3", use_container_width=True):
-                            st.session_state.idx_niver_land += 1
-                            st.rerun()
-                    
-                    # Agora sim fechamos o quadrado, abraçando o botão junto
-                    st.markdown("</div>", unsafe_allow_html=True)
+                        # Criamos um container para o botão com a mesma largura do quadrado
+                        with st.container():
+                            st.markdown("""
+                                <style>
+                                    div[data-testid="stButton"] > button {
+                                        width: 250px !important;
+                                        border-radius: 0 0 10px 10px !important;
+                                        border: 1px solid #ddd !important;
+                                        border-top: 1px solid #eee !important;
+                                        height: 35px !important;
+                                        font-size: 0.8rem !important;
+                                        margin-top: -16px !important;
+                                    }
+                                </style>
+                            """, unsafe_allow_html=True)
+                            
+                            if st.button(f"Próximo ({st.session_state.idx_niver_land + 1}/{len(aniv_hoje)}) ➔", key="btn_niver_final_v4"):
+                                st.session_state.idx_niver_land += 1
+                                st.rerun()
         
     elif pagina == "💼 Departamento Pessoal":
         departamento_pessoal.render(df_ativos, df_desligados)
