@@ -479,8 +479,8 @@ def render(df):
 
         with c_cad:
             st.markdown("##### 📥 Cadastros")
-            with st.expander("👤 Beneficiário", expanded=False):
-                st.caption("Em breve: Atalho para atualização de dados de saúde/odonto.")
+            with st.expander("👤 Movimentações", expanded=False):
+                st.caption("Em breve.")
 
         with c_form:
             st.markdown("##### 📝 Gerar Formulários")
@@ -502,9 +502,9 @@ def render(df):
         with c_mail:
             st.markdown("##### ✉️ E-mails / Mensagens")
             with st.expander("📩 Comunicados", expanded=False):
-                st.caption("Em breve: Rascunho de e-mail de boas-vindas ao plano.")
+                st.caption("Em breve.")
 
         with c_div:
             st.markdown("##### 📂 Diversos")
             with st.expander("🛠️ Ferramentas", expanded=False):
-                st.caption("Em breve: Calculadora de coparticipação ou conferência de fatura.")
+                st.caption("Em breve.")
