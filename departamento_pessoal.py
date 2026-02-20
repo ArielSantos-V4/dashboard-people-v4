@@ -1581,24 +1581,27 @@ def render(df_ativos, df_desligados):
                         with c2:
                             st.metric("Liderados", len(df_liderados))
             
-                        # 3. Definição das colunas (Sempre criamos a variável aqui)
+                        # --- TRATAMENTO DOS DADOS ---
+                        # Se o toggle estiver ligado, garantimos que a remuneração esteja bonitinha
+                        if mostrar_salario and 'Remuneração' in df_liderados.columns:
+                            # Converte para número, trata erros e formata como texto para não dar erro de tipo
+                            df_liderados['Remuneração'] = pd.to_numeric(df_liderados['Remuneração'], errors='coerce').fillna(0)
+                            df_liderados['Remuneração'] = df_liderados['Remuneração'].map('R$ {:,.2f}'.format)
+            
                         colunas_exibir = [
                             'Nome', 'E-mail corporativo', 'Cargo', 
                             'Modelo de contrato', 'CC', 'Descrição CC', 
                             'Área', 'Senioridade', 'Remuneração'
                         ]
                         
-                        # Filtramos as que existem na planilha
                         cols_finais = [c for c in colunas_exibir if c in df_liderados.columns]
             
-                        # 4. Configuração da Tabela
+                        # --- CONFIGURAÇÃO DE VISIBILIDADE ---
                         config_colunas = {}
                         if 'Remuneração' in cols_finais:
-                            # Usamos NumberColumn ou simplesmente configuramos a visibilidade
-                            config_colunas['Remuneração'] = st.column_config.NumberColumn(
+                            config_colunas['Remuneração'] = st.column_config.Column(
                                 "Remuneração",
-                                format="R$ %.2f",
-                                visible=mostrar_salario
+                                visible=mostrar_salario # Aqui não tem erro de tipo!
                             )
             
                         # 5. Exibição
@@ -1608,10 +1611,6 @@ def render(df_ativos, df_desligados):
                             hide_index=True,
                             column_config=config_colunas
                         )
-                    else:
-                        st.info("Aguardando seleção de liderança...")
-                else:
-                    st.error(f"Coluna '{col_lider}' não encontrada.")
                     
             # ==========================================
             # 2. CONTRATOS A VENCER
