@@ -189,16 +189,16 @@ else:
                             border-bottom: none;
                             margin-bottom: 0px;
                         ">
-                            <p style='margin: 0 0 12px 0; font-weight: bold; color: #E30613; font-size: 0.8rem; text-transform: uppercase;'>
-                                🎂 Aniversariantes
+                            <p style='margin: 0 0 14px 0; font-weight: bold; color: #E30613; font-size: 0.8rem; text-transform: uppercase;'>
+                                🎂 Aniversariantes do dia
                             </p>
                             <div style="display: flex; align-items: center;">
                                 <div style="margin-right: 12px;">
                                     {"<img src='" + foto_p + "' style='width:55px; height:55px; border-radius:8px; object-fit:cover;'>" if foto_p and str(foto_p).startswith("http") else "<div style='width:55px; height:55px; border-radius:8px; background-color:#78909c; display:flex; align-items:center; justify-content:center; color:white; font-weight:bold; font-size:20px;'>" + nome_p[0] + "</div>"}
                                 </div>
                                 <div>
-                                    <p style='margin: 0; font-weight: bold; font-size: 1rem; line-height: 1.1;'>{nome_p}</p>
-                                    <p style='margin: 0; font-size: 0.75rem; color: gray;'>📅 {nasc_p}</p>
+                                    <p style='margin: 0; font-weight: bold; font-size: 1.5rem; line-height: 1.1;'>{nome_p}</p>
+                                    <p style='margin: 0; font-size: 0.80rem; color: gray;'>📅 {nasc_p}</p>
                                 </div>
                             </div>
                         </div>
