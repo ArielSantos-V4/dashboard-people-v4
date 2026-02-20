@@ -369,7 +369,29 @@ def render(df):
                 c2.code(str(dados.get("Carteirinha odonto", "Não possui")).replace(".0", ""), language=None)
         
         st.markdown("---")
-        st.dataframe(df[df["Situação no plano"] == "Ativo"][["Nome", "Carteirinha médico", "Carteirinha odonto"]], use_container_width=True, hide_index=True)
+        
+        # --- TABELA DE ATIVOS ---
+        st.markdown("### 📋 Base Ativa (Planos de Saúde/Dental)")
+        if "Situação no plano" in df.columns:
+            # Filtra apenas quem está Ativo
+            df_ativos = df[df["Situação no plano"] == "Ativo"].copy()
+            
+            if not df_ativos.empty:
+                # Seleciona colunas relevantes
+                colunas_view = ["Nome", "E-mail corporativo"]
+                if "Carteirinha médico" in df.columns: colunas_view.append("Carteirinha médico")
+                if "Operadora Médico" in df.columns: colunas_view.append("Operadora Médico")
+                if "Carteirinha odonto" in df.columns: colunas_view.append("Carteirinha odonto")
+                if "Operadora Odonto" in df.columns: colunas_view.append("Operadora Odonto")
+                
+                # Formata para tirar .0 dos números
+                for col in ["Carteirinha médico", "Carteirinha odonto"]:
+                    if col in df_ativos.columns:
+                        df_ativos[col] = df_ativos[col].astype(str).replace(r'\.0$', '', regex=True)
+
+                st.dataframe(df_ativos[colunas_view], use_container_width=True, hide_index=True)
+            else:
+                st.info("Nenhum investidor com status 'Ativo' encontrado.")
 
     # ----------------------------------------------------
     # 3. ABA ANALYTICS
