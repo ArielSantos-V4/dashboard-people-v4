@@ -216,7 +216,7 @@ else:
                                         border: 1px solid #ddd !important;
                                         border-top: 1px solid #eee !important;
                                         height: 35px !important;
-                                        font-size: 0.8rem !important;
+                                        font-size: 0.5rem !important;
                                         margin-top: -16px !important;
                                     }
                                 </style>
