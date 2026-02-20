@@ -1559,42 +1559,54 @@ def render(df_ativos, df_desligados):
                 st.dataframe(df_cargo, use_container_width=True, hide_index=True)
 
             # --- RELATÓRIO DE LIDERADOS (DENTRO DE EXPANDER) ---
-            with st.expander("👤 Liderados por Liderança", expanded=False):
-                st.markdown("<br>", unsafe_allow_html=True)
+            with st.expander("👤 Consultar Liderados por Liderança", expanded=False):
+                # Definimos os nomes exatos das colunas para evitar o KeyError
+                col_lider = 'Liderança direta' 
+                col_remun = 'Remuneração' 
                 
-                # 1. Filtros e Contador
-                lista_lideres = sorted(df_ativos_proc['Liderança direta'].unique().tolist())
-                
-                c1, c2 = st.columns([3, 1])
-                with c1:
-                    lider_sel = st.selectbox("Selecione o Líder para visualizar o time", ["Selecione..."] + lista_lideres, key="sel_lider_report")
-                
-                # Filtragem
-                if lider_sel != "Selecione...":
-                    df_liderados = df_ativos_proc[df_ativos_proc['Liderança direta'] == lider_sel].copy()
+                if col_lider in df_ativos_proc.columns:
+                    st.markdown("<br>", unsafe_allow_html=True)
                     
-                    with c2:
-                        st.metric("Time de " + lider_sel.split()[0], f"{len(df_liderados)} pessoas")
-            
-                    # 2. Tabela de Dados Gerais
-                    st.markdown("#### Dados da Equipe")
-                    colunas_gerais = [
-                        'Nome', 'E-mail corporativo', 'Cargo', 
-                        'Modelo de contrato', 'CC', 'Descrição CC', 
-                        'Área', 'Senioridade'
-                    ]
+                    # 1. Filtros e Contador
+                    lista_lideres = sorted([l for l in df_ativos_proc[col_lider].unique() if l and str(l).strip() != ""])
                     
-                    # Filtra apenas colunas que realmente existem no seu DF
-                    cols_existentes = [c for c in colunas_gerais if c in df_liderados.columns]
-                    st.dataframe(df_liderados[cols_existentes], use_container_width=True, hide_index=True)
+                    c1, c2 = st.columns([3, 1])
+                    with c1:
+                        lider_sel = st.selectbox("Selecione o Líder para visualizar o time", ["Selecione..."] + lista_lideres, key="sel_lider_report")
+                    
+                    if lider_sel != "Selecione...":
+                        df_liderados = df_ativos_proc[df_ativos_proc[col_lider] == lider_sel].copy()
+                        
+                        with c2:
+                            st.metric("Total Liderados", f"{len(df_liderados)}")
             
-                    # 3. Seção de Remuneração Oculta (Dentro de outro expander interno)
-                    if 'Remuneração' in df_liderados.columns:
-                        st.markdown("---")
-                        with st.expander("🔐 Exibir Dados Financeiros (Confidencial)"):
-                            # Formatação simples para moeda se necessário
-                            df_fin = df_liderados[['Nome', 'Cargo', 'Remuneração']].copy()
-                            st.table(df_fin) # Usando table para uma visualização mais fixa e limpa
+                        # 2. Tabela de Dados Gerais (SEM REMUNERAÇÃO)
+                        st.markdown("#### Dados Gerais da Equipe")
+                        colunas_gerais = [
+                            'Nome', 'E-mail corporativo', 'Cargo', 
+                            'Modelo de contrato', 'CC', 'Descrição CC', 
+                            'Área', 'Senioridade'
+                        ]
+                        
+                        # Filtra apenas colunas que realmente existem para não dar erro
+                        cols_exibir = [c for c in colunas_gerais if c in df_liderados.columns]
+                        st.dataframe(df_liderados[cols_exibir], use_container_width=True, hide_index=True)
+            
+                        # 3. A REMUNERAÇÃO OCULTA AQUI
+                        if col_remun in df_liderados.columns:
+                            st.markdown("---")
+                            with st.expander("👁️ Ver Remuneração (Dados Sensíveis)"):
+                                st.warning("Acesso restrito a informações financeiras.")
+                                # Exibe apenas Nome, Cargo e o Salário
+                                df_financeiro = df_liderados[['Nome', 'Cargo', col_remun]].copy()
+                                
+                                # Formatação simples para R$ se for número
+                                if df_financeiro[col_remun].dtype in ['float64', 'int64']:
+                                    df_financeiro[col_remun] = df_financeiro[col_remun].apply(lambda x: f"R$ {x:,.2f}")
+                                
+                                st.table(df_financeiro) # Table é melhor para visualização estática e limpa
+                else:
+                    st.error(f"A coluna '{col_lider}' não foi encontrada. Verifique se o nome na planilha é exatamente este.")
                     
             # ==========================================
             # 2. CONTRATOS A VENCER
