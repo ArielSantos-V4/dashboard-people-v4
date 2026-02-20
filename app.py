@@ -172,39 +172,40 @@ else:
                 col_card, col_futuro = st.columns([0.8, 3.2])
                 
                 with col_card:
-                    # 1. Definimos a largura máxima do quadrado aqui (ex: 280px)
-                    # 2. Criamos o quadrado com borda e padding usando uma <div>
+                    # Iniciamos o quadrado (Container Externo)
+                    # O 'width: fit-content' faz com que o quadrado grude no texto e não sobre espaço
                     st.markdown(f"""
                         <div style="
                             border: 1px solid #ddd; 
                             border-radius: 10px; 
                             padding: 15px; 
-                            max-width: 280px; 
+                            width: fit-content; 
+                            max-width: 260px; 
                             background-color: white;
                         ">
-                            <p style='margin: 0 0 15px 0; font-weight: bold; color: #E30613; font-size: 0.85rem;'>
+                            <p style='margin: 0 0 12px 0; font-weight: bold; color: #E30613; font-size: 0.75rem; letter-spacing: 0.5px;'>
                                 🎂 ANIVERSARIANTES DO DIA
                             </p>
                             
-                            <div style="display: flex; align-items: center; margin-bottom: 15px;">
-                                <div style="margin-right: 15px;">
-                                    {"<img src='" + foto_p + "' style='width:60px; height:60px; border-radius:10px; object-fit:cover;'>" if foto_p and str(foto_p).startswith("http") else "<div style='width:60px; height:60px; border-radius:10px; background-color:#78909c; display:flex; align-items:center; justify-content:center; color:white; font-weight:bold; font-size:20px;'>" + nome_p[0] + "</div>"}
+                            <div style="display: flex; align-items: center; margin-bottom: 5px;">
+                                <div style="margin-right: 12px;">
+                                    {"<img src='" + foto_p + "' style='width:55px; height:55px; border-radius:8px; object-fit:cover;'>" if foto_p and str(foto_p).startswith("http") else "<div style='width:55px; height:55px; border-radius:8px; background-color:#78909c; display:flex; align-items:center; justify-content:center; color:white; font-weight:bold; font-size:18px;'>" + nome_p[0] + "</div>"}
                                 </div>
                                 <div>
-                                    <p style='margin: 0; font-weight: bold; font-size: 1rem;'>{nome_p}</p>
-                                    <p style='margin: 0; font-size: 0.8rem; color: gray;'>📅 {nasc_p}</p>
+                                    <p style='margin: 0; font-weight: bold; font-size: 0.95rem; line-height: 1.2;'>{nome_p}</p>
+                                    <p style='margin: 0; font-size: 0.75rem; color: gray;'>📅 {nasc_p}</p>
                                 </div>
                             </div>
                     """, unsafe_allow_html=True)
         
-                    # O BOTÃO PRECISA CONTINUAR SENDO STREAMLIT PARA FUNCIONAR
+                    # O botão fica logo abaixo, mas ainda dentro da lógica da coluna
                     if len(aniv_hoje) > 1:
-                        # Criamos uma coluna pequena só para o botão não esticar demais
-                        if st.button("Próximo ➔", key="btn_niver_slim", use_container_width=True):
+                        # O style margin-top garante que o botão não grude na foto
+                        st.markdown("<div style='margin-top: 10px;'></div>", unsafe_allow_html=True)
+                        if st.button("Próximo ➔", key="btn_niver_final", use_container_width=True):
                             st.session_state.idx_niver_land += 1
                             st.rerun()
                     
-                    # FECHAMOS A DIV DO QUADRADO
                     st.markdown("</div>", unsafe_allow_html=True)
         
     elif pagina == "💼 Departamento Pessoal":
