@@ -172,45 +172,45 @@ else:
                 col_card, col_futuro = st.columns([0.8, 3.2])
                 
                 with col_card:
-                    # Pegamos os dados da pessoa atual
+                    # Pegamos os dados
                     p = aniv_hoje[st.session_state.idx_niver_land]
                     nome_p = p['Nome'].split()[0]
                     nasc_p = p.get('Data de nascimento', '')
                     foto_p = p.get('Foto', '')
         
-                    # MONTAGEM DO QUADRADO COMPACTO (TUDO EM UM SÓ MARKDOWN)
+                    # Abrimos o Quadrado (Container com borda)
+                    # Aumentei para 300px para não ficar "espremido"
                     st.markdown(f"""
                         <div style="
                             border: 1px solid #ddd; 
-                            border-radius: 10px; 
-                            padding: 12px; 
-                            width: fit-content; 
+                            border-radius: 12px; 
+                            padding: 18px; 
+                            width: 300px; 
                             background-color: white;
-                            box-shadow: 2px 2px 5px rgba(0,0,0,0.05);
+                            box-shadow: 2px 2px 8px rgba(0,0,0,0.05);
                         ">
-                            <p style='margin: 0 0 10px 0; font-weight: bold; color: #E30613; font-size: 0.75rem; text-transform: uppercase;'>
+                            <p style='margin: 0 0 15px 0; font-weight: bold; color: #E30613; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px;'>
                                 🎂 Aniversariantes do Dia
                             </p>
-                            <div style="display: flex; align-items: center;">
-                                <div style="margin-right: 12px;">
-                                    {"<img src='" + foto_p + "' style='width:55px; height:55px; border-radius:8px; object-fit:cover;'>" if foto_p and str(foto_p).startswith("http") else "<div style='width:55px; height:55px; border-radius:8px; background-color:#78909c; display:flex; align-items:center; justify-content:center; color:white; font-weight:bold; font-size:20px;'>" + nome_p[0] + "</div>"}
+                            <div style="display: flex; align-items: center; margin-bottom: 18px;">
+                                <div style="margin-right: 15px;">
+                                    {"<img src='" + foto_p + "' style='width:65px; height:65px; border-radius:10px; object-fit:cover;'>" if foto_p and str(foto_p).startswith("http") else "<div style='width:65px; height:65px; border-radius:10px; background-color:#78909c; display:flex; align-items:center; justify-content:center; color:white; font-weight:bold; font-size:22px;'>" + nome_p[0] + "</div>"}
                                 </div>
-                                <div style="min-width: 100px;">
-                                    <p style='margin: 0; font-weight: bold; font-size: 0.95rem; line-height: 1.2;'>{nome_p}</p>
-                                    <p style='margin: 0; font-size: 0.75rem; color: gray;'>📅 {nasc_p}</p>
+                                <div>
+                                    <p style='margin: 0; font-weight: bold; font-size: 1.1rem; line-height: 1.2;'>{nome_p}</p>
+                                    <p style='margin: 0; font-size: 0.85rem; color: gray;'>📅 {nasc_p}</p>
                                 </div>
                             </div>
-                        </div>
                     """, unsafe_allow_html=True)
         
-                    # Botão de navegação (fora do quadrado para não bugar o clique)
+                    # O Segredo: O botão é chamado AQUI, antes de fechar a DIV principal
                     if len(aniv_hoje) > 1:
-                        # Criamos uma mini-coluna para o botão não ser mais largo que o quadrado
-                        c_btn, _ = st.columns([1, 1])
-                        with c_btn:
-                            if st.button("Próximo ➔", key="btn_niver_final_v2"):
-                                st.session_state.idx_niver_land += 1
-                                st.rerun()
+                        if st.button("Próximo ➔", key="btn_niver_final_v3", use_container_width=True):
+                            st.session_state.idx_niver_land += 1
+                            st.rerun()
+                    
+                    # Agora sim fechamos o quadrado, abraçando o botão junto
+                    st.markdown("</div>", unsafe_allow_html=True)
         
     elif pagina == "💼 Departamento Pessoal":
         departamento_pessoal.render(df_ativos, df_desligados)
