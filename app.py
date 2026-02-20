@@ -169,14 +169,14 @@ else:
                 st.markdown("<br>", unsafe_allow_html=True)
                 
                 # Criamos colunas: a primeira é pequena para o card, a segunda sobra para o futuro
-                col_card, col_futuro = st.columns([1, 1.5])
+                col_card, col_futuro = st.columns([0.8, 3.2])
                 
                 with col_card:
                     # Título com margem inferior para desgrudar do card
                     st.markdown("<p style='margin-bottom: 15px; font-weight: bold; color: #E30613; font-size: 0.85rem;'>🎂 ANIVERSARIANTES DO DIA</p>", unsafe_allow_html=True)
                     
                     with st.container(border=True):
-                        c_img, c_txt = st.columns([1, 2])
+                        c_img, c_txt = st.columns([1, 1])
                         
                         with c_img:
                             if foto_p and str(foto_p).startswith("http"):
