@@ -1581,35 +1581,44 @@ def render(df_ativos, df_desligados):
                         with c2:
                             st.metric("Liderados", len(df_liderados))
             
-                        # --- TRATAMENTO DOS DADOS ---
-                        # Se o toggle estiver ligado, garantimos que a remuneração esteja bonitinha
-                        if mostrar_salario and 'Remuneração' in df_liderados.columns:
-                            # Converte para número, trata erros e formata como texto para não dar erro de tipo
-                            df_liderados['Remuneração'] = pd.to_numeric(df_liderados['Remuneração'], errors='coerce').fillna(0)
-                            df_liderados['Remuneração'] = df_liderados['Remuneração'].map('R$ {:,.2f}'.format)
-            
+                        # 1. Definimos as colunas que queremos
                         colunas_exibir = [
                             'Nome', 'E-mail corporativo', 'Cargo', 
                             'Modelo de contrato', 'CC', 'Descrição CC', 
                             'Área', 'Senioridade', 'Remuneração'
                         ]
                         
+                        # Filtramos as que existem
                         cols_finais = [c for c in colunas_exibir if c in df_liderados.columns]
             
-                        # --- CONFIGURAÇÃO DE VISIBILIDADE ---
-                        config_colunas = {}
-                        if 'Remuneração' in cols_finais:
-                            config_colunas['Remuneração'] = st.column_config.Column(
+                        # 2. Criamos o dicionário de configuração SEM instanciar a classe Column
+                        # Isso evita o TypeError em qualquer versão do Streamlit
+                        configuracao_das_colunas = {
+                            "Remuneração": st.column_config.TextColumn(
                                 "Remuneração",
-                                visible=mostrar_salario # Aqui não tem erro de tipo!
+                                width="medium",
+                                help="Valor da remuneração mensal",
+                                required=False
                             )
+                        }
             
-                        # 5. Exibição
+                        # 3. Se o toggle estiver DESLIGADO, removemos a Remuneração da lista de exibição
+                        # Em vez de tentar esconder via 'visible=False' (que dá erro em algumas versões), 
+                        # simplesmente tiramos ela da lista de colunas do dataframe.
+                        colunas_para_mostrar = [c for c in cols_finais if c != 'Remuneração']
+                        
+                        if mostrar_salario:
+                            colunas_para_mostrar = cols_finais
+                            # Formatação manual para garantir que apareça bonito
+                            if 'Remuneração' in df_liderados.columns:
+                                df_liderados['Remuneração'] = pd.to_numeric(df_liderados['Remuneração'], errors='coerce').map('R$ {:,.2f}'.format)
+            
+                        # 4. Exibição final
                         st.dataframe(
-                            df_liderados[cols_finais],
+                            df_liderados[colunas_para_mostrar],
                             use_container_width=True,
                             hide_index=True,
-                            column_config=config_colunas
+                            column_config=configuracao_das_colunas
                         )
                     
             # ==========================================
