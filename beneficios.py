@@ -46,25 +46,41 @@ def email_para_nome_arquivo(email):
     return str(email).replace("@", "_").replace(".", "_").lower()
 
 def carregar_desligados_google_sheets():
-    # Tenta carregar credenciais para a planilha de desligados
+    # Tenta carregar credenciais usando st.secrets (mais seguro e correto para o Streamlit Cloud)
     try:
         scopes = [
             "https://www.googleapis.com/auth/spreadsheets",
             "https://www.googleapis.com/auth/drive"
         ]
-        # Ajuste se o caminho do arquivo for diferente
-        creds = Credentials.from_service_account_file(
-            "credenciais_google.json", 
+        
+        # Aqui usamos st.secrets em vez de procurar o arquivo .json
+        creds = Credentials.from_service_account_info(
+            st.secrets["gcp_service_account"], 
             scopes=scopes
         )
+        
         client = gspread.authorize(creds)
-        # ID da planilha de desligados (conforme seu código original)
-        spreadsheet = client.open_by_key("ID_DA_PLANILHA") 
-        worksheet = spreadsheet.get_worksheet_by_id(1422602176)
-        dados = worksheet.get_all_records()
-        return pd.DataFrame(dados)
+        
+        # ID da sua planilha Master
+        spreadsheet = client.open_by_key("13EPwhiXgh8BkbhyrEy2aCy3cv1O8npxJ_hA-HmLZ-pY") 
+        
+        # Acessa a aba de desligados pelo GID (1422602176)
+        # O gspread não tem "get_worksheet_by_id" nativo, então fazemos esse loop rápido:
+        worksheet = None
+        for sheet in spreadsheet.worksheets():
+            if str(sheet.id) == "1422602176":
+                worksheet = sheet
+                break
+        
+        if worksheet:
+            dados = worksheet.get_all_records()
+            return pd.DataFrame(dados)
+        else:
+            st.error("Aba de desligados (GID 1422602176) não encontrada.")
+            return pd.DataFrame()
+            
     except Exception as e:
-        st.error(f"Erro ao carregar planilha de desligados: {e}")
+        st.error(f"Erro ao conectar com o Google Sheets: {e}")
         return pd.DataFrame()
 
 # ==========================================
