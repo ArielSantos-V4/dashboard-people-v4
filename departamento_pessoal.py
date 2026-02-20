@@ -1326,28 +1326,28 @@ def render(df_ativos, df_desligados):
             </div>
         """, unsafe_allow_html=True)
         
-        # --- SELETOR DE VISUALIZAÇÃO (Trocado de Radio para Toggle) ---
+        # --- SELETOR DE VISUALIZAÇÃO COM CORES CORRIGIDAS ---
         st.write("Selecione a base:")
         
         # 1. Criamos o Toggle
         status_v4 = st.toggle("Alternar Base", value=True, label_visibility="collapsed")
         
-        # 2. Definimos as cores com base no estado do Toggle
-        # Ativo (True) -> Ativos Preto (#000), Desligados Cinza (#ccc)
-        # Inativo (False) -> Ativos Cinza (#ccc), Desligados Preto (#000)
+        # 2. LÓGICA CORRIGIDA:
+        # Se status_v4 é True (Ligado) -> Ativos: Preto | Desligados: Cinza
+        # Se status_v4 é False (Desligado) -> Ativos: Cinza | Desligados: Preto
         cor_ativos = "#000000" if status_v4 else "#cccccc"
-        cor_desligados = "#cccccc" if not status_v4 else "#000000"
+        cor_desligados = "#000000" if not status_v4 else "#cccccc"
         
-        # 3. Exibimos os nomes com as cores dinâmicas
+        # 3. Exibição Visual
         st.markdown(f"""
-            <div style="display: flex; gap: 20px; font-weight: bold; font-size: 1.1rem; margin-top: -10px;">
+            <div style="display: flex; gap: 10px; font-weight: bold; font-size: 1.1rem; margin-top: -5px; align-items: center;">
                 <span style="color: {cor_ativos}; transition: 0.3s;">Ativos</span>
-                <span style="color: #ccc;">/</span>
+                <span style="color: #eee;">|</span>
                 <span style="color: {cor_desligados}; transition: 0.3s;">Desligados</span>
             </div>
         """, unsafe_allow_html=True)
 
-        # 4. Mantemos a compatibilidade com o restante do seu código
+        # 4. Mantemos a compatibilidade com o seu IF lá de baixo
         modo_visualizacao = "Investidores Ativos" if status_v4 else "Investidores Desligados"
         
         st.markdown("---")
