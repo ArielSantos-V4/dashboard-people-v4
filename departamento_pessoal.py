@@ -1557,7 +1557,46 @@ def render(df_ativos, df_desligados):
                 
                 df_cargo["Remuneração_Média"] = df_cargo["Remuneração_Média"].map('R$ {:,.2f}'.format).str.replace(',', 'X').str.replace('.', ',').str.replace('X', '.')
                 st.dataframe(df_cargo, use_container_width=True, hide_index=True)
+
+            # --- RELATÓRIO DE LIDERADOS POR LIDERANÇA ---
+            with st.expander("👥 Liderados por Liderança", expanded=False):
+            
+                # 1. Filtro de Liderança e Contador ao lado
+                lista_lideres = sorted(df_ativos_proc['Liderança'].unique().tolist())
                 
+                c1, c2 = st.columns([3, 1])
+                with c1:
+                    lider_selecionado = st.selectbox("Selecione o Líder", ["Todos"] + lista_lideres, key="sel_lider_analytics")
+                
+                # Filtragem dos dados
+                if lider_selecionado == "Todos":
+                    df_liderados = df_ativos_proc.copy()
+                else:
+                    df_liderados = df_ativos_proc[df_ativos_proc['Liderança'] == lider_selecionado].copy()
+                
+                with c2:
+                    st.metric("Total de Liderados", len(df_liderados))
+        
+                # 2. Preparação das Colunas do Relatório
+                colunas_exibir = [
+                    'Nome', 'E-mail corporativo', 'Cargo', 
+                    'Modelo de contrato', 'CC', 'Descrição CC', 
+                    'Área', 'Senioridade'
+                ]
+                
+                # Garantir que as colunas existem antes de exibir
+                colunas_presentes = [c for c in colunas_exibir if c in df_liderados.columns]
+                
+                # 3. Exibição da Tabela Principal
+                st.dataframe(df_liderados[colunas_presentes], use_container_width=True, hide_index=True)
+        
+                # 4. Remuneração Oculta (Controle de Acesso Visual)
+                if 'Remuneração' in df_liderados.columns:
+                    with st.expander("👁️ Ver Remuneração e Dados Financeiros"):
+                        st.warning("Atenção: Estes dados são sensíveis.")
+                        col_fin = ['Nome', 'Cargo', 'Remuneração']
+                        st.dataframe(df_liderados[col_fin], use_container_width=True, hide_index=True)
+                    
             # ==========================================
             # 2. CONTRATOS A VENCER
             # ==========================================
