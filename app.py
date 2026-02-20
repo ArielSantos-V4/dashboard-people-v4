@@ -142,6 +142,7 @@ else:
             </div>
         """, unsafe_allow_html=True)
     
+        # --- BLOCO DE ANIVERSARIANTES ULTRA COMPACTO (ALINHADO À ESQUERDA) ---
         if 'df_ativos' in locals() or 'df_ativos' in globals():
             hoje = datetime.now()
             
@@ -160,37 +161,37 @@ else:
                 st.session_state.idx_niver_land = st.session_state.idx_niver_land % len(aniv_hoje)
                 p = aniv_hoje[st.session_state.idx_niver_land]
                 
-                nome_p = p['Nome'].split()[0] # Primeiro nome
+                nome_p = p['Nome'].split()[0]
                 nasc_p = p.get('Data de nascimento', '')
                 foto_p = p.get('Foto', '')
 
+                # Espaçamento para não grudar na mensagem de boas-vindas
                 st.markdown("<br>", unsafe_allow_html=True)
                 
-                # Criamos 3 colunas para o card não ocupar a largura total (centralizado)
-                c_esq, c_meio, c_dir = st.columns([1, 1.5, 1])
+                # Criamos colunas: a primeira é pequena para o card, a segunda sobra para o futuro
+                col_card, col_futuro = st.columns([1.2, 2.8])
                 
-                with c_meio:
-                    # Título em cima
-                    st.markdown("<p style='margin-bottom: -10px; font-weight: bold; color: #E30613;'>🎂 ANIVERSARIANTES DO DIA</p>", unsafe_allow_html=True)
+                with col_card:
+                    # Título com margem inferior para desgrudar do card
+                    st.markdown("<p style='margin-bottom: 15px; font-weight: bold; color: #E30613; font-size: 0.85rem;'>🎂 ANIVERSARIANTES DO DIA</p>", unsafe_allow_html=True)
                     
-                    # Container do Card
                     with st.container(border=True):
-                        # Foto e Info lado a lado
-                        col_foto_card, col_txt_card = st.columns([1, 2])
+                        c_img, c_txt = st.columns([1, 2])
                         
-                        with col_foto_card:
+                        with c_img:
                             if foto_p and str(foto_p).startswith("http"):
-                                st.markdown(f'<img src="{foto_p}" style="width:70px; height:70px; border-radius:10px; object-fit:cover; border: 1px solid #ddd;">', unsafe_allow_html=True)
+                                st.markdown(f'<img src="{foto_p}" style="width:60px; height:60px; border-radius:10px; object-fit:cover; border: 1px solid #ddd;">', unsafe_allow_html=True)
                             else:
-                                st.markdown('<div style="width:70px; height:70px; border-radius:10px; background-color:#f1f3f5; display:flex; align-items:center; justify-content:center; border: 1px solid #ddd; font-size:30px;">🎂</div>', unsafe_allow_html=True)
+                                # Fallback caso não tenha foto (estilo letra ou ícone)
+                                st.markdown(f'<div style="width:60px; height:60px; border-radius:10px; background-color:#78909c; display:flex; align-items:center; justify-content:center; border: 1px solid #ddd; color:white; font-weight:bold; font-size:20px;">{nome_p[0]}</div>', unsafe_allow_html=True)
                         
-                        with col_txt_card:
+                        with c_txt:
                             st.markdown(f"**{nome_p}**")
                             st.caption(f"📅 {nasc_p}")
 
-                        # Setinha simples em baixo (se houver mais de um)
                         if len(aniv_hoje) > 1:
-                            if st.button("Próximo ➔", key="btn_niver_short", use_container_width=True):
+                            st.markdown("<div style='margin-top: 10px;'></div>", unsafe_allow_html=True)
+                            if st.button("Próximo ➔", key="btn_niver_slim", use_container_width=True):
                                 st.session_state.idx_niver_land += 1
                                 st.rerun()
         
