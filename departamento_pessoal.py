@@ -1558,64 +1558,60 @@ def render(df_ativos, df_desligados):
                 df_cargo["Remuneração_Média"] = df_cargo["Remuneração_Média"].map('R$ {:,.2f}'.format).str.replace(',', 'X').str.replace('.', ',').str.replace('X', '.')
                 st.dataframe(df_cargo, use_container_width=True, hide_index=True)
 
-            # --- RELATÓRIO DE LIDERADOS (DENTRO DE EXPANDER) ---
+            # --- RELATÓRIO DE LIDERADOS ---
             with st.expander("👤 Liderados por Liderança", expanded=False):
-                # Definimos os nomes exatos das colunas para evitar o KeyError
-                col_lider = 'Liderança direta' 
-                col_remun = 'Remuneração' 
+                col_lider = 'Liderança direta'
                 
                 if col_lider in df_ativos_proc.columns:
-                    st.markdown("<br>", unsafe_allow_html=True)
-                    
-                    # 1. Filtros e Contador
+                    # 1. Filtros e Toggle no Topo
                     lista_lideres = sorted([l for l in df_ativos_proc[col_lider].unique() if l and str(l).strip() != ""])
                     
-                    # 1. Filtros e Contador (como já tínhamos)
-                    c1, c2, c3 = st.columns([2.5, 1, 1]) # Adicionei uma c3 para o botão
+                    c1, c2, c3 = st.columns([2.5, 1, 1])
                     with c1:
                         lider_sel = st.selectbox("Selecione o Líder", ["Selecione..."] + lista_lideres, key="sel_lider_report")
                     
-                    # 2. Toggle para mostrar/esconder remuneração
                     with c3:
-                        st.write("") # Alinhamento
+                        st.write("") # Espaçador
                         mostrar_salario = st.toggle("Ver Salários", value=False)
             
+                    # 2. Só processamos se um líder for selecionado
                     if lider_sel != "Selecione...":
                         df_liderados = df_ativos_proc[df_ativos_proc[col_lider] == lider_sel].copy()
                         
                         with c2:
                             st.metric("Liderados", len(df_liderados))
             
-                        # 3. Configuração de Visibilidade das Colunas
-                        config_colunas = {}
+                        # 3. Definição das colunas (Sempre criamos a variável aqui)
+                        colunas_exibir = [
+                            'Nome', 'E-mail corporativo', 'Cargo', 
+                            'Modelo de contrato', 'CC', 'Descrição CC', 
+                            'Área', 'Senioridade', 'Remuneração'
+                        ]
                         
+                        # Filtramos as que existem na planilha
+                        cols_finais = [c for c in colunas_exibir if c in df_liderados.columns]
+            
+                        # 4. Configuração da Tabela
+                        config_colunas = {}
                         if 'Remuneração' in cols_finais:
-                            # Usamos NumberColumn para formatar como Real e controlar a visibilidade
+                            # Usamos NumberColumn ou simplesmente configuramos a visibilidade
                             config_colunas['Remuneração'] = st.column_config.NumberColumn(
                                 "Remuneração",
                                 format="R$ %.2f",
-                                visible=mostrar_salario # O toggle controla se ela aparece ou não
-                            )
-                        
-                        # Filtramos apenas as que existem no seu DF
-                        cols_finais = [c for c in colunas_exibir if c in df_liderados.columns]
-            
-                        # O TRUQUE: Se o toggle for Falso, ocultamos a coluna 'Remuneração'
-                        config_colunas = {}
-                        if 'Remuneração' in cols_finais:
-                            config_colunas['Remuneração'] = st.column_config.Column(
-                                "Remuneração",
-                                visible=mostrar_salario, # Fica visível apenas se o toggle estiver ligado
-                                format="R$ %.2f"         # Já formata como moeda
+                                visible=mostrar_salario
                             )
             
-                        # 4. Exibição da Tabela
+                        # 5. Exibição
                         st.dataframe(
                             df_liderados[cols_finais],
                             use_container_width=True,
                             hide_index=True,
-                            column_config=config_colunas # Aplica a configuração de visibilidade
+                            column_config=config_colunas
                         )
+                    else:
+                        st.info("Aguardando seleção de liderança...")
+                else:
+                    st.error(f"Coluna '{col_lider}' não encontrada.")
                     
             # ==========================================
             # 2. CONTRATOS A VENCER
