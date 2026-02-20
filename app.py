@@ -176,7 +176,7 @@ else:
                     st.markdown("<p style='margin-bottom: 15px; font-weight: bold; color: #E30613; font-size: 0.85rem;'>🎂 ANIVERSARIANTES DO DIA</p>", unsafe_allow_html=True)
                     
                     with st.container(border=True):
-                        c_img, c_txt = st.columns([1, 0.5])
+                        c_img, c_txt = st.columns([0.5, 0.5])
                         
                         with c_img:
                             if foto_p and str(foto_p).startswith("http"):
