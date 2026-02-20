@@ -194,7 +194,7 @@ else:
                             </p>
                             <div style="display: flex; align-items: center;">
                                 <div style="margin-right: 12px;">
-                                    {"<img src='" + foto_p + "' style='width:55px; height:55px; border-radius:8px; object-fit:cover;'>" if foto_p and str(foto_p).startswith("http") else "<div style='width:55px; height:55px; border-radius:8px; background-color:#78909c; display:flex; align-items:center; justify-content:center; color:white; font-weight:bold; font-size:20px;'>" + nome_p[0] + "</div>"}
+                                    {"<img src='" + foto_p + "' style='width:55px; height:55px; border-radius:9px; object-fit:cover;'>" if foto_p and str(foto_p).startswith("http") else "<div style='width:55px; height:55px; border-radius:9px; background-color:#78909c; display:flex; align-items:center; justify-content:center; color:white; font-weight:bold; font-size:20px;'>" + nome_p[0] + "</div>"}
                                 </div>
                                 <div>
                                     <p style='margin: 0; font-weight: bold; font-size: 1.1rem; line-height: 1.1;'>{nome_p}</p>
