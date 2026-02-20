@@ -356,23 +356,47 @@ def render(df):
         st.dataframe(df[df["Situação no plano"] == "Ativo"][["Nome", "Carteirinha médico", "Carteirinha odonto"]], use_container_width=True, hide_index=True)
 
     # ----------------------------------------------------
-    # 3. ABA ANALYTICS (Relatórios de Auditoria)
+    # 3. ABA ANALYTICS (Agora só com as Tabelas/Relatórios)
     # ----------------------------------------------------
-    with aba_anlt:
-        st.markdown("### 📊 Relatórios de Acompanhamento")
-        t1, t2, t3 = st.tabs(["⏰ Pendentes", "📩 Fluxo DBL", "🆗 Ativação"])
+    with aba_analytics:
+        st.markdown("### 📊 Relatórios Operacionais")
+        # Aqui as tabelas ocupam a tela toda agora!
+        abas_rel = st.tabs(["⏰ Pendentes", "📂 Aguardando docs", "📩 Enviar para DBL", "🆗 Aguardando ativação"])
         
-        with t1:
-            st.dataframe(df[df["Situação no plano"] == "Pendente"][["Nome", "E-mail corporativo", "Solicitar documentação"]], use_container_width=True, hide_index=True)
-        with t2:
-            st.dataframe(df[df["Situação no plano"] == "Enviar à DBL"][["Nome", "E-mail corporativo", "Enviar no EB"]], use_container_width=True, hide_index=True)
-        with t3:
-            st.dataframe(df[df["Situação no plano"] == "Aguardando DBL"][["Nome", "E-mail corporativo"]], use_container_width=True, hide_index=True)
+        with abas_rel[0]:
+            df_p = df[(df["Situação no plano"] == "Pendente") & (df["Modalidade PJ"] != "MEI")]
+            st.dataframe(df_p[["Nome", "E-mail corporativo", "Modelo de contrato", "Solicitar documentação"]], use_container_width=True, hide_index=True)
+        
+        with abas_rel[1]:
+            df_d = df[df["Situação no plano"] == "Aguardando docs"]
+            st.dataframe(df_d[["Nome", "E-mail corporativo", "Enviar no EB"]], use_container_width=True, hide_index=True)
+            
+        with abas_rel[2]:
+            df_dbl = df[df["Situação no plano"] == "Enviar à DBL"]
+            st.dataframe(df_dbl[["Nome", "E-mail corporativo", "Enviar no EB"]], use_container_width=True, hide_index=True)
+            
+        with abas_rel[3]:
+            df_act = df[df["Situação no plano"] == "Aguardando DBL"]
+            st.dataframe(df_act[["Nome", "E-mail corporativo", "Modelo de contrato"]], use_container_width=True, hide_index=True)
 
     # ----------------------------------------------------
-    # 4. ABA AÇÕES (Vazia/Redirecionamento)
+    # 4. ABA AÇÕES (Aqui estão os seus botões!)
     # ----------------------------------------------------
-    with aba_aco:
-        st.info("💡 As ações de geração de documentos e termos agora estão centralizadas na aba **'⚡ Ações'** do menu principal para facilitar o seu fluxo de trabalho.")
-        st.markdown("---")
-        st.caption("Task: Utilize o menu à esquerda para acessar a aba de Ações global.")
+    with aba_acoes:
+        st.markdown("### ⚙️ Gestão de Documentos")
+        st.write("Selecione a ação que deseja realizar:")
+        
+        c1, c2 = st.columns(2)
+        with c1:
+            if st.button("📄 Gerar Inclusão Subfatura", use_container_width=True):
+                modal_inclusao_subfatura(df)
+            
+            if st.button("📄 Gerar Termo de Subestipulante", use_container_width=True):
+                modal_subestipulante(df)
+        
+        with c2:
+            if st.button("📄 Gerar Termo de Não Adesão", use_container_width=True):
+                modal_nao_adesao(df)
+            
+            if st.button("📄 Gerar Exclusão Subfatura", use_container_width=True):
+                modal_exclusao_subfatura()
