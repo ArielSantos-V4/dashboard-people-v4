@@ -168,9 +168,19 @@ def modal_cadastro_investidor(lista_nomes_ativos):
         matri = c5.text_input("Matrícula")
         dt_cont = c6.date_input("Data do Contrato", format="DD/MM/YYYY")
         
-        # --- CAMPOS NA COLUNA C_TERM (Corrigido para bloqueio em tempo real) ---
-        dt_term = c_term.date_input("Término contrato", format="DD/MM/YYYY", disabled=st.session_state.indet_ativo)
-        indet = c_term.checkbox("Indeterminado", value=st.session_state.indet_ativo, key="chk_indet_v4")
+        # --- CAMPOS NA COLUNA C_TERM (Data em cima, Check em baixo) ---
+        dt_term = c_term.date_input(
+            "Término contrato", 
+            format="DD/MM/YYYY", 
+            disabled=st.session_state.indet_ativo
+        )
+        
+        indet = c_term.checkbox(
+            "Indeterminado", 
+            value=st.session_state.indet_ativo, 
+            key="chk_indet_v4",
+            on_change=toggle_indet # <--- Isso faz a mágica de destravar na hora
+        )
                 
         unid = c7.selectbox("Unidade/Atuação", ["Flagship", "Headquarters", "Híbrido", "Remoto", "Unidade São Leopoldo"])
 
