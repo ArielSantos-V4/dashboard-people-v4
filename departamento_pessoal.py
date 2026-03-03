@@ -142,87 +142,87 @@ def toggle_indet():
 # ==========================================
 @st.dialog("📝 Cadastro de Novo Investidor", width="large")
 def modal_cadastro_investidor(lista_nomes_ativos):
-    # Função de tratamento V4
+    # 1. Controle de Reset (para limpar os campos soltos)
+    if "reset_key" not in st.session_state:
+        st.session_state.reset_key = 0
+    
+    s = str(st.session_state.reset_key)
+
     def tratar_string_v4(texto):
         if not texto: return ""
         import unicodedata
         nfkd = unicodedata.normalize('NFKD', str(texto))
         return "".join([c for c in nfkd if not unicodedata.combining(c)]).title().strip()
 
-    # --- FORMULÁRIO PRINCIPAL ---
-    with st.form("form_novo_investidor", clear_on_submit=True):
+    # --- TUDO DENTRO DE UM CONTAINER COM BORDA PARA PARECER UM FORMULÁRIO ÚNICO ---
+    with st.container(border=True):
         st.markdown("#### 👤 Dados Principais")
         
-        # LINHA 1
+        # LINHA 1 (Solta para permitir reatividade)
         c1, c2, c3 = st.columns([1.5, 1.5, 1])
-        n_curto = c1.text_input("Nome (Sem acentos)")
-        n_completo = c2.text_input("Nome Completo")
-        foto = c3.text_input("URL da Foto")
+        n_curto = c1.text_input("Nome (Sem acentos)", key=f"n_curto_{s}")
+        n_completo = c2.text_input("Nome Completo", key=f"n_comp_{s}")
+        foto = c3.text_input("URL da Foto", key=f"foto_{s}")
 
-        # LINHA 2: Onde mora o problema
+        # LINHA 2 (Solta para o bloqueio ser instantâneo)
         c4, c5, c6, c_term, c7 = st.columns([0.5, 0.5, 0.7, 0.8, 1])
-        bp = c4.number_input("BP", step=1, value=0)
-        matri = c5.text_input("Matrícula")
-        dt_cont = c6.date_input("Data do Contrato", format="DD/MM/YYYY")
+        bp = c4.number_input("BP", step=1, value=0, key=f"bp_{s}")
+        matri = c5.text_input("Matrícula", key=f"matri_{s}")
+        dt_cont = c6.date_input("Data do Contrato", format="DD/MM/YYYY", key=f"dt_cont_{s}")
         
-        # SOLUÇÃO DEFINITIVA:
-        # 1. Verificamos o estado global da chave. 
-        # 2. Se o usuário clicar, o Streamlit agora vai processar o 'disabled' corretamente
-        indet_check = st.checkbox("Indeterminado", value=st.session_state.get("chk_indet_v4", False), key="chk_indet_v4")
-        dt_term = c_term.date_input("Término contrato", format="DD/MM/YYYY", disabled=indet_check)
+        # O BLOQUEIO AGORA VAI FUNCIONAR NA HORA
+        indet = c_term.checkbox("Indeterminado", value=True, key=f"indet_{s}")
+        dt_term = c_term.date_input("Término contrato", format="DD/MM/YYYY", disabled=indet, key=f"dt_term_{s}")
         
-        unid = c7.selectbox("Unidade/Atuação", ["Flagship", "Headquarters", "Híbrido", "Remoto", "Unidade São Leopoldo"])
+        unid = c7.selectbox("Unidade/Atuação", ["Flagship", "Headquarters", "Híbrido", "Remoto", "Unidade São Leopoldo"], key=f"unid_{s}")
 
-        # ... (Restante dos campos conforme seu código anterior)
+        st.markdown("---")
+        
+        # LINHA 3 EM DIANTE
         c8, c9, c10, c11, c12 = st.columns([0.5, 1.4, 0.5, 0.8, 1.2])
-        mod_cont = c8.selectbox("Modelo de Contrato", ["CLT", "PJ", "Estágio"])
-        e_corp = c9.text_input("E-mail Corporativo")
-        mod_pj = c10.selectbox("Modalidade PJ", ["", "MEI", "SLU"])
-        ini_v4 = c11.date_input("Início na V4", format="DD/MM/YYYY")
-        cnpj = c12.text_input("CNPJ")
+        mod_cont = c8.selectbox("Modelo de Contrato", ["CLT", "PJ", "Estágio"], key=f"mod_{s}")
+        e_corp = c9.text_input("E-mail Corporativo", key=f"e_corp_{s}")
+        mod_pj = c10.selectbox("Modalidade PJ", ["", "MEI", "SLU"], key=f"pj_{s}")
+        ini_v4 = c11.date_input("Início na V4", format="DD/MM/YYYY", key=f"ini_{s}")
+        cnpj = c12.text_input("CNPJ", key=f"cnpj_{s}")
         
         c13, c14, c15, c15b = st.columns([1.5, 1.2, 1, 0.5])
-        raz_soc = c13.text_input("Razão Social")
-        cargo = c14.text_input("Cargo")
-        remun = c15.text_input("Remuneração")
-        lista_cbo_res = buscar_lista_cbo()
-        cbo_sel = c15b.selectbox("CBO", options=[""] + lista_cbo_res)
+        raz_soc = c13.text_input("Razão Social", key=f"raz_{s}")
+        cargo = c14.text_input("Cargo", key=f"cargo_{s}")
+        remun = c15.text_input("Remuneração", key=f"rem_{s}")
+        cbo_sel = c15b.selectbox("CBO", options=[""] + buscar_lista_cbo(), key=f"cbo_{s}")
 
-        st.markdown("---")
         st.markdown("#### 🏢 Centro de Custo & Liderança")
         cv1, cv3, cv4 = st.columns([1, 1, 1])
-        id_vaga = cv1.text_input("ID Vaga")
-        senior = cv3.selectbox("Senioridade", options=["", "Junior", "Pleno", "Senior", "Coordenador", "Gerente"])
-        lider = cv4.selectbox("Liderança Direta", options=[""] + sorted(lista_nomes_ativos))
+        id_vaga = cv1.text_input("ID Vaga", key=f"vaga_{s}")
+        senior = cv3.selectbox("Senioridade", ["", "Junior", "Pleno", "Senior", "Gerente"], key=f"sen_{s}")
+        lider = cv4.selectbox("Liderança Direta", [""] + sorted(lista_nomes_ativos), key=f"lid_{s}")
 
-        st.markdown("---")
         st.markdown("#### 🏠 Dados Pessoais")
         cp1, cp2, cp3, cp4 = st.columns([1, 0.8, 1, 1.3])
-        cpf = cp1.text_input("CPF (Somente números)")
-        nasc = cp2.date_input("Nascimento", value=None, format="DD/MM/YYYY")
-        escolar = cp3.selectbox("Escolaridade", ["", "Ensino médio", "Ensino superior", "Pós graduação"])
-        e_pess = cp4.text_input("E-mail Pessoal")
+        cpf = cp1.text_input("CPF", key=f"cpf_{s}")
+        nasc = cp2.date_input("Nascimento", value=None, format="DD/MM/YYYY", key=f"nasc_{s}")
+        escolar = cp3.selectbox("Escolaridade", ["", "Ensino médio", "Ensino superior", "Pós graduação"], key=f"esc_{s}")
+        e_pess = cp4.text_input("E-mail Pessoal", key=f"epess_{s}")
 
         cp5, cp6, cp7 = st.columns([1, 2, 1])
-        tel = cp5.text_input("Telefone")
-        drive = cp6.text_input("URL Drive")
-        cep = cp7.text_input("CEP")
+        tel = cp5.text_input("Telefone", key=f"tel_{s}")
+        drive = cp6.text_input("URL Drive", key=f"drive_{s}")
+        cep = cp7.text_input("CEP", key=f"cep_{s}")
 
-        st.markdown("---")
-        # BOTÃO SUBMIT
-        btn_gravar = st.form_submit_button("🚀 Gravar na Planilha", use_container_width=True, type="primary")
-
-        if btn_gravar:
+        st.markdown("<br>", unsafe_allow_html=True)
+        
+        # BOTÃO DE GRAVAR (Fora de st.form para não travar a reatividade)
+        if st.button("🚀 Gravar na Planilha", use_container_width=True, type="primary"):
             if not n_curto or not cpf:
                 st.error("⚠️ Nome e CPF são obrigatórios!")
             else:
                 try:
-                    # Regra de negócio respeitada
-                    val_termino = "Indeterminado" if indet_check else dt_term.strftime("%d/%m/%Y")
-
+                    termino_final = "Indeterminado" if indet else dt_term.strftime("%d/%m/%Y")
+                    
                     linha = [
                         tratar_string_v4(n_curto), tratar_string_v4(n_completo), foto, bp, matri, 
-                        dt_cont.strftime("%d/%m/%Y"), val_termino, "Ativo", unid, mod_cont, 
+                        dt_cont.strftime("%d/%m/%Y"), termino_final, "Ativo", unid, mod_cont, 
                         e_corp.lower(), mod_pj, ini_v4.strftime("%d/%m/%Y"), cnpj, tratar_string_v4(raz_soc), 
                         cargo, remun, re.sub(r'\D', '', cbo_sel) if cbo_sel else "", "", id_vaga, "", "", 
                         senior, lider, "", "", limpar_numero(cpf), nasc.strftime("%d/%m/%Y") if nasc else "", 
@@ -230,14 +230,14 @@ def modal_cadastro_investidor(lista_nomes_ativos):
                     ]
 
                     gravar_no_google_sheets(linha)
-                    st.success(f"✅ Investidor {tratar_string_v4(n_curto)} cadastrado com sucesso!")
+                    
+                    # O SUCESSO: Incrementamos a reset_key para limpar TUDO e damos rerun
+                    st.session_state.reset_key += 1
+                    st.success("✅ Investidor cadastrado com sucesso! Campos limpos.")
+                    st.rerun() # Dentro do Dialog, o rerun apenas limpa o conteúdo sem fechar o modal
                     
                 except Exception as e:
                     st.error(f"Erro ao gravar: {e}")
-
-    # GATILHO DE ATUALIZAÇÃO: Se o checkbox mudou, força o rerun para aplicar o 'disabled' no campo de data
-    if st.session_state.get("chk_indet_v4") != indet_check:
-        st.rerun()
                         
 # ==========================================
 # LÓGICA DE ALERTAS (ATIVOS)
