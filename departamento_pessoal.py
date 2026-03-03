@@ -152,91 +152,90 @@ def modal_cadastro_investidor(lista_nomes_ativos):
 
     # --- INÍCIO DO FORMULÁRIO ---
     # clear_on_submit limpa os campos de texto após o cadastro
-    with st.form("form_novo_investidor", clear_on_submit=True):
-        st.markdown("#### 👤 Dados Principais")
+    st.markdown("#### 👤 Dados Principais")
 
-        c4_off, c5_off, c6_off, c_term_off, c7_off = st.columns([0.5, 0.5, 0.7, 0.8, 1])
+    c4_off, c5_off, c6_off, c_term_off, c7_off = st.columns([0.5, 0.5, 0.7, 0.8, 1])
+    
+    # Lógica de bloqueio instantâneo
+    indet = c_term_off.checkbox("Indeterminado", value=True, key="chk_v4_instant")
+    dt_term = c_term_off.date_input("Término contrato", format="DD/MM/YYYY", disabled=indet, key="dt_term_v4")
+
+    # Agora sim, iniciamos o formulário para o restante dos campos
+    with st.form("form_novo_investidor", clear_on_submit=True):
+    
+        # No seu bloco original de colunas dentro do form, deixe assim:
+        c1, c2, c3 = st.columns([1.5, 1.5, 1])
+        n_curto = c1.text_input("Nome (Sem acentos)")
+        n_completo = c2.text_input("Nome Completo")
+        foto = c3.text_input("URL da Foto")
+
+        # Colunas sem o campo de término (que já está lá em cima)
+        c4, c5, c6, c_vazio, c7 = st.columns([0.5, 0.5, 0.7, 0.8, 1])
+        bp = c4.number_input("BP", step=1, value=0)
+        matri = c5.text_input("Matrícula")
+        dt_cont = c6.date_input("Data do Contrato", format="DD/MM/YYYY")
+        # c_vazio fica aqui apenas para manter o espaçamento do layout
+        unid = c7.selectbox("Unidade/Atuação", ["Flagship", "Headquarters", "Híbrido", "Remoto", "Unidade São Leopoldo"])
+
+        c8, c9, c10, c11, c12 = st.columns([0.5, 1.4, 0.5, 0.8, 1.2])
+        mod_cont = c8.selectbox("Modelo de Contrato", ["CLT", "PJ", "Estágio"])
+        e_corp = c9.text_input("E-mail Corporativo")
+        mod_pj = c10.selectbox("Modalidade PJ", ["", "MEI", "SLU"])
+        ini_v4 = c11.date_input("Início na V4", format="DD/MM/YYYY")
+        cnpj = c12.text_input("CNPJ")
         
-        # Lógica de bloqueio instantâneo
-        indet = c_term_off.checkbox("Indeterminado", value=True, key="chk_v4_instant")
-        dt_term = c_term_off.date_input("Término contrato", format="DD/MM/YYYY", disabled=indet, key="dt_term_v4")
-    
-        # Agora sim, iniciamos o formulário para o restante dos campos
-        with st.form("form_novo_investidor", clear_on_submit=True):
-        
-            # No seu bloco original de colunas dentro do form, deixe assim:
-            c1, c2, c3 = st.columns([1.5, 1.5, 1])
-            n_curto = c1.text_input("Nome (Sem acentos)")
-            n_completo = c2.text_input("Nome Completo")
-            foto = c3.text_input("URL da Foto")
-    
-            # Colunas sem o campo de término (que já está lá em cima)
-            c4, c5, c6, c_vazio, c7 = st.columns([0.5, 0.5, 0.7, 0.8, 1])
-            bp = c4.number_input("BP", step=1, value=0)
-            matri = c5.text_input("Matrícula")
-            dt_cont = c6.date_input("Data do Contrato", format="DD/MM/YYYY")
-            # c_vazio fica aqui apenas para manter o espaçamento do layout
-            unid = c7.selectbox("Unidade/Atuação", ["Flagship", "Headquarters", "Híbrido", "Remoto", "Unidade São Leopoldo"])
-    
-            c8, c9, c10, c11, c12 = st.columns([0.5, 1.4, 0.5, 0.8, 1.2])
-            mod_cont = c8.selectbox("Modelo de Contrato", ["CLT", "PJ", "Estágio"])
-            e_corp = c9.text_input("E-mail Corporativo")
-            mod_pj = c10.selectbox("Modalidade PJ", ["", "MEI", "SLU"])
-            ini_v4 = c11.date_input("Início na V4", format="DD/MM/YYYY")
-            cnpj = c12.text_input("CNPJ")
-            
-            c13, c14, c15, c15b = st.columns([1.5, 1.2, 1, 0.5])
-            raz_soc = c13.text_input("Razão Social")
-            cargo = c14.text_input("Cargo")
-            remun = c15.text_input("Remuneração")
-            lista_cbo_res = buscar_lista_cbo()
-            cbo_sel = c15b.selectbox("CBO", options=[""] + lista_cbo_res)
-    
-            st.markdown("---")
-            st.markdown("#### 🏢 Centro de Custo & Liderança")
-            cv1, cv3, cv4 = st.columns([1, 1, 1])
-            id_vaga = cv1.text_input("ID Vaga")
-            senior = cv3.selectbox("Senioridade", options=["", "Junior", "Pleno", "Senior", "Coordenador", "Gerente"])
-            lider = cv4.selectbox("Liderança Direta", options=[""] + sorted(lista_nomes_ativos))
-    
-            st.markdown("---")
-            st.markdown("#### 🏠 Dados Pessoais")
-            cp1, cp2, cp3, cp4 = st.columns([1, 0.8, 1, 1.3])
-            cpf = cp1.text_input("CPF (Somente números)")
-            nasc = cp2.date_input("Nascimento", value=None, format="DD/MM/YYYY")
-            escolar = cp3.selectbox("Escolaridade", ["", "Ensino médio", "Ensino superior", "Pós graduação"])
-            e_pess = cp4.text_input("E-mail Pessoal")
-    
-            cp5, cp6, cp7 = st.columns([1, 2, 1])
-            tel = cp5.text_input("Telefone")
-            drive = cp6.text_input("URL Drive")
-            cep = cp7.text_input("CEP")
-    
-            st.markdown("---")
-            btn_gravar = st.form_submit_button("🚀 Gravar na Planilha", use_container_width=True, type="primary")
-    
-            if btn_gravar:
-                if not n_curto or not cpf:
-                    st.error("⚠️ Nome e CPF são obrigatórios!")
-                else:
-                    try:
-                        # Lógica de Negócio: Se checkbox ativo, grava texto, senão grava a data
-                        termino_final = "Indeterminado" if indet else dt_term.strftime("%d/%m/%Y")
-    
-                        linha = [
-                            tratar_string_v4(n_curto), tratar_string_v4(n_completo), foto, bp, matri, 
-                            dt_cont.strftime("%d/%m/%Y"), termino_final, "Ativo", unid, mod_cont, 
-                            e_corp.lower(), mod_pj, ini_v4.strftime("%d/%m/%Y"), cnpj, tratar_string_v4(raz_soc), 
-                            cargo, remun, re.sub(r'\D', '', cbo_sel) if cbo_sel else "", "", id_vaga, "", "", 
-                            senior, lider, "", "", limpar_numero(cpf), nasc.strftime("%d/%m/%Y") if nasc else "", 
-                            cep, escolar, e_pess.lower(), tel, "", "", "Pendente", "", "", "", "", drive, ""
-                        ]
-    
-                        gravar_no_google_sheets(linha)
-                        st.success(f"✅ Investidor {tratar_string_v4(n_curto)} cadastrado com sucesso!")
-                        
-                    except Exception as e:
-                        st.error(f"Erro ao gravar: {e}")
+        c13, c14, c15, c15b = st.columns([1.5, 1.2, 1, 0.5])
+        raz_soc = c13.text_input("Razão Social")
+        cargo = c14.text_input("Cargo")
+        remun = c15.text_input("Remuneração")
+        lista_cbo_res = buscar_lista_cbo()
+        cbo_sel = c15b.selectbox("CBO", options=[""] + lista_cbo_res)
+
+        st.markdown("---")
+        st.markdown("#### 🏢 Centro de Custo & Liderança")
+        cv1, cv3, cv4 = st.columns([1, 1, 1])
+        id_vaga = cv1.text_input("ID Vaga")
+        senior = cv3.selectbox("Senioridade", options=["", "Junior", "Pleno", "Senior", "Coordenador", "Gerente"])
+        lider = cv4.selectbox("Liderança Direta", options=[""] + sorted(lista_nomes_ativos))
+
+        st.markdown("---")
+        st.markdown("#### 🏠 Dados Pessoais")
+        cp1, cp2, cp3, cp4 = st.columns([1, 0.8, 1, 1.3])
+        cpf = cp1.text_input("CPF (Somente números)")
+        nasc = cp2.date_input("Nascimento", value=None, format="DD/MM/YYYY")
+        escolar = cp3.selectbox("Escolaridade", ["", "Ensino médio", "Ensino superior", "Pós graduação"])
+        e_pess = cp4.text_input("E-mail Pessoal")
+
+        cp5, cp6, cp7 = st.columns([1, 2, 1])
+        tel = cp5.text_input("Telefone")
+        drive = cp6.text_input("URL Drive")
+        cep = cp7.text_input("CEP")
+
+        st.markdown("---")
+        btn_gravar = st.form_submit_button("🚀 Gravar na Planilha", use_container_width=True, type="primary")
+
+        if btn_gravar:
+            if not n_curto or not cpf:
+                st.error("⚠️ Nome e CPF são obrigatórios!")
+            else:
+                try:
+                    # Lógica de Negócio: Se checkbox ativo, grava texto, senão grava a data
+                    termino_final = "Indeterminado" if indet else dt_term.strftime("%d/%m/%Y")
+
+                    linha = [
+                        tratar_string_v4(n_curto), tratar_string_v4(n_completo), foto, bp, matri, 
+                        dt_cont.strftime("%d/%m/%Y"), termino_final, "Ativo", unid, mod_cont, 
+                        e_corp.lower(), mod_pj, ini_v4.strftime("%d/%m/%Y"), cnpj, tratar_string_v4(raz_soc), 
+                        cargo, remun, re.sub(r'\D', '', cbo_sel) if cbo_sel else "", "", id_vaga, "", "", 
+                        senior, lider, "", "", limpar_numero(cpf), nasc.strftime("%d/%m/%Y") if nasc else "", 
+                        cep, escolar, e_pess.lower(), tel, "", "", "Pendente", "", "", "", "", drive, ""
+                    ]
+
+                    gravar_no_google_sheets(linha)
+                    st.success(f"✅ Investidor {tratar_string_v4(n_curto)} cadastrado com sucesso!")
+                    
+                except Exception as e:
+                    st.error(f"Erro ao gravar: {e}")
                         
 # ==========================================
 # LÓGICA DE ALERTAS (ATIVOS)
