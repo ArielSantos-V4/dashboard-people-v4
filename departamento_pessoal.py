@@ -185,8 +185,8 @@ def modal_cadastro_investidor(lista_nomes_ativos):
             
             # Criamos duas micro-colunas: uma para o label e outra para o check
             ct1, ct2 = st.columns([1.1, 1])
-            ct1.markdown("<p style='font-size: 14px; font-weight: 400; margin-bottom: -10px;'>Término</p>", unsafe_allow_html=True)
-            indet = ct2.checkbox("Indet.", value=True, key=f"indet_{s}")
+            ct1.markdown("<p style='font-size: 14px; font-weight: 400; margin-bottom: 0px;'>Término</p>", unsafe_allow_html=True)
+            indet = ct2.checkbox("Indeterminado", value=True, key=f"indet_{s}")
             
             # O campo de data logo abaixo
             dt_term = st.date_input("Label_Oculto", format="DD/MM/YYYY", disabled=indet, key=f"dt_term_{s}", label_visibility="collapsed")
