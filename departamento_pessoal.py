@@ -140,22 +140,11 @@ def gravar_no_google_sheets(dados_lista):
 @st.dialog("📝 Cadastro de Novo Investidor", width="large")
 def modal_cadastro_investidor(lista_nomes_ativos):
     
-    # --- GATILHO DE LIMPEZA (Roda ANTES de desenhar os campos) ---
-    if st.session_state.get("sucesso_cadastro", False):
-        chaves_limpar = [
-            "cad_n_curto", "cad_n_comp", "cad_foto", "cad_matri", "cad_e_corp", 
-            "cad_mod_pj", "cad_cnpj", "cad_raz_soc", "cad_cargo", "cad_remun", 
-            "cad_cbo_list", "cad_id_vaga", "cad_senior", "cad_lider", "cad_cpf", 
-            "cad_escolar", "cad_e_pess", "cad_tel", "cad_drive", "cad_cep"
-        ]
-        for k in chaves_limpar:
-            if k in st.session_state:
-                st.session_state[k] = ""
-        st.session_state["cad_bp"] = 0
-        st.session_state["cad_indet"] = True
-        
-        st.success("✅ Investidor cadastrado com sucesso!")
-        st.session_state["sucesso_cadastro"] = False 
+    # Exibe a mensagem de sucesso e logo a consome (evita reruns adicionais)
+    if "msg_sucesso" in st.session_state and st.session_state.msg_sucesso:
+        st.success(st.session_state.msg_sucesso)
+        # Apagamos da sessão para não ficar persistente nas próximas vezes
+        st.session_state.msg_sucesso = "" 
 
     # ==========================================
     # BLOCO 1: DADOS PRINCIPAIS
@@ -245,7 +234,6 @@ def modal_cadastro_investidor(lista_nomes_ativos):
     st.markdown("---")
     
     if st.button("🚀 Gravar na Planilha", use_container_width=True, type="primary"):
-        # Função para verificar acentos
         def tem_acento(texto):
             return texto != ''.join(c for c in unicodedata.normalize('NFD', texto) if unicodedata.category(c) != 'Mn')
 
@@ -282,24 +270,26 @@ def modal_cadastro_investidor(lista_nomes_ativos):
             try:
                 gravar_no_google_sheets(linha)
                 
-                # Deleta os dados do estado para que o rerun renderize campos vazios
+                # --- ZERA OS CAMPOS IMEDIATAMENTE APÓS SALVAR ---
+                # Essa lista é fundamental. Estamos DELETANDO a chave, em vez de modificá-la para vazio
                 chaves_limpar = [
                     "cad_n_curto", "cad_n_comp", "cad_foto", "cad_matri", "cad_e_corp", 
                     "cad_mod_pj", "cad_cnpj", "cad_raz_soc", "cad_cargo", "cad_remun", 
                     "cad_cbo_list", "cad_id_vaga", "cad_senior", "cad_lider", "cad_cpf", 
-                    "cad_escolar", "cad_e_pess", "cad_tel", "cad_drive", "cad_cep",
-                    "cad_bp", "cad_indet", "cad_dt_cont", "cad_dt_term", "cad_unid", 
-                    "cad_mod_cont", "cad_ini_v4", "cad_nasc"
+                    "cad_escolar", "cad_e_pess", "cad_tel", "cad_drive", "cad_cep"
                 ]
-                
                 for k in chaves_limpar:
                     if k in st.session_state:
                         del st.session_state[k]
 
-                st.toast(f"✅ Investidor {n_curto_fmt} cadastrado com sucesso!")
+                # Restaurando padrões para números/booleanos
+                st.session_state["cad_bp"] = 0
+                st.session_state["cad_indet"] = True
+
+                # Define a mensagem que será lida na linha 1 do modal e renderizada
+                st.session_state.msg_sucesso = f"✅ Investidor {n_curto_fmt} cadastrado com sucesso!"
                 
-                # Reinicia a tela e exibe com os campos em branco
-                st.rerun()
+                # NENHUM ST.RERUN AQUI. O botão natural já força um rerun, e ao encontrar a tela, os campos estarão zerados!
                 
             except Exception as e:
                 st.error(f"Erro ao gravar: {e}")
