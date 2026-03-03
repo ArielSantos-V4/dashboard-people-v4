@@ -140,9 +140,9 @@ def toggle_indet():
 # ==========================================
 # MODAL DE CADASTRO
 # ==========================================
-@st.dialog("📝 Cadastro de Novo Investidor", width="large")
-def modal_cadastro_investidor(lista_nomes_ativos):
-    # 1. Controle de Reset (para limpar os campos soltos)
+@st.fragment
+def corpo_do_modal(lista_nomes_ativos):
+    # Controle de Reset
     if "reset_key" not in st.session_state:
         st.session_state.reset_key = 0
     
@@ -154,7 +154,6 @@ def modal_cadastro_investidor(lista_nomes_ativos):
         nfkd = unicodedata.normalize('NFKD', str(texto))
         return "".join([c for c in nfkd if not unicodedata.combining(c)]).title().strip()
 
-    # --- TUDO DENTRO DE UM CONTAINER COM BORDA PARA PARECER UM FORMULÁRIO ÚNICO ---
     with st.container(border=True):
         st.markdown("#### 👤 Dados Principais")
         
@@ -173,13 +172,8 @@ def modal_cadastro_investidor(lista_nomes_ativos):
         
         # --- O SEGREDO DO ALINHAMENTO E REATIVIDADE ---
         with c_term:
-            # Criamos um espaço reservado para a data aparecer em cima
             espaco_data = st.empty() 
-            
-            # O Checkbox fica embaixo, mas sua variável 'indet' será lida pelo espaço acima
             indet = st.checkbox("Indeterminado", value=True, key=f"indet_{s}")
-            
-            # Renderizamos a data no espaço reservado lá em cima, olhando para o check de baixo
             dt_term = espaco_data.date_input(
                 "Término contrato", 
                 format="DD/MM/YYYY", 
@@ -226,10 +220,9 @@ def modal_cadastro_investidor(lista_nomes_ativos):
         st.markdown("<br>", unsafe_allow_html=True)
 
         st.markdown("---")
-        # BOTÃO DE GRAVAR (Fora de st.form para não travar a reatividade)
         # BOTÃO DE GRAVAR
         if st.button("🚀 Gravar na Planilha", use_container_width=True, type="primary"):
-            # EXTRAÇÃO DOS VALORES DO SESSION STATE (Garante que as variáveis existam)
+            # Buscamos do session_state por causa das chaves dinâmicas
             v_n_curto = st.session_state.get(f"n_curto_{s}", "")
             v_cpf = st.session_state.get(f"cpf_{s}", "")
             
@@ -237,56 +230,39 @@ def modal_cadastro_investidor(lista_nomes_ativos):
                 st.error("⚠️ Nome e CPF são obrigatórios!")
             else:
                 try:
-                    # Pegamos todos os campos usando a chave dinâmica _{s}
-                    termino_final = "Indeterminado" if indet else dt_term.strftime("%d/%m/%Y")
+                    termino_final = "Indeterminado" if st.session_state.get(f"indet_{s}") else st.session_state.get(f"dt_term_{s}").strftime("%d/%m/%Y")
                     
-                    # Captura os dados do estado para a planilha
                     linha = [
-                        tratar_string_v4(v_n_curto), 
-                        tratar_string_v4(st.session_state.get(f"n_comp_{s}", "")), 
-                        st.session_state.get(f"foto_{s}", ""), 
-                        st.session_state.get(f"bp_{s}", 0), 
-                        st.session_state.get(f"matri_{s}", ""), 
-                        st.session_state.get(f"dt_cont_{s}", date.today()).strftime("%d/%m/%Y"), 
-                        termino_final, 
-                        "Ativo", 
-                        st.session_state.get(f"unid_{s}", "Flagship"), 
-                        st.session_state.get(f"mod_{s}", "PJ"), 
-                        st.session_state.get(f"e_corp_{s}", "").lower(), 
-                        st.session_state.get(f"pj_{s}", ""), 
-                        st.session_state.get(f"ini_{s}", date.today()).strftime("%d/%m/%Y"), 
-                        st.session_state.get(f"cnpj_{s}", ""), 
-                        tratar_string_v4(st.session_state.get(f"raz_{s}", "")), 
-                        st.session_state.get(f"cargo_{s}", ""), 
-                        st.session_state.get(f"rem_{s}", ""), 
-                        re.sub(r'\D', '', st.session_state.get(f"cbo_{s}", "")) if st.session_state.get(f"cbo_{s}") else "", 
-                        "", # Coluna vazia conforme seu padrão
-                        st.session_state.get(f"vaga_{s}", ""), 
-                        "", "", # Colunas vazias
-                        st.session_state.get(f"sen_{s}", ""), 
-                        st.session_state.get(f"lid_{s}", ""), 
-                        "", "", 
-                        limpar_numero(v_cpf), 
-                        st.session_state.get(f"nasc_{s}", date.today()).strftime("%d/%m/%Y") if st.session_state.get(f"nasc_{s}") else "", 
-                        st.session_state.get(f"cep_{s}", ""), 
-                        st.session_state.get(f"esc_{s}", ""), 
-                        st.session_state.get(f"epess_{s}", "").lower(), 
-                        st.session_state.get(f"tel_{s}", ""), 
-                        "", "", "Pendente", "", "", "", "", 
-                        st.session_state.get(f"drive_{s}", ""), 
-                        ""
+                        tratar_string_v4(v_n_curto), tratar_string_v4(st.session_state.get(f"n_comp_{s}")),
+                        st.session_state.get(f"foto_{s}"), st.session_state.get(f"bp_{s}"), st.session_state.get(f"matri_{s}"),
+                        st.session_state.get(f"dt_cont_{s}").strftime("%d/%m/%Y"), termino_final, "Ativo",
+                        st.session_state.get(f"unid_{s}"), st.session_state.get(f"mod_{s}"),
+                        st.session_state.get(f"e_corp_{s}").lower(), st.session_state.get(f"pj_{s}"),
+                        st.session_state.get(f"ini_{s}").strftime("%d/%m/%Y"), st.session_state.get(f"cnpj_{s}"),
+                        tratar_string_v4(st.session_state.get(f"raz_{s}")), st.session_state.get(f"cargo_{s}"),
+                        st.session_state.get(f"rem_{s}"), re.sub(r'\D', '', st.session_state.get(f"cbo_{s}")) if st.session_state.get(f"cbo_{s}") else "",
+                        "", st.session_state.get(f"vaga_{s}"), "", "", st.session_state.get(f"sen_{s}"),
+                        st.session_state.get(f"lid_{s}"), "", "", limpar_numero(v_cpf),
+                        st.session_state.get(f"nasc_{s}").strftime("%d/%m/%Y") if st.session_state.get(f"nasc_{s}") else "",
+                        st.session_state.get(f"cep_{s}"), st.session_state.get(f"esc_{s}"),
+                        st.session_state.get(f"epess_{s}").lower(), st.session_state.get(f"tel_{s}"),
+                        "", "", "Pendente", "", "", "", "", st.session_state.get(f"drive_{s}"), ""
                     ]
 
                     gravar_no_google_sheets(linha)
                     
-                    # Limpeza total
+                    # RESET: Mudamos a chave e apenas o fragmento recarrega
                     st.session_state.reset_key += 1
-                    st.success("✅ Investidor cadastrado com sucesso! Campos limpos.")
-                    st.rerun() 
-                    
+                    st.success("✅ Cadastrado! Campos limpos.")
+                    st.rerun() # Como estamos em um fragmento, este rerun só reinicia o fragmento!
+
                 except Exception as e:
                     st.error(f"Erro ao gravar: {e}")
-                        
+
+@st.dialog("📝 Cadastro de Novo Investidor", width="large")
+def modal_cadastro_investidor(lista_nomes_ativos):
+    corpo_do_modal(lista_nomes_ativos)
+    
 # ==========================================
 # LÓGICA DE ALERTAS (ATIVOS)
 # ==========================================
