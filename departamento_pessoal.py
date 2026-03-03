@@ -147,9 +147,14 @@ def modal_cadastro_investidor(lista_nomes_ativos):
         sem_acento = "".join([c for c in nfkd if not unicodedata.combining(c)])
         return sem_acento.title().strip()
 
+    col_aux1, col_aux2, col_aux3 = st.columns([2, 1, 1])
+    with col_aux3:
+        indet = st.checkbox("Contrato Indeterminado", value=True)
+        dt_term = st.date_input("Término do Contrato", format="DD/MM/YYYY", disabled=indet)
+        
     # O segredo para não fechar e limpar campos é o st.form com clear_on_submit
     with st.form("form_novo_investidor", clear_on_submit=True):
-        
+
         # ==========================================
         # BLOCO 1: DADOS PRINCIPAIS
         # ==========================================
