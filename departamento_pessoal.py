@@ -142,7 +142,7 @@ def toggle_indet():
 # ==========================================
 @st.dialog("📝 Cadastro de Novo Investidor", width="large")
 def modal_cadastro_investidor(lista_nomes_ativos):
-    # Função interna para tratar strings
+    # Função interna para tratar strings (Regra V4)
     def tratar_string_v4(texto):
         if not texto: return ""
         import unicodedata
@@ -150,33 +150,40 @@ def modal_cadastro_investidor(lista_nomes_ativos):
         sem_acento = "".join([c for c in nfkd if not unicodedata.combining(c)])
         return sem_acento.title().strip()
 
-    # --- INÍCIO DO FORMULÁRIO ---
-    # clear_on_submit limpa os campos de texto após o cadastro
-    st.markdown("#### 👤 Dados Principais")
-
-    c4_off, c5_off, c6_off, c_term_off, c7_off = st.columns([0.5, 0.5, 0.7, 0.8, 1])
-    
-    # Lógica de bloqueio instantâneo
-    indet = c_term_off.checkbox("Indeterminado", value=True, key="chk_v4_instant")
-    dt_term = c_term_off.date_input("Término contrato", format="DD/MM/YYYY", disabled=indet, key="dt_term_v4")
-
-    # Agora sim, iniciamos o formulário para o restante dos campos
+    # --- INÍCIO DO FORMULÁRIO (TUDO AQUI DENTRO) ---
     with st.form("form_novo_investidor", clear_on_submit=True):
-    
-        # No seu bloco original de colunas dentro do form, deixe assim:
+        st.markdown("#### 👤 Dados Principais")
+        
+        # LINHA 1
         c1, c2, c3 = st.columns([1.5, 1.5, 1])
         n_curto = c1.text_input("Nome (Sem acentos)")
         n_completo = c2.text_input("Nome Completo")
         foto = c3.text_input("URL da Foto")
 
-        # Colunas sem o campo de término (que já está lá em cima)
-        c4, c5, c6, c_vazio, c7 = st.columns([0.5, 0.5, 0.7, 0.8, 1])
+        # LINHA 2 (Onde está o segredo do alinhamento)
+        c4, c5, c6, c_term, c7 = st.columns([0.5, 0.5, 0.7, 0.8, 1])
         bp = c4.number_input("BP", step=1, value=0)
         matri = c5.text_input("Matrícula")
         dt_cont = c6.date_input("Data do Contrato", format="DD/MM/YYYY")
-        # c_vazio fica aqui apenas para manter o espaçamento do layout
+        
+        # TRUQUE TÉCNICO: 
+        # Como o checkbox está dentro do form, usamos st.session_state para checar a key dele.
+        # Na primeira vez ele não existe, então usamos o padrão True.
+        foi_marcado = st.session_state.get("chk_indet_v4", True)
+        
+        # Agora o campo fica EXATAMENTE onde você quer, dentro da c_term
+        dt_term = c_term.date_input("Término contrato", format="DD/MM/YYYY", disabled=foi_marcado)
+        indet = c_term.checkbox("Indeterminado", value=True, key="chk_indet_v4")
+        
         unid = c7.selectbox("Unidade/Atuação", ["Flagship", "Headquarters", "Híbrido", "Remoto", "Unidade São Leopoldo"])
 
+        # BOTÃO PARA ATUALIZAR O BLOQUEIO (Gatilho visual)
+        # Como o form não atualiza sozinho ao clicar no check, o usuário clica aqui 
+        # ou apenas preenche o resto e o sistema valida no final.
+        if st.form_submit_button("🔄 Validar bloqueio de data"):
+            st.rerun()
+
+        # ... (Restante dos campos: c8 até tel/cep - Mantenha como você já tem)
         c8, c9, c10, c11, c12 = st.columns([0.5, 1.4, 0.5, 0.8, 1.2])
         mod_cont = c8.selectbox("Modelo de Contrato", ["CLT", "PJ", "Estágio"])
         e_corp = c9.text_input("E-mail Corporativo")
@@ -212,6 +219,7 @@ def modal_cadastro_investidor(lista_nomes_ativos):
         cep = cp7.text_input("CEP")
 
         st.markdown("---")
+        # BOTÃO PRINCIPAL
         btn_gravar = st.form_submit_button("🚀 Gravar na Planilha", use_container_width=True, type="primary")
 
         if btn_gravar:
@@ -219,7 +227,7 @@ def modal_cadastro_investidor(lista_nomes_ativos):
                 st.error("⚠️ Nome e CPF são obrigatórios!")
             else:
                 try:
-                    # Lógica de Negócio: Se checkbox ativo, grava texto, senão grava a data
+                    # Lógica de gravação infalível: Se o check estiver marcado no formulário, ignora a data.
                     termino_final = "Indeterminado" if indet else dt_term.strftime("%d/%m/%Y")
 
                     linha = [
@@ -233,6 +241,7 @@ def modal_cadastro_investidor(lista_nomes_ativos):
 
                     gravar_no_google_sheets(linha)
                     st.success(f"✅ Investidor {tratar_string_v4(n_curto)} cadastrado com sucesso!")
+                    # O formulário limpa os campos de texto sozinho aqui.
                     
                 except Exception as e:
                     st.error(f"Erro ao gravar: {e}")
