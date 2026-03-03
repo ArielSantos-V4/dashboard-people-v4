@@ -164,8 +164,8 @@ def modal_cadastro_investidor(lista_nomes_ativos):
         matri = c5.text_input("Matrícula")
         dt_cont = c6.date_input("Data do Contrato", format="DD/MM/YYYY")
         
+        dt_term = c_term.date_input("Término contrato", format="DD/MM/YYYY")
         indet = c_term.checkbox("Indeterminado", value=True)
-        dt_term = c_term.date_input("Término de contrato (Se houver)", format="DD/MM/YYYY")
         unid = c7.selectbox("Unidade/Atuação", ["Flagship", "Headquarters", "Híbrido", "Remoto", "Unidade São Leopoldo"])
 
         c8, c9, c10, c11, c12 = st.columns([0.5, 1.4, 0.5, 0.8, 1.2])
@@ -218,7 +218,7 @@ def modal_cadastro_investidor(lista_nomes_ativos):
         st.markdown("<br>", unsafe_allow_html=True)
         
         # O botão dentro do formulário deve ser o st.form_submit_button
-        btn_gravar = st.form_submit_button("🚀 Gravar na Planilha e Limpar", use_container_width=True, type="primary")
+        btn_gravar = st.form_submit_button("🚀 Gravar", use_container_width=True, type="primary")
 
         if btn_gravar:
             # Validação interna de acentos para o Nome Curto (obrigatório V4)
@@ -258,7 +258,7 @@ def modal_cadastro_investidor(lista_nomes_ativos):
                     gravar_no_google_sheets(linha)
                     
                     # Feedback visual (Como o form limpa, a mensagem aparece no topo ou abaixo do botão)
-                    st.success(f"✅ Investidor {n_curto_fmt} cadastrado com sucesso! Campos limpos.")
+                    st.success(f"✅ Investidor {n_curto_fmt} cadastrado com sucesso!")
                     
                     # Importante: NÃO damos st.rerun() aqui para o modal não fechar.
                     
