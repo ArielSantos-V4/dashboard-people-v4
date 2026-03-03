@@ -234,10 +234,13 @@ def modal_cadastro_investidor(lista_nomes_ativos):
     st.markdown("---")
     
     if st.button("🚀 Gravar na Planilha", use_container_width=True, type="primary"):
-        # Extrai apenas os números do telefone para validar o tamanho
+        # Função rápida para verificar se tem acento
+        def tem_acento(texto):
+            return texto != ''.join(c for c in unicodedata.normalize('NFD', texto) if unicodedata.category(c) != 'Mn')
+
         tel_numeros = re.sub(r'\D', '', tel) if tel else ""
 
-        # --- VALIDAÇÕES DE BLOQUEIO ---
+        # --- VALIDAÇÕES ---
         if not n_curto or not cpf:
             st.warning("⚠️ Nome e CPF são obrigatórios!")
         elif tem_acento(n_curto):
@@ -245,7 +248,7 @@ def modal_cadastro_investidor(lista_nomes_ativos):
         elif tel and len(tel_numeros) not in [10, 11]:
             st.error("🚨 O 'Telefone' deve conter exatamente 10 ou 11 dígitos.")
         else:
-            # --- FORMATAÇÃO DE DADOS ---
+            # --- FORMATAÇÕES AUTOMÁTICAS ---
             n_curto_fmt = n_curto.title()
             n_completo_fmt = n_completo.title()
             e_corp_fmt = e_corp.lower()
@@ -253,11 +256,9 @@ def modal_cadastro_investidor(lista_nomes_ativos):
             raz_soc_fmt = raz_soc.title()
             cbo_fmt = re.sub(r'\D', '', cbo_selecionado) if cbo_selecionado else ""
             
-            # Lógica do Término de Contrato
             val_term = "Indeterminado" if indet else dt_term.strftime("%d/%m/%Y")
             matri_final = matri if matri else ""
             
-            # Montagem da Linha na ordem correta da planilha
             linha = [
                 n_curto_fmt, n_completo_fmt, foto, bp, matri_final, 
                 dt_cont.strftime("%d/%m/%Y"), val_term, "Ativo", unid, mod_cont, 
@@ -269,14 +270,26 @@ def modal_cadastro_investidor(lista_nomes_ativos):
             
             try:
                 gravar_no_google_sheets(linha)
-                st.success(f"✅ Investidor **{n_curto_fmt}** cadastrado com sucesso! Você já pode cadastrar o próximo.")
                 
-                # Limpa as variáveis da sessão sem fechar o modal
-                for key in list(st.session_state.keys()):
-                    if key.startswith("cad_"):
-                        del st.session_state[key]
-                        
-                # Nota: O Modal não vai fechar. Os campos ficarão limpos visualmente na próxima interação.
+                # O st.toast mostra a mensagem de sucesso no canto da tela (sobrevive ao rerun)
+                st.toast(f"✅ Investidor {n_curto_fmt} cadastrado com sucesso!")
+                
+                # --- ZERA OS CAMPOS PARA O PRÓXIMO ---
+                chaves_limpar = [
+                    "cad_n_curto", "cad_n_comp", "cad_foto", "cad_matri", "cad_e_corp", 
+                    "cad_mod_pj", "cad_cnpj", "cad_raz_soc", "cad_cargo", "cad_remun", 
+                    "cad_cbo_list", "cad_id_vaga", "cad_senior", "cad_lider", "cad_cpf", 
+                    "cad_escolar", "cad_e_pess", "cad_tel", "cad_drive", "cad_cep"
+                ]
+                for k in chaves_limpar:
+                    if k in st.session_state:
+                        st.session_state[k] = ""
+                st.session_state["cad_bp"] = 0
+                st.session_state["cad_indet"] = True
+                
+                # Atualiza apenas o modal (ele limpa a tela e NÃO fecha a janela)
+                st.rerun()
+                
             except Exception as e:
                 st.error(f"Erro ao gravar: {e}")
                     
