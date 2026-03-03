@@ -147,6 +147,10 @@ def modal_cadastro_investidor(lista_nomes_ativos):
         sem_acento = "".join([c for c in nfkd if not unicodedata.combining(c)])
         return sem_acento.title().strip()
 
+    # Inicializa o controle do checkbox se não existir
+    if "indet_ativo" not in st.session_state:
+        st.session_state.indet_ativo = True
+        
     with st.form("form_novo_investidor", clear_on_submit=True):
         st.markdown("#### 👤 Dados Principais")
         
@@ -162,8 +166,8 @@ def modal_cadastro_investidor(lista_nomes_ativos):
         dt_cont = c6.date_input("Data do Contrato", format="DD/MM/YYYY")
         
         # --- CAMPOS NA COLUNA C_TERM (Original) ---
-        dt_term = c_term.date_input("Término contrato", format="DD/MM/YYYY")
-        indet = c_term.checkbox("Indeterminado", value=True)
+        dt_term = c_term.date_input("Término contrato", format="DD/MM/YYYY", disabled=indet)
+        indet = c_term.checkbox("Indeterminado", value=st.session_state.indet_ativo, key="chk_indet_v4")
         
         unid = c7.selectbox("Unidade/Atuação", ["Flagship", "Headquarters", "Híbrido", "Remoto", "Unidade São Leopoldo"])
 
@@ -204,6 +208,11 @@ def modal_cadastro_investidor(lista_nomes_ativos):
         st.markdown("---")
         btn_gravar = st.form_submit_button("🚀 Gravar na Planilha", use_container_width=True, type="primary")
 
+        # Se o usuário clicou no checkbox, atualiza o estado e recarrega o visual do modal
+        if indet != st.session_state.indet_ativo:
+            st.session_state.indet_ativo = indet
+            st.rerun()
+        
         if btn_gravar:
             if not n_curto or not cpf:
                 st.error("⚠️ Nome e CPF são obrigatórios!")
