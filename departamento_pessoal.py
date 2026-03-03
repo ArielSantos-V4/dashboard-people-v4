@@ -164,31 +164,27 @@ def modal_cadastro_investidor(lista_nomes_ativos):
         n_completo = c2.text_input("Nome Completo", key=f"n_comp_{s}")
         foto = c3.text_input("URL da Foto", key=f"foto_{s}")
 
-        # LINHA 2 - Ajuste de Alinhamento Definitivo
-        # Redistribuímos os pesos: c_term agora tem espaço para o texto e o check lado a lado
-        c4, c5, c6, c_term, c7 = st.columns([0.6, 0.6, 0.8, 1.3, 1])
+        # LINHA 2 - Layout Original com Reatividade Garantida
+        c4, c5, c6, c_term, c7 = st.columns([0.5, 0.5, 0.7, 0.8, 1])
         
         c4.number_input("BP", step=1, value=0, key=f"bp_{s}")
         c5.text_input("Matrícula", key=f"matri_{s}")
         c6.date_input("Data do Contrato", format="DD/MM/YYYY", key=f"dt_cont_{s}")
         
-        # --- COLUNA TÉRMINO (O segredo do alinhamento está aqui) ---
+        # --- O SEGREDO DO ALINHAMENTO E REATIVIDADE ---
         with c_term:
-            # 1. Criamos uma sub-linha para os títulos ficarem lado a lado
-            sub_l, sub_r = st.columns([0.8, 1.2])
-            sub_l.markdown("<p style='font-size: 14px; font-weight: 400; margin-top: 5px; margin-bottom: 0px;'>Término</p>", unsafe_allow_html=True)
+            # Criamos um espaço reservado para a data aparecer em cima
+            espaco_data = st.empty() 
             
-            # CSS para remover o espaço extra que o checkbox cria no topo
-            st.markdown("<style>div[data-testid='stCheckbox'] { margin-top: -3px !important; }</style>", unsafe_allow_html=True)
-            indet = sub_r.checkbox("Indeterminado", value=True, key=f"indet_{s}")
+            # O Checkbox fica embaixo, mas sua variável 'indet' será lida pelo espaço acima
+            indet = st.checkbox("Indeterminado", value=True, key=f"indet_{s}")
             
-            # 2. O campo de data entra SEM label para não empurrar nada e alinhar com os vizinhos
-            dt_term = st.date_input(
-                "Label_Oculto", 
+            # Renderizamos a data no espaço reservado lá em cima, olhando para o check de baixo
+            dt_term = espaco_data.date_input(
+                "Término contrato", 
                 format="DD/MM/YYYY", 
                 disabled=indet, 
-                key=f"dt_term_{s}", 
-                label_visibility="collapsed"
+                key=f"dt_term_{s}"
             )
         
         c7.selectbox("Unidade/Atuação", ["Flagship", "Headquarters", "Híbrido", "Remoto", "Unidade São Leopoldo"], key=f"unid_{s}")
