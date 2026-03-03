@@ -140,10 +140,21 @@ def gravar_no_google_sheets(dados_lista):
 @st.dialog("📝 Cadastro de Novo Investidor", width="large")
 def modal_cadastro_investidor(lista_nomes_ativos):
     
-    # Função interna para validar acentos
-    def tem_acento(texto):
-        texto_sem_acento = ''.join(c for c in unicodedata.normalize('NFD', texto) if unicodedata.category(c) != 'Mn')
-        return texto != texto_sem_acento
+    # --- GATILHO PARA ZERAR TUDO (Roda antes de desenhar a tela) ---
+    if st.session_state.get("sucesso_cadastro", False):
+        st.success("✅ Investidor cadastrado com sucesso!")
+        chaves_limpar = [
+            "cad_n_curto", "cad_n_comp", "cad_foto", "cad_matri", "cad_e_corp", 
+            "cad_mod_pj", "cad_cnpj", "cad_raz_soc", "cad_cargo", "cad_remun", 
+            "cad_cbo_list", "cad_id_vaga", "cad_senior", "cad_lider", "cad_cpf", 
+            "cad_escolar", "cad_e_pess", "cad_tel", "cad_drive", "cad_cep"
+        ]
+        for k in chaves_limpar:
+            if k in st.session_state:
+                st.session_state[k] = ""
+        st.session_state["cad_bp"] = 0
+        st.session_state["cad_indet"] = True
+        st.session_state["sucesso_cadastro"] = False # Desliga o gatilho
 
     # ==========================================
     # BLOCO 1: DADOS PRINCIPAIS
