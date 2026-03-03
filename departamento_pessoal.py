@@ -227,28 +227,62 @@ def modal_cadastro_investidor(lista_nomes_ativos):
 
         st.markdown("---")
         # BOTÃO DE GRAVAR (Fora de st.form para não travar a reatividade)
+        # BOTÃO DE GRAVAR
         if st.button("🚀 Gravar na Planilha", use_container_width=True, type="primary"):
-            if not n_curto or not cpf:
+            # EXTRAÇÃO DOS VALORES DO SESSION STATE (Garante que as variáveis existam)
+            v_n_curto = st.session_state.get(f"n_curto_{s}", "")
+            v_cpf = st.session_state.get(f"cpf_{s}", "")
+            
+            if not v_n_curto or not v_cpf:
                 st.error("⚠️ Nome e CPF são obrigatórios!")
             else:
                 try:
+                    # Pegamos todos os campos usando a chave dinâmica _{s}
                     termino_final = "Indeterminado" if indet else dt_term.strftime("%d/%m/%Y")
                     
+                    # Captura os dados do estado para a planilha
                     linha = [
-                        tratar_string_v4(n_curto), tratar_string_v4(n_completo), foto, bp, matri, 
-                        dt_cont.strftime("%d/%m/%Y"), termino_final, "Ativo", unid, mod_cont, 
-                        e_corp.lower(), mod_pj, ini_v4.strftime("%d/%m/%Y"), cnpj, tratar_string_v4(raz_soc), 
-                        cargo, remun, re.sub(r'\D', '', cbo_sel) if cbo_sel else "", "", id_vaga, "", "", 
-                        senior, lider, "", "", limpar_numero(cpf), nasc.strftime("%d/%m/%Y") if nasc else "", 
-                        cep, escolar, e_pess.lower(), tel, "", "", "Pendente", "", "", "", "", drive, ""
+                        tratar_string_v4(v_n_curto), 
+                        tratar_string_v4(st.session_state.get(f"n_comp_{s}", "")), 
+                        st.session_state.get(f"foto_{s}", ""), 
+                        st.session_state.get(f"bp_{s}", 0), 
+                        st.session_state.get(f"matri_{s}", ""), 
+                        st.session_state.get(f"dt_cont_{s}", date.today()).strftime("%d/%m/%Y"), 
+                        termino_final, 
+                        "Ativo", 
+                        st.session_state.get(f"unid_{s}", "Flagship"), 
+                        st.session_state.get(f"mod_{s}", "PJ"), 
+                        st.session_state.get(f"e_corp_{s}", "").lower(), 
+                        st.session_state.get(f"pj_{s}", ""), 
+                        st.session_state.get(f"ini_{s}", date.today()).strftime("%d/%m/%Y"), 
+                        st.session_state.get(f"cnpj_{s}", ""), 
+                        tratar_string_v4(st.session_state.get(f"raz_{s}", "")), 
+                        st.session_state.get(f"cargo_{s}", ""), 
+                        st.session_state.get(f"rem_{s}", ""), 
+                        re.sub(r'\D', '', st.session_state.get(f"cbo_{s}", "")) if st.session_state.get(f"cbo_{s}") else "", 
+                        "", # Coluna vazia conforme seu padrão
+                        st.session_state.get(f"vaga_{s}", ""), 
+                        "", "", # Colunas vazias
+                        st.session_state.get(f"sen_{s}", ""), 
+                        st.session_state.get(f"lid_{s}", ""), 
+                        "", "", 
+                        limpar_numero(v_cpf), 
+                        st.session_state.get(f"nasc_{s}", date.today()).strftime("%d/%m/%Y") if st.session_state.get(f"nasc_{s}") else "", 
+                        st.session_state.get(f"cep_{s}", ""), 
+                        st.session_state.get(f"esc_{s}", ""), 
+                        st.session_state.get(f"epess_{s}", "").lower(), 
+                        st.session_state.get(f"tel_{s}", ""), 
+                        "", "", "Pendente", "", "", "", "", 
+                        st.session_state.get(f"drive_{s}", ""), 
+                        ""
                     ]
 
                     gravar_no_google_sheets(linha)
                     
-                    # O SUCESSO: Incrementamos a reset_key para limpar TUDO e damos rerun
+                    # Limpeza total
                     st.session_state.reset_key += 1
                     st.success("✅ Investidor cadastrado com sucesso! Campos limpos.")
-                    st.rerun() # Dentro do Dialog, o rerun apenas limpa o conteúdo sem fechar o modal
+                    st.rerun() 
                     
                 except Exception as e:
                     st.error(f"Erro ao gravar: {e}")
