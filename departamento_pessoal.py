@@ -137,29 +137,41 @@ def gravar_no_google_sheets(dados_lista):
 # ==========================================
 # MODAL DE CADASTRO
 # ==========================================
+# ==========================================
+# MODAL DE CADASTRO DEFINITIVO (NÃO FECHA)
+# ==========================================
 @st.dialog("📝 Cadastro de Novo Investidor", width="large")
 def modal_cadastro_investidor(lista_nomes_ativos):
-    # 1. Criamos estados para controlar se já gravou e a limpeza
-    if "gravado_com_sucesso" not in st.session_state:
-        st.session_state.gravado_com_sucesso = False
-    if "reset_key" not in st.session_state:
-        st.session_state.reset_key = 0
+    
+    # Criamos uma bolha isolada. Nada aqui dentro fecha o modal.
+    @st.fragment
+    def render_formulario():
+        # Inicializa o estado de sucesso e a chave de reset dentro da bolha
+        if "sucesso_cadastro" not in st.session_state:
+            st.session_state.sucesso_cadastro = False
+        if "reset_key" not in st.session_state:
+            st.session_state.reset_key = 0
+            
+        s = str(st.session_state.reset_key)
 
-    s = str(st.session_state.reset_key)
+        def tratar_string_v4(texto):
+            if not texto: return ""
+            import unicodedata
+            nfkd = unicodedata.normalize('NFKD', str(texto))
+            return "".join([c for c in nfkd if not unicodedata.combining(c)]).title().strip()
 
-    # Função de tratamento V4
-    def tratar_string_v4(texto):
-        if not texto: return ""
-        import unicodedata
-        nfkd = unicodedata.normalize('NFKD', str(texto))
-        return "".join([c for c in nfkd if not unicodedata.combining(c)]).title().strip()
+        # Se já gravou, mostra mensagem e o botão de limpar
+        if st.session_state.sucesso_cadastro:
+            st.success("✅ Investidor cadastrado com sucesso na planilha Master!")
+            if st.button("➕ Cadastrar Novo (Limpar Campos)", use_container_width=True, type="primary"):
+                st.session_state.sucesso_cadastro = False
+                st.session_state.reset_key += 1
+                st.rerun() # Este rerun só reinicia o fragmento, o modal fica aberto!
+            return # Para a execução aqui para não mostrar o form embaixo
 
-    # --- LÓGICA DE EXIBIÇÃO ---
-    # Se ainda não gravou, mostra o formulário normal
-    if not st.session_state.gravado_com_sucesso:
+        # --- CONTEÚDO DO FORMULÁRIO ---
         with st.container(border=True):
             st.markdown("#### 👤 Dados Principais")
-            
             c1, c2, c3 = st.columns([1.5, 1.5, 1])
             n_curto = c1.text_input("Nome (Sem acentos)", key=f"n_curto_{s}")
             n_completo = c2.text_input("Nome Completo", key=f"n_comp_{s}")
@@ -176,72 +188,64 @@ def modal_cadastro_investidor(lista_nomes_ativos):
                 dt_term = espaco_data.date_input("Término contrato", format="DD/MM/YYYY", disabled=indet, key=f"dt_term_{s}")
             
             unid = c7.selectbox("Unidade/Atuação", ["Flagship", "Headquarters", "Híbrido", "Remoto", "Unidade São Leopoldo"], key=f"unid_{s}")
-            
+
+            st.markdown("---")
+            # --- LINHA 3: CONTRATO E PJ ---
             c8, c9, c10, c11, c12 = st.columns([0.5, 1.4, 0.5, 0.8, 1.2])
-            mod_cont = c8.selectbox("Modelo de Contrato", ["CLT", "PJ", "Estágio"], key=f"cad_mod_cont_{s}")
-            e_corp = c9.text_input("E-mail Corporativo", key=f"cad_e_corp_{s}")
-            mod_pj = c10.selectbox("Modalidade PJ", ["", "MEI", "SLU"], key=f"cad_mod_pj_{s}")
-            ini_v4 = c11.date_input("Início na V4", format="DD/MM/YYYY", key=f"cad_ini_v4_{s}")
-            cnpj = c12.text_input("CNPJ", key=f"cad_cnpj_{s}")
-            
+            mod_cont = c8.selectbox("Modelo", ["CLT", "PJ", "Estágio"], key=f"mod_{s}")
+            e_corp = c9.text_input("E-mail Corp.", key=f"e_corp_{s}")
+            mod_pj = c10.selectbox("PJ", ["", "MEI", "SLU"], key=f"pj_{s}")
+            ini_v4 = c11.date_input("Início V4", format="DD/MM/YYYY", key=f"ini_{s}")
+            cnpj = c12.text_input("CNPJ", key=f"cnpj_{s}")
+
             c13, c14, c15, c15b = st.columns([1.5, 1.2, 1, 0.5])
-            raz_soc = c13.text_input("Razão Social", key=f"cad_raz_soc_{s}")
-            cargo = c14.text_input("Cargo", key=f"cad_cargo_{s}")
-            remun = c15.text_input("Remuneração", key=f"cad_remun_{s}")
-            cbo_sel = c15b.selectbox("CBO", options=[""] + buscar_lista_cbo(), key=f"cad_cbo_list_{s}")
-        
-            st.markdown("---")
-            st.markdown("#### 🏢 Centro de Custo")
-            cv1, cv3, cv4 = st.columns([1, 1, 1])
-            id_vaga = cv1.text_input("ID Vaga", key=f"cad_id_vaga_{s}")
-            senior = cv3.selectbox("Senioridade", options=["", "Trainee", "Junior", "Pleno", "Senior", "Gerente"], key=f"cad_senior_{s}")
-            lider = cv4.selectbox("Liderança Direta", options=[""] + sorted(lista_nomes_ativos), key=f"cad_lider_{s}")
-        
-            st.markdown("---")
+            raz_soc = c13.text_input("Razão Social", key=f"raz_{s}")
+            cargo = c14.text_input("Cargo", key=f"cargo_{s}")
+            remun = c15.text_input("Remuneração", key=f"rem_{s}")
+            cbo_sel = c15b.selectbox("CBO", options=[""] + buscar_lista_cbo(), key=f"cbo_{s}")
+
             st.markdown("#### 🏠 Dados Pessoais")
             cp1, cp2, cp3, cp4 = st.columns([1, 0.8, 1, 1.3])
-            cpf = cp1.text_input("CPF", key=f"cad_cpf_{s}")
-            nasc = cp2.date_input("Nascimento", value=None, format="DD/MM/YYYY", key=f"cad_nasc_{s}")
-            escolar = cp3.selectbox("Escolaridade", options=["", "Ensino médio", "Ensino superior", "Pós graduação"], key=f"cad_escolar_{s}")
-            e_pess = cp4.text_input("E-mail Pessoal", key=f"cad_e_pess_{s}")
-        
+            cpf = cp1.text_input("CPF", key=f"cpf_{s}")
+            nasc = cp2.date_input("Nascimento", value=None, format="DD/MM/YYYY", key=f"nasc_{s}")
+            escolar = cp3.selectbox("Escolaridade", ["", "Ensino médio", "Ensino superior", "Pós graduação"], key=f"esc_{s}")
+            e_pess = cp4.text_input("E-mail Pessoal", key=f"epess_{s}")
+
             cp5, cp6, cp7 = st.columns([1, 2, 1])
-            tel = cp5.text_input("Telefone", key=f"cad_tel_{s}")
-            drive = cp6.text_input("URL Drive", key=f"cad_drive_{s}")
-            cep = cp7.text_input("CEP", key=f"cad_cep_{s}")
+            tel = cp5.text_input("Telefone", key=f"tel_{s}")
+            drive = cp6.text_input("URL Drive", key=f"drive_{s}")
+            cep = cp7.text_input("CEP", key=f"cep_{s}")
+
+            st.markdown("<br>", unsafe_allow_html=True)
             
-            end_info = buscar_cep(cep)
-            if end_info: st.info(f"📍 {end_info}")
-        
-            st.markdown("---")
-            
-            st.markdown("---")
+            # BOTÃO DE GRAVAR
             if st.button("🚀 Gravar na Planilha", use_container_width=True, type="primary"):
-                if not n_curto:
-                    st.error("⚠️ Nome é obrigatório!")
+                if not n_curto or not cpf:
+                    st.error("⚠️ Nome e CPF são obrigatórios!")
                 else:
                     try:
-                        termino_final = "Indeterminado" if indet else dt_term.strftime("%d/%m/%Y")
-                        # Aqui você monta a 'linha' e chama o gravar_no_google_sheets(linha)
-                        # EX: gravar_no_google_sheets([...])
+                        val_term = "Indeterminado" if indet else dt_term.strftime("%d/%m/%Y")
                         
-                        # EM VEZ DE DAR RERUN, MUDAMOS O ESTADO
-                        st.session_state.gravado_com_sucesso = True
-                        st.rerun() # Este rerun agora é seguro pois o estado mudou
+                        linha = [
+                            tratar_string_v4(n_curto), tratar_string_v4(n_completo), foto, bp, matri, 
+                            dt_cont.strftime("%d/%m/%Y"), val_term, "Ativo", unid, mod_cont, 
+                            e_corp.lower(), mod_pj, ini_v4.strftime("%d/%m/%Y"), cnpj, tratar_string_v4(raz_soc), 
+                            cargo, remun, re.sub(r'\D', '', cbo_sel) if cbo_sel else "", "", "ID_VAGA", "", "", 
+                            "SENIOR", "LIDER", "", "", limpar_numero(cpf), nasc.strftime("%d/%m/%Y") if nasc else "", 
+                            cep, escolar, e_pess.lower(), tel, "", "", "Pendente", "", "", "", "", drive, ""
+                        ]
+
+                        gravar_no_google_sheets(linha)
+                        
+                        # Ativa o estado de sucesso
+                        st.session_state.sucesso_cadastro = True
+                        st.rerun() # Reinicia apenas o fragmento
                         
                     except Exception as e:
                         st.error(f"Erro ao gravar: {e}")
 
-    # Se já gravou, mostra a mensagem e o botão de limpar
-    else:
-        st.balloons()
-        st.success("✅ Investidor cadastrado com sucesso na planilha Master!")
-        
-        if st.button("➕ Cadastrar Novo (Limpar Campos)", use_container_width=True, type="primary"):
-            # Reseta tudo: limpa o sucesso e muda a key dos campos
-            st.session_state.gravado_com_sucesso = False
-            st.session_state.reset_key += 1
-            st.rerun()
+    # Chama o fragmento dentro do dialog
+    render_formulario()
                         
 # ==========================================
 # LÓGICA DE ALERTAS (ATIVOS)
