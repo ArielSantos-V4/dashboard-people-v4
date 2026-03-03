@@ -140,11 +140,19 @@ def gravar_no_google_sheets(dados_lista):
 @st.dialog("📝 Cadastro de Novo Investidor", width="large")
 def modal_cadastro_investidor(lista_nomes_ativos):
     
-    # Exibe a mensagem de sucesso e logo a consome (evita reruns adicionais)
-    if "msg_sucesso" in st.session_state and st.session_state.msg_sucesso:
-        st.success(st.session_state.msg_sucesso)
-        # Apagamos da sessão para não ficar persistente nas próximas vezes
-        st.session_state.msg_sucesso = "" 
+    # 1. Verifica se houve sucesso
+    houve_sucesso = st.session_state.get("sucesso_cadastro", False)
+    
+    if houve_sucesso:
+        st.success("✅ Investidor cadastrado com sucesso! Pode cadastrar o próximo.")
+        st.session_state["sucesso_cadastro"] = False # Desliga para não mostrar de novo
+        
+        # O pulo do gato: A gente muda o sufixo da chave!
+        # Quando a chave muda, o Streamlit é obrigado a recriar o input VAZIO.
+        st.session_state["reset_key"] = st.session_state.get("reset_key", 0) + 1
+    
+    # Sufixo para garantir que os campos limpem (Ex: "_1", "_2")
+    s = str(st.session_state.get("reset_key", 0))
 
     # ==========================================
     # BLOCO 1: DADOS PRINCIPAIS
@@ -152,36 +160,33 @@ def modal_cadastro_investidor(lista_nomes_ativos):
     st.markdown("#### 👤 Dados Principais")
     
     c1, c2, c3 = st.columns([1.5, 1.5, 1])
-    n_curto = c1.text_input("Nome (Sem acentos)", key="cad_n_curto")
-    n_completo = c2.text_input("Nome Completo", key="cad_n_comp")
-    foto = c3.text_input("URL da Foto", key="cad_foto")
+    n_curto = c1.text_input("Nome (Sem acentos)", key=f"cad_n_curto_{s}")
+    n_completo = c2.text_input("Nome Completo", key=f"cad_n_comp_{s}")
+    foto = c3.text_input("URL da Foto", key=f"cad_foto_{s}")
 
-    # Linha 2: BP; Matrícula; Data contrato; Término; Unidade
     c4, c5, c6, c_term, c7 = st.columns([0.5, 0.5, 0.7, 0.8, 1])
-    bp = c4.number_input("BP", step=1, value=0, key="cad_bp")
-    matri = c5.text_input("Matrícula", key="cad_matri")
-    dt_cont = c6.date_input("Data do Contrato", value=datetime.today(), format="DD/MM/YYYY", key="cad_dt_cont")
+    bp = c4.number_input("BP", step=1, value=0, key=f"cad_bp_{s}")
+    matri = c5.text_input("Matrícula", key=f"cad_matri_{s}")
+    dt_cont = c6.date_input("Data do Contrato", value=datetime.today(), format="DD/MM/YYYY", key=f"cad_dt_cont_{s}")
     
-    # Campo de Término com Checkbox embaixo
-    indet_state = st.session_state.get("cad_indet", True)
-    dt_term = c_term.date_input("Término de contrato", value=datetime.today(), format="DD/MM/YYYY", disabled=indet_state, key="cad_dt_term")
-    indet = c_term.checkbox("Indeterminado", value=True, key="cad_indet")
+    indet = c_term.checkbox("Indeterminado", value=True, key=f"cad_indet_{s}")
+    dt_term = c_term.date_input("Término de contrato", value=datetime.today(), format="DD/MM/YYYY", disabled=indet, key=f"cad_dt_term_{s}")
     
-    unid = c7.selectbox("Unidade/Atuação", ["Flagship", "Headquarters", "Híbrido", "Remoto", "Unidade São Leopoldo"], key="cad_unid")
+    unid = c7.selectbox("Unidade/Atuação", ["Flagship", "Headquarters", "Híbrido", "Remoto", "Unidade São Leopoldo"], key=f"cad_unid_{s}")
 
     c8, c9, c10, c11, c12 = st.columns([0.5, 1.4, 0.5, 0.8, 1.2])
-    mod_cont = c8.selectbox("Modelo de Contrato", ["CLT", "PJ", "Estágio"], key="cad_mod_cont")
-    e_corp = c9.text_input("E-mail Corporativo", key="cad_e_corp")
-    mod_pj = c10.selectbox("Modalidade PJ", ["", "MEI", "SLU"], key="cad_mod_pj")
-    ini_v4 = c11.date_input("Início na V4", value=datetime.today(), format="DD/MM/YYYY", key="cad_ini_v4")
-    cnpj = c12.text_input("CNPJ", key="cad_cnpj")
+    mod_cont = c8.selectbox("Modelo de Contrato", ["CLT", "PJ", "Estágio"], key=f"cad_mod_cont_{s}")
+    e_corp = c9.text_input("E-mail Corporativo", key=f"cad_e_corp_{s}")
+    mod_pj = c10.selectbox("Modalidade PJ", ["", "MEI", "SLU"], key=f"cad_mod_pj_{s}")
+    ini_v4 = c11.date_input("Início na V4", value=datetime.today(), format="DD/MM/YYYY", key=f"cad_ini_v4_{s}")
+    cnpj = c12.text_input("CNPJ", key=f"cad_cnpj_{s}")
     
     c13, c14, c15, c15b = st.columns([1.5, 1.2, 1, 0.5])
-    raz_soc = c13.text_input("Razão Social", key="cad_raz_soc")
-    cargo = c14.text_input("Cargo", key="cad_cargo")
-    remun = c15.text_input("Remuneração", placeholder="Ex: 5000,00", key="cad_remun")
+    raz_soc = c13.text_input("Razão Social", key=f"cad_raz_soc_{s}")
+    cargo = c14.text_input("Cargo", key=f"cad_cargo_{s}")
+    remun = c15.text_input("Remuneração", placeholder="Ex: 5000,00", key=f"cad_remun_{s}")
     lista_cbo_res = buscar_lista_cbo()
-    cbo_selecionado = c15b.selectbox("CBO", options=[""] + lista_cbo_res, key="cad_cbo_list")
+    cbo_selecionado = c15b.selectbox("CBO", options=[""] + lista_cbo_res, key=f"cad_cbo_list_{s}")
 
     st.markdown("---")
     
