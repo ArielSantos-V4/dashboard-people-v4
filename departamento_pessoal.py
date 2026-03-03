@@ -165,10 +165,10 @@ def modal_cadastro_investidor(lista_nomes_ativos):
         matri = c5.text_input("Matrícula")
         dt_cont = c6.date_input("Data do Contrato", format="DD/MM/YYYY")
         
-        # --- CAMPOS NA COLUNA C_TERM (Original) ---
-        dt_term = c_term.date_input("Término contrato", format="DD/MM/YYYY", disabled=indet)
+        # --- CAMPOS NA COLUNA C_TERM (Corrigido para bloqueio em tempo real) ---
+        dt_term = c_term.date_input("Término contrato", format="DD/MM/YYYY", disabled=st.session_state.indet_ativo)
         indet = c_term.checkbox("Indeterminado", value=st.session_state.indet_ativo, key="chk_indet_v4")
-        
+                
         unid = c7.selectbox("Unidade/Atuação", ["Flagship", "Headquarters", "Híbrido", "Remoto", "Unidade São Leopoldo"])
 
         c8, c9, c10, c11, c12 = st.columns([0.5, 1.4, 0.5, 0.8, 1.2])
@@ -207,11 +207,6 @@ def modal_cadastro_investidor(lista_nomes_ativos):
 
         st.markdown("---")
         btn_gravar = st.form_submit_button("🚀 Gravar na Planilha", use_container_width=True, type="primary")
-
-        # Se o usuário clicou no checkbox, atualiza o estado e recarrega o visual do modal
-        if indet != st.session_state.indet_ativo:
-            st.session_state.indet_ativo = indet
-            st.rerun()
         
         if btn_gravar:
             if not n_curto or not cpf:
@@ -235,6 +230,11 @@ def modal_cadastro_investidor(lista_nomes_ativos):
                     
                 except Exception as e:
                     st.error(f"Erro ao gravar: {e}")
+                    
+    # Se o usuário clicou no checkbox, atualiza o estado e recarrega o visual do modal
+    if indet != st.session_state.indet_ativo:
+        st.session_state.indet_ativo = indet
+        st.rerun()
                     
 # ==========================================
 # LÓGICA DE ALERTAS (ATIVOS)
