@@ -181,12 +181,14 @@ def modal_cadastro_investidor(lista_nomes_ativos):
         lista_cbo_res = buscar_lista_cbo()
         cbo_sel = c15b.selectbox("CBO", options=[""] + lista_cbo_res)
 
+        st.markdown("---")
         st.markdown("#### 🏢 Centro de Custo & Liderança")
         cv1, cv3, cv4 = st.columns([1, 1, 1])
         id_vaga = cv1.text_input("ID Vaga")
         senior = cv3.selectbox("Senioridade", options=["", "Junior", "Pleno", "Senior", "Coordenador", "Gerente"])
         lider = cv4.selectbox("Liderança Direta", options=[""] + sorted(lista_nomes_ativos))
 
+        st.markdown("---")
         st.markdown("#### 🏠 Dados Pessoais")
         cp1, cp2, cp3, cp4 = st.columns([1, 0.8, 1, 1.3])
         cpf = cp1.text_input("CPF (Somente números)")
@@ -199,6 +201,7 @@ def modal_cadastro_investidor(lista_nomes_ativos):
         drive = cp6.text_input("URL Drive")
         cep = cp7.text_input("CEP")
 
+        st.markdown("---")
         btn_gravar = st.form_submit_button("🚀 Gravar na Planilha", use_container_width=True, type="primary")
 
         if btn_gravar:
