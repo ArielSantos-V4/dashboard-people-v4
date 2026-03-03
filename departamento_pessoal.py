@@ -128,11 +128,10 @@ def gravar_no_google_sheets(dados_lista):
     coluna_a = sheet.col_values(1)
     proxima_linha = len(coluna_a) + 1
     
-    # 2. Define o range correto até a coluna AN (40 colunas)
-    # A coluna AN é a quadragésima coluna da planilha.
-    range_nome = f"A{proxima_linha}:AN{proxima_linha}"
+    # 2. Define o range correto até a coluna AO (41 colunas)
+    range_nome = f"A{proxima_linha}:AO{proxima_linha}" # <-- MUDANÇA AQUI
     
-    # 3. Executa o update usando a variável range_nome que acabamos de criar
+    # 3. Executa o update
     sheet.update(range_name=range_nome, values=[dados_lista], value_input_option="USER_ENTERED")
     
 # ==========================================
@@ -140,40 +139,54 @@ def gravar_no_google_sheets(dados_lista):
 # ==========================================
 @st.dialog("📝 Cadastro de Novo Investidor", width="large")
 def modal_cadastro_investidor(lista_nomes_ativos):
+    
+    # 1. Verifica se houve sucesso
+    houve_sucesso = st.session_state.get("sucesso_cadastro", False)
+    
+    if houve_sucesso:
+        st.success("✅ Investidor cadastrado com sucesso! Pode cadastrar o próximo.")
+        st.session_state["sucesso_cadastro"] = False # Desliga para não mostrar de novo
+        
+        # O pulo do gato: A gente muda o sufixo da chave!
+        # Quando a chave muda, o Streamlit é obrigado a recriar o input VAZIO.
+        st.session_state["reset_key"] = st.session_state.get("reset_key", 0) + 1
+    
+    # Sufixo para garantir que os campos limpem (Ex: "_1", "_2")
+    s = str(st.session_state.get("reset_key", 0))
+
     # ==========================================
     # BLOCO 1: DADOS PRINCIPAIS
     # ==========================================
     st.markdown("#### 👤 Dados Principais")
     
-    # Linha 1: Nome; Nome completo; Foto
     c1, c2, c3 = st.columns([1.5, 1.5, 1])
-    n_curto = c1.text_input("Nome", key="cad_n_curto")
-    n_completo = c2.text_input("Nome Completo com acentuação", key="cad_n_comp")
-    foto = c3.text_input("URL da Foto", key="cad_foto")
+    n_curto = c1.text_input("Nome (Sem acentos)", key=f"cad_n_curto_{s}")
+    n_completo = c2.text_input("Nome Completo", key=f"cad_n_comp_{s}")
+    foto = c3.text_input("URL da Foto", key=f"cad_foto_{s}")
 
-    # Linha 2: BP; Matrícula; Data contrato; Unidade
-    c4, c5, c6, c7 = st.columns([0.5, 0.5, 0.5, 1])
-    bp = c4.number_input("BP", step=1, value=0, key="cad_bp")
-    # Matrícula como texto para permitir vazio
-    matri = c5.text_input("Matrícula", key="cad_matri")
-    dt_cont = c6.date_input("Data do Contrato", value=datetime.today(), format="DD/MM/YYYY", key="cad_dt_cont")
-    unid = c7.selectbox("Unidade/Atuação", ["Flagship", "Headquarters", "Híbrido", "Remoto", "Unidade São Leopoldo"], key="cad_unid")
-
-    # Linha 3: Modelo; Email corp; Modalidade PJ; Início V4
-    c8, c9, c10, c11, c12 = st.columns([0.5, 1.4, 0.5, 0.8, 1.2])
-    mod_cont = c8.selectbox("Modelo de Contrato", ["CLT", "PJ", "Estágio"], key="cad_mod_cont")
-    e_corp = c9.text_input("E-mail Corporativo", key="cad_e_corp")
-    mod_pj = c10.selectbox("Modalidade PJ", ["", "MEI", "SLU"], key="cad_mod_pj")
-    ini_v4 = c11.date_input("Início na V4", value=datetime.today(), format="DD/MM/YYYY", key="cad_ini_v4")
-    cnpj = c12.text_input("CNPJ", key="cad_cnpj")
+    c4, c5, c6, c_term, c7 = st.columns([0.5, 0.5, 0.7, 0.8, 1])
+    bp = c4.number_input("BP", step=1, value=0, key=f"cad_bp_{s}")
+    matri = c5.text_input("Matrícula", key=f"cad_matri_{s}")
+    dt_cont = c6.date_input("Data do Contrato", value=datetime.today(), format="DD/MM/YYYY", key=f"cad_dt_cont_{s}")
     
-    # Linha 4: CNPJ; Razão; Cargo; Remuneração; CBO
+    indet = c_term.checkbox("Indeterminado", value=True, key=f"cad_indet_{s}")
+    dt_term = c_term.date_input("Término de contrato", value=datetime.today(), format="DD/MM/YYYY", disabled=indet, key=f"cad_dt_term_{s}")
+    
+    unid = c7.selectbox("Unidade/Atuação", ["Flagship", "Headquarters", "Híbrido", "Remoto", "Unidade São Leopoldo"], key=f"cad_unid_{s}")
+
+    c8, c9, c10, c11, c12 = st.columns([0.5, 1.4, 0.5, 0.8, 1.2])
+    mod_cont = c8.selectbox("Modelo de Contrato", ["CLT", "PJ", "Estágio"], key=f"cad_mod_cont_{s}")
+    e_corp = c9.text_input("E-mail Corporativo", key=f"cad_e_corp_{s}")
+    mod_pj = c10.selectbox("Modalidade PJ", ["", "MEI", "SLU"], key=f"cad_mod_pj_{s}")
+    ini_v4 = c11.date_input("Início na V4", value=datetime.today(), format="DD/MM/YYYY", key=f"cad_ini_v4_{s}")
+    cnpj = c12.text_input("CNPJ", key=f"cad_cnpj_{s}")
+    
     c13, c14, c15, c15b = st.columns([1.5, 1.2, 1, 0.5])
-    raz_soc = c13.text_input("Razão Social", key="cad_raz_soc")
-    cargo = c14.text_input("Cargo", key="cad_cargo")
-    remun = c15.text_input("Remuneração", placeholder="Ex: 5000,00", key="cad_remun")
+    raz_soc = c13.text_input("Razão Social", key=f"cad_raz_soc_{s}")
+    cargo = c14.text_input("Cargo", key=f"cad_cargo_{s}")
+    remun = c15.text_input("Remuneração", placeholder="Ex: 5000,00", key=f"cad_remun_{s}")
     lista_cbo_res = buscar_lista_cbo()
-    cbo_selecionado = c15b.selectbox("CBO", options=[""] + lista_cbo_res, key="cad_cbo_list")
+    cbo_selecionado = c15b.selectbox("CBO", options=[""] + lista_cbo_res, key=f"cad_cbo_list_{s}")
 
     st.markdown("---")
     
@@ -189,16 +202,11 @@ def modal_cadastro_investidor(lista_nomes_ativos):
         st.markdown('<p style="margin-bottom: 30px;"></p>', unsafe_allow_html=True)
         with st.popover("❓", use_container_width=True):
             st.markdown("##### 🔍 Buscar ID da Vaga")
-            # Adicionamos um filtro interno para facilitar
             busca_vaga = st.text_input("Filtrar por nome ou área:", key="filtro_vaga_pop")
-            
             df_v = buscar_base_vagas()
             if df_v is not None:
-                # Lógica de filtro dinâmico dentro do popover
                 if busca_vaga:
                     df_v = df_v[df_v.astype(str).apply(lambda x: x.str.contains(busca_vaga, case=False).any(), axis=1)]
-                
-                # Exibimos a tabela. A largura do popover vai seguir a largura dos dados.
                 st.dataframe(df_v, hide_index=True, use_container_width=True)
             else:
                 st.error("Erro ao carregar base de vagas.")
@@ -215,15 +223,13 @@ def modal_cadastro_investidor(lista_nomes_ativos):
     st.markdown("#### 🏠 Dados Pessoais")
     cp1, cp2, cp3, cp4 = st.columns([1, 0.8, 1, 1.3])
     cpf = cp1.text_input("CPF", key="cad_cpf")
-    # Range de data de nascimento ajustado (1950 até hoje)
-    nasc = cp2.date_input("Nascimento", value=None, format="DD/MM/YYYY", 
-                          min_value=date(1950, 1, 1), max_value=date.today(), key="cad_nasc")
+    nasc = cp2.date_input("Nascimento", value=None, format="DD/MM/YYYY", min_value=date(1950, 1, 1), max_value=date.today(), key="cad_nasc")
     lista_escolar = ["", "Ensino médio", "Ensino superior", "Pós graduação", "Mestrado", "Doutorado"]
     escolar = cp3.selectbox("Escolaridade", options=lista_escolar, key="cad_escolar")
     e_pess = cp4.text_input("E-mail Pessoal", key="cad_e_pess")
 
     cp5, cp6, cp7 = st.columns([1, 2, 1])
-    tel = cp5.text_input("Telefone Pessoal", key="cad_tel")
+    tel = cp5.text_input("Telefone Pessoal (DDD+Número)", key="cad_tel")
     drive = cp6.text_input("URL Drive (Documentos)", key="cad_drive")
     cep = cp7.text_input("CEP", key="cad_cep")
     
@@ -233,24 +239,84 @@ def modal_cadastro_investidor(lista_nomes_ativos):
     st.markdown("---")
     
     if st.button("🚀 Gravar na Planilha", use_container_width=True, type="primary"):
+        # Funcao rapida para verificar se tem acento
+        def tem_acento(texto):
+            return texto != ''.join(c for c in unicodedata.normalize('NFD', str(texto)) if unicodedata.category(c) != 'Mn')
+
+        tel_numeros = re.sub(r'\D', '', str(tel)) if tel else ""
+
+        # --- VALIDAÇÕES ---
         if not n_curto or not cpf:
-            st.warning("Nome e CPF são obrigatórios!")
+            st.warning("⚠️ Nome e CPF sao obrigatorios!")
+        elif tem_acento(n_curto):
+            st.error("🚨 O campo 'Nome' não pode conter acentos ou cedilha (Ex: Use 'Joao' em vez de 'João').")
+        elif tel and len(tel_numeros) not in [10, 11]:
+            st.error("🚨 O 'Telefone' deve conter exatamente 10 ou 11 dígitos.")
         else:
-            # Tratamento da matrícula (se vazio vira "")
+            # --- FORMATACOES AUTOMATICAS ---
+            n_curto_fmt = n_curto.title()
+            n_completo_fmt = n_completo.title()
+            e_corp_fmt = e_corp.lower()
+            e_pess_fmt = e_pess.lower()
+            raz_soc_fmt = raz_soc.title()
+            cbo_fmt = re.sub(r'\D', '', cbo_selecionado) if cbo_selecionado else ""
+            
+            val_term = "Indeterminado" if indet else dt_term.strftime("%d/%m/%Y")
             matri_final = matri if matri else ""
             
             linha = [
-                n_curto, n_completo, foto, bp, matri_final, 
-                dt_cont.strftime("%d/%m/%Y"), "", "Ativo", unid, mod_cont, 
-                e_corp, mod_pj, ini_v4.strftime("%d/%m/%Y"), cnpj, raz_soc, 
-                cargo, remun, cbo_selecionado, "", id_vaga, "", "", 
+                n_curto_fmt, n_completo_fmt, foto, bp, matri_final, 
+                dt_cont.strftime("%d/%m/%Y"), val_term, "Ativo", unid, mod_cont, 
+                e_corp_fmt, mod_pj, ini_v4.strftime("%d/%m/%Y"), cnpj, raz_soc_fmt, 
+                cargo, remun, cbo_fmt, "", id_vaga, "", "", 
                 senior, lider, "", "", cpf, nasc.strftime("%d/%m/%Y") if nasc else "", 
-                cep, escolar, e_pess, tel, "", "", "Pendente", "", "", "", "", drive, ""
+                cep, escolar, e_pess_fmt, tel, "", "", "Pendente", "", "", "", "", drive, ""
             ]
+            
+            if st.button("🚀 Gravar na Planilha", use_container_width=True, type="primary"):
+        # Funcao rapida para verificar se tem acento
+        def tem_acento(texto):
+            return texto != ''.join(c for c in unicodedata.normalize('NFD', str(texto)) if unicodedata.category(c) != 'Mn')
+
+        tel_numeros = re.sub(r'\D', '', str(tel)) if tel else ""
+
+        # --- VALIDAÇÕES ---
+        if not n_curto or not cpf:
+            st.warning("⚠️ Nome e CPF sao obrigatorios!")
+        elif tem_acento(n_curto):
+            st.error("🚨 O campo 'Nome' não pode conter acentos ou cedilha (Ex: Use 'Joao' em vez de 'João').")
+        elif tel and len(tel_numeros) not in [10, 11]:
+            st.error("🚨 O 'Telefone' deve conter exatamente 10 ou 11 dígitos.")
+        else:
+            # --- FORMATACOES AUTOMATICAS ---
+            n_curto_fmt = n_curto.title()
+            n_completo_fmt = n_completo.title()
+            e_corp_fmt = e_corp.lower()
+            e_pess_fmt = e_pess.lower()
+            raz_soc_fmt = raz_soc.title()
+            cbo_fmt = re.sub(r'\D', '', cbo_selecionado) if cbo_selecionado else ""
+            
+            val_term = "Indeterminado" if indet else dt_term.strftime("%d/%m/%Y")
+            matri_final = matri if matri else ""
+            
+            linha = [
+                n_curto_fmt, n_completo_fmt, foto, bp, matri_final, 
+                dt_cont.strftime("%d/%m/%Y"), val_term, "Ativo", unid, mod_cont, 
+                e_corp_fmt, mod_pj, ini_v4.strftime("%d/%m/%Y"), cnpj, raz_soc_fmt, 
+                cargo, remun, cbo_fmt, "", id_vaga, "", "", 
+                senior, lider, "", "", cpf, nasc.strftime("%d/%m/%Y") if nasc else "", 
+                cep, escolar, e_pess_fmt, tel, "", "", "Pendente", "", "", "", "", drive, ""
+            ]
+            
             try:
                 gravar_no_google_sheets(linha)
-                st.success("Investidor cadastrado com sucesso!")
+                
+                # Apenas registramos o sucesso para que as chaves sejam recriadas
+                st.session_state["sucesso_cadastro"] = True
+                
+                # O rerun faz o modal redesenhar DO ZERO
                 st.rerun()
+                
             except Exception as e:
                 st.error(f"Erro ao gravar: {e}")
                     
@@ -1016,49 +1082,6 @@ def render(df_ativos, df_desligados):
                 <span style="color: grey; font-size: 1.1rem; margin-top: 2px;">V4 Company</span>
             </div>
         """, unsafe_allow_html=True)
-
-    # --- 3. BLOCO DE ANIVERSARIANTES (AGORA VAI FUNCIONAR!) ---
-    hoje = datetime.now()
-    df_niver = df_ativos_proc[df_ativos_proc['Data de nascimento_dt'].notna()].copy()
-    df_niver['dia_nasc'] = df_niver['Data de nascimento_dt'].dt.day
-    df_niver['mes_nasc'] = df_niver['Data de nascimento_dt'].dt.month
-
-    aniversariantes_hoje = df_niver[
-        (df_niver['dia_nasc'] == hoje.day) & 
-        (df_niver['mes_nasc'] == hoje.month)
-    ].to_dict('records')
-
-    if aniversariantes_hoje:
-        if "idx_niver" not in st.session_state:
-            st.session_state.idx_niver = 0
-        
-        st.session_state.idx_niver = st.session_state.idx_niver % len(aniversariantes_hoje)
-        pessoa = aniversariantes_hoje[st.session_state.idx_niver]
-        
-        primeiro_nome = pessoa['Nome'].split()[0]
-        idade_val = calcular_idade(pessoa['Data de nascimento_dt'])
-        foto_url = pessoa.get('Foto', '')
-
-        st.markdown(f"""
-            <div style="background-color: #f8f9fa; padding: 15px; border-radius: 10px; border-left: 5px solid #E30613; margin-bottom: 20px; box-shadow: 2px 2px 5px rgba(0,0,0,0.05);">
-                <div style="display: flex; align-items: center;">
-                    <div style="margin-right: 20px;">
-                        {"<img src='" + foto_url + "' style='width:75px; height:75px; border-radius:50%; object-fit:cover; border: 2px solid #E30613;'>" if foto_url and str(foto_url).startswith("http") else "<div style='width:75px; height:75px; border-radius:50%; background-color:#ddd; display:flex; align-items:center; justify-content:center; font-size:30px;'>🎂</div>"}
-                    </div>
-                    <div style="flex-grow: 1;">
-                        <h3 style="margin: 0; color: #E30613; font-size: 1.4rem;">Parabéns, {primeiro_nome}! 🎉</h3>
-                        <p style="margin: 0; color: #404040; font-size: 1.1rem;">Hoje completando <b>{idade_val}</b>. Vida longa!</p>
-                    </div>
-                </div>
-            </div>
-        """, unsafe_allow_html=True)
-
-        if len(aniversariantes_hoje) > 1:
-            c_vazio, c_botao = st.columns([4, 1])
-            with c_botao:
-                if st.button(f"Próximo ({st.session_state.idx_niver + 1}/{len(aniversariantes_hoje)}) ➡️", key="btn_niver_diag"):
-                    st.session_state.idx_niver += 1
-                    st.rerun()
                     
     aba_dashboard, aba_rolling, aba_analytics, aba_acoes, aba_conectividade = st.tabs(["📊 Dashboard", "👥 Rolling", "📈 Analytics", "⚡ Ações", "🔗 Conectividade"])
     
@@ -1369,13 +1392,29 @@ def render(df_ativos, df_desligados):
             </div>
         """, unsafe_allow_html=True)
         
-        # --- SELETOR DE VISUALIZAÇÃO ---
-        modo_visualizacao = st.radio(
-            "Selecione a base:",
-            ["Investidores Ativos", "Investidores Desligados"], 
-            horizontal=True,
-            label_visibility="collapsed" 
-        )
+        # --- SELETOR DE VISUALIZAÇÃO COM CORES CORRIGIDAS ---
+        st.write("Selecione a base:")
+        
+        # 1. Criamos o Toggle
+        status_v4 = st.toggle("Alternar Base", value=True, label_visibility="collapsed")
+        
+        # 2. LÓGICA CORRIGIDA:
+        # Se status_v4 é True (Ligado) -> Ativos: Preto | Desligados: Cinza
+        # Se status_v4 é False (Desligado) -> Ativos: Cinza | Desligados: Preto
+        cor_ativos = "#000000" if status_v4 else "#cccccc"
+        cor_desligados = "#000000" if not status_v4 else "#cccccc"
+        
+        # 3. Exibição Visual
+        st.markdown(f"""
+            <div style="display: flex; gap: 10px; font-weight: bold; font-size: 1.1rem; margin-top: -5px; align-items: center;">
+                <span style="color: {cor_ativos}; transition: 0.3s;">Ativos</span>
+                <span style="color: #eee;">|</span>
+                <span style="color: {cor_desligados}; transition: 0.3s;">Desligados</span>
+            </div>
+        """, unsafe_allow_html=True)
+
+        # 4. Mantemos a compatibilidade com o seu IF lá de baixo
+        modo_visualizacao = "Investidores Ativos" if status_v4 else "Investidores Desligados"
         
         st.markdown("---")
 
@@ -1600,7 +1639,49 @@ def render(df_ativos, df_desligados):
                 
                 df_cargo["Remuneração_Média"] = df_cargo["Remuneração_Média"].map('R$ {:,.2f}'.format).str.replace(',', 'X').str.replace('.', ',').str.replace('X', '.')
                 st.dataframe(df_cargo, use_container_width=True, hide_index=True)
+
+            # --- RELATÓRIO DE LIDERADOS POR LIDERANÇA ---
+            with st.expander("👤 Liderados por Liderança", expanded=False):
+                col_lider = 'Liderança direta'
                 
+                if col_lider in df_ativos_proc.columns:
+                    st.markdown("<br>", unsafe_allow_html=True)
+                    
+                    # 1. Filtros e Contador
+                    lista_lideres = sorted([l for l in df_ativos_proc[col_lider].unique() if l and str(l).strip() != ""])
+                    
+                    c1, c2 = st.columns([3, 1])
+                    with c1:
+                        lider_sel = st.selectbox("Selecione o Líder para visualizar o time", ["Selecione..."] + lista_lideres, key="sel_lider_report")
+                    
+                    if lider_sel != "Selecione...":
+                        # Filtragem dos liderados
+                        df_liderados = df_ativos_proc[df_ativos_proc[col_lider] == lider_sel].copy()
+                        
+                        with c2:
+                            st.metric("Total Liderados", f"{len(df_liderados)}")
+            
+                        # 2. Definição das colunas cadastrais (Sem Remuneração)
+                        colunas_exibir = [
+                            'Nome', 'E-mail corporativo', 'Cargo', 
+                            'Modelo de contrato', 'CC', 'Descrição CC', 
+                            'Área', 'Senioridade'
+                        ]
+                        
+                        # Filtra apenas as que existem na planilha para evitar erros
+                        cols_finais = [c for c in colunas_exibir if c in df_liderados.columns]
+            
+                        # 3. Exibição da Tabela
+                        st.dataframe(
+                            df_liderados[cols_finais],
+                            use_container_width=True,
+                            hide_index=True
+                        )
+                    else:
+                        st.info("Selecione um líder acima para visualizar a relação de liderados.")
+                else:
+                    st.error(f"Coluna '{col_lider}' não encontrada na base de dados.")
+                    
             # ==========================================
             # 2. CONTRATOS A VENCER
             # ==========================================

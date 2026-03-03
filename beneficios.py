@@ -46,25 +46,41 @@ def email_para_nome_arquivo(email):
     return str(email).replace("@", "_").replace(".", "_").lower()
 
 def carregar_desligados_google_sheets():
-    # Tenta carregar credenciais para a planilha de desligados
+    # Tenta carregar credenciais usando st.secrets (mais seguro e correto para o Streamlit Cloud)
     try:
         scopes = [
             "https://www.googleapis.com/auth/spreadsheets",
             "https://www.googleapis.com/auth/drive"
         ]
-        # Ajuste se o caminho do arquivo for diferente
-        creds = Credentials.from_service_account_file(
-            "credenciais_google.json", 
+        
+        # Aqui usamos st.secrets em vez de procurar o arquivo .json
+        creds = Credentials.from_service_account_info(
+            st.secrets["gcp_service_account"], 
             scopes=scopes
         )
+        
         client = gspread.authorize(creds)
-        # ID da planilha de desligados (conforme seu código original)
-        spreadsheet = client.open_by_key("ID_DA_PLANILHA") 
-        worksheet = spreadsheet.get_worksheet_by_id(1422602176)
-        dados = worksheet.get_all_records()
-        return pd.DataFrame(dados)
+        
+        # ID da sua planilha Master
+        spreadsheet = client.open_by_key("13EPwhiXgh8BkbhyrEy2aCy3cv1O8npxJ_hA-HmLZ-pY") 
+        
+        # Acessa a aba de desligados pelo GID (1422602176)
+        # O gspread não tem "get_worksheet_by_id" nativo, então fazemos esse loop rápido:
+        worksheet = None
+        for sheet in spreadsheet.worksheets():
+            if str(sheet.id) == "1422602176":
+                worksheet = sheet
+                break
+        
+        if worksheet:
+            dados = worksheet.get_all_records()
+            return pd.DataFrame(dados)
+        else:
+            st.error("Aba de desligados (GID 1422602176) não encontrada.")
+            return pd.DataFrame()
+            
     except Exception as e:
-        st.error(f"Erro ao carregar planilha de desligados: {e}")
+        st.error(f"Erro ao conectar com o Google Sheets: {e}")
         return pd.DataFrame()
 
 # ==========================================
@@ -225,60 +241,67 @@ def modal_exclusao_subfatura():
     if col2.button("✅ Gerar", use_container_width=True, key="btn_exclusao"):
         dados = df_desligados[df_desligados["Nome"] == nome_escolhido].iloc[0]
         
-        razao_social = str(dados.get("Razão social", ""))
+        # 1. Preparação dos dados
+        razao_social = str(dados.get("Razão social", "")).upper()
         cnpj = formatar_cnpj(dados.get("CNPJ", ""))
         cpf = normalizar_cpf(dados.get("CPF", ""))
         email_pessoal = str(dados.get("E-mail pessoal", ""))
         email_arquivo = email_para_nome_arquivo(email_pessoal)
-        modelo_contrato = str(dados.get("Modelo de contrato", ""))
+        
+        hoje = date.today()
+        data_assinatura = f"{hoje.day} de {MESES_PT[hoje.month]} de {hoje.year}"
 
-        if "PJ" not in modelo_contrato.upper():
-            st.warning(f"⚠️ **{nome_escolhido}** não possui contrato PJ. Modelo atual: **{modelo_contrato}**")
+        # 2. Mapa com as chaves EXATAS que você pediu
+        mapa = {
+            "{{razao_social}}": razao_social,
+            "{{cnpj}}": cnpj,
+            "{{data_exclusao}}": data_exclusao.strftime("%d/%m/%Y"),
+            "{{data}}": data_assinatura
+        }
 
         try:
-            doc = Document("Exclusao_Subfatura.docx")
-            data_exclusao_formatada = data_exclusao.strftime("%d/%m/%Y")
-            hoje = date.today()
-            data_assinatura = f"{hoje.day} de {MESES_PT[hoje.month]} de {hoje.year}"
+            # Carrega o modelo
+            doc = Document("Exclusão Subfatura.docx")
 
-            mapa = {
-                "{RAZAO_SOCIAL}": razao_social,
-                "{CNPJ}": cnpj,
-                "{DATA_EXCLUSAO}": data_exclusao_formatada,
-                "{DATA}": data_assinatura
-            }
+            # 3. Executa a substituição em parágrafos, tabelas e cabeçalhos
+            for p in doc.paragraphs:
+                for chave, valor in mapa.items():
+                    if chave in p.text:
+                        # Substitui no parágrafo inteiro para evitar quebras do Word
+                        p.text = p.text.replace(chave, valor)
 
-            substituir_texto(doc.paragraphs, mapa)
             for table in doc.tables:
                 for row in table.rows:
                     for cell in row.cells:
-                        substituir_texto(cell.paragraphs, mapa)
-            for section in doc.sections:
-                substituir_texto(section.header.paragraphs, mapa)
+                        for p in cell.paragraphs:
+                            for chave, valor in mapa.items():
+                                if chave in p.text:
+                                    p.text = p.text.replace(chave, valor)
 
+            # 4. Salva e disponibiliza para download
             cpf_limpo = re.sub(r"\D", "", cpf)
             nome_arquivo = f"{nome_escolhido} __ {cpf_limpo} __ {email_arquivo} __ Exclusão Subfatura.docx"
             doc.save(nome_arquivo)
 
             with open(nome_arquivo, "rb") as f:
-                st.download_button("⬇️ Download", f, file_name=nome_arquivo, mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document", use_container_width=True)
+                st.download_button("⬇️ Download Documento", f, file_name=nome_arquivo, use_container_width=True, type="primary")
             
-            st.link_button("🔁 Converter PDF", "https://www.ilovepdf.com/pt/word_para_pdf", use_container_width=True)
-            st.success("Exclusão Subfatura gerada com sucesso ✅")
+            st.success("Documento gerado com sucesso! ✅")
+            
         except Exception as e:
-            st.error(f"Erro ao gerar documento: {e}")
+            st.error(f"Erro ao processar o Word: {e}")
 
 # ==========================================
 # FUNÇÃO PRINCIPAL (RENDER)
 # ==========================================
 def render(df):
     
-    # Proteção simples
+    # Proteção de Login
     if "authenticated" not in st.session_state or not st.session_state.authenticated:
         st.warning("Você precisa fazer login para acessar esta página.")
         st.stop()
 
-    # NOVO CABEÇALHO
+    # CABEÇALHO (PADRÃO V4)
     c_logo, c_texto = st.columns([0.5, 6]) 
     with c_logo:
         st.image("LOGO VERMELHO.png", width=100) 
@@ -290,94 +313,129 @@ def render(df):
             </div>
         """, unsafe_allow_html=True)
     
-    # ABAS
-    aba_dash, aba_cart, aba_analytics = st.tabs(["📊 Dashboard", "💳 Carteirinhas", "📈 Analytics"])
+    # --- CRIAÇÃO DAS 4 ABAS (Nomes corrigidos para evitar NameError) ---
+    aba_dashboard, aba_carteirinhas, aba_analytics, aba_acoes = st.tabs([
+        "📊 Dashboard", 
+        "💳 Carteirinhas", 
+        "📈 Analytics", 
+        "⚡ Ações"
+    ])
     
     # ----------------------------------------------------
-    # ABA DASHBOARD
+    # 1. ABA DASHBOARD
     # ----------------------------------------------------
-    with aba_dash:
-        st.markdown("<br>", unsafe_allow_html=True)
+    with aba_dashboard:
+        st.markdown("""
+            <div style="background-color: #f1f3f5; padding: 12px; border-radius: 6px; border-left: 5px solid #404040; margin-bottom: 20px;">
+                <span style="color: #404040; font-size: 14px;">
+                    Acompanhe abaixo os principais indicadores (KPIs) e gráficos demográficos referentes exclusivamente ao <b>plano médico e dental.</b>
+                </span>
+            </div>
+        """, unsafe_allow_html=True)
         
         if "Situação no plano" in df.columns:
-            # Cálculos de KPI
+            # --- CÁLCULOS DOS KPIs ---
+            total_investidores = len(df)
             total_vidas = len(df[df["Situação no plano"] == "Ativo"])
             pendencias = len(df[df["Situação no plano"].isin(["Pendente", "Aguardando docs", "Enviar à DBL"])])
             em_processo = len(df[df["Situação no plano"] == "Aguardando DBL"])
             
-            # Exibição KPIs
+            # Novo KPI: Taxa de Adesão
+            taxa_adesao = (total_vidas / total_investidores * 100) if total_investidores > 0 else 0
+            # Novo KPI: Total Odonto
+            total_odonto = len(df[df["Operadora Odonto"].notna() & (df["Operadora Odonto"] != "")])
+
+            # --- PRIMEIRA LINHA DE MÉTRICAS ---
             c1, c2, c3 = st.columns(3)
-            c1.metric("Vidas Ativas", total_vidas, help="Total de investidores com status 'Ativo'")
-            c2.metric("Pendências", pendencias, help="Pendente + Aguardando docs + Enviar à DBL", delta_color="inverse")
-            c3.metric("Em ativação", em_processo, help="Aguardando retorno da DBL")
+            c1.metric("Vidas Ativas (Saúde)", total_vidas)
+            c2.metric("Pendências Totais", pendencias, delta_color="inverse")
+            c3.metric("Em ativação (DBL)", em_processo)
+            
+            # --- SEGUNDA LINHA DE MÉTRICAS (NOVAS) ---
+            c4, c5, c6 = st.columns(3)
+            c4.metric("Taxa de Adesão Geral", f"{taxa_adesao:.1f}%")
+            c5.metric("Vidas Ativas (Odonto)", total_odonto)
+            c6.metric("Total na Base", total_investidores)
             
             st.markdown("---")
-            
-            # Gráficos
+
+            # --- LINHA 1 DE GRÁFICOS (OS QUE VOCÊ JÁ TINHA) ---
             col_g1, col_g2 = st.columns(2)
-            
             with col_g1:
                 st.subheader("Situação no plano")
                 df_plano = df["Situação no plano"].fillna("Não informado").value_counts().reset_index()
                 df_plano.columns = ["Situação", "Quantidade"]
-                total = df_plano["Quantidade"].sum()
-                df_plano["Percentual"] = (df_plano["Quantidade"] / total) * 100
-                
-                grafico_pizza = alt.Chart(df_plano).mark_arc(innerRadius=80, outerRadius=130).encode(
+                grafico_pizza = alt.Chart(df_plano).mark_arc(innerRadius=80).encode(
                     theta="Quantidade:Q",
-                    color=alt.Color("Situação:N", scale=alt.Scale(range=["#2E8B57", "#FFA500", "#8A2BE2", "#DC143C", "#8B4513", "#808080"]), legend=alt.Legend(orient="bottom")),
-                    tooltip=[alt.Tooltip("Situação:N"), alt.Tooltip("Quantidade:Q"), alt.Tooltip("Percentual:Q", format=".1f")]
-                ).properties(height=400)
+                    color=alt.Color("Situação:N", scale=alt.Scale(range=["#2E8B57", "#FFA500", "#8A2BE2", "#DC143C", "#8B4513", "#808080"])),
+                    tooltip=["Situação", "Quantidade"]
+                )
                 st.altair_chart(grafico_pizza, use_container_width=True)
 
             with col_g2:
-                st.subheader("Vidas por Operadora (Médico)")
+                st.subheader("Vidas por Operadora")
                 if "Operadora Médico" in df.columns:
-                    # Filtra apenas quem tem operadora preenchida
                     df_oper = df[df["Operadora Médico"].notna() & (df["Operadora Médico"] != "")]
                     df_oper_count = df_oper["Operadora Médico"].value_counts().reset_index()
                     df_oper_count.columns = ["Operadora", "Quantidade"]
-                    
                     grafico_barras = alt.Chart(df_oper_count).mark_bar(color="#E30613").encode(
-                        x=alt.X("Operadora:N", sort="-y", axis=alt.Axis(labelAngle=0)),
-                        y="Quantidade:Q",
-                        tooltip=["Operadora", "Quantidade"]
-                    ).properties(height=400)
+                        x=alt.X("Operadora:N", sort="-y"), y="Quantidade:Q"
+                    )
                     st.altair_chart(grafico_barras, use_container_width=True)
-                else:
-                    st.info("Coluna 'Operadora Médico' não encontrada para gerar gráfico.")
-        else:
-            st.warning("Coluna 'Situação no plano' não encontrada para gerar KPIs.")
+
+            # --- LINHA 2 DE GRÁFICOS (NOVOS) ---
+            st.markdown("<br>", unsafe_allow_html=True)
+            col_g3, col_g4 = st.columns(2)
+            
+            with col_g3:
+                st.subheader("Adesão por Área")
+                if "Área" in df.columns:
+                    # Filtra apenas ativos para ver quem realmente usa por área
+                    df_area = df[df["Situação no plano"] == "Ativo"]["Área"].value_counts().head(10).reset_index()
+                    df_area.columns = ["Área", "Vidas"]
+                    grafico_area = alt.Chart(df_area).mark_bar(color="#404040").encode(
+                        x=alt.X("Vidas:Q"),
+                        y=alt.Y("Área:N", sort="-x"),
+                        tooltip=["Área", "Vidas"]
+                    )
+                    st.altair_chart(grafico_area, use_container_width=True)
+
+            with col_g4:
+                st.subheader("Adesão por Modelo de Contrato")
+                if "Modelo de contrato" in df.columns:
+                    df_mod = df[df["Situação no plano"] == "Ativo"]["Modelo de contrato"].value_counts().reset_index()
+                    df_mod.columns = ["Modelo", "Vidas"]
+                    grafico_modelo = alt.Chart(df_mod).mark_bar(color="#8B0000").encode(
+                        x=alt.X("Modelo:N", sort="-y"),
+                        y=alt.Y("Vidas:Q"),
+                        tooltip=["Modelo", "Vidas"]
+                    )
+                    st.altair_chart(grafico_modelo, use_container_width=True)
 
     # ----------------------------------------------------
-    # ABA CARTEIRINHAS
+    # 2. ABA CARTEIRINHAS
     # ----------------------------------------------------
-    with aba_cart:
-        st.markdown("<br>", unsafe_allow_html=True)
+    with aba_carteirinhas:
+        st.markdown("""
+            <div style="background-color: #f1f3f5; padding: 12px; border-radius: 6px; border-left: 5px solid #404040; margin-bottom: 20px;">
+                <span style="color: #404040; font-size: 14px;">
+                    Realize consultas de carteirinhas de maneira rápida.
+                </span>
+            </div>
+        """, unsafe_allow_html=True)
         
-        # --- BUSCA INDIVIDUAL ---
-        st.markdown("### 🔎 Consulta Rápida")
-        nome_beneficio = st.selectbox("Buscar investidor", [""] + sorted(df["Nome"].dropna().unique()), key="sel_beneficio_cart")
+        st.markdown("### 🔎 Consulta de Carteirinhas")
+        nome_ben = st.selectbox("Buscar investidor", [""] + sorted(df["Nome"].dropna().unique()), key="sel_ben_cart_v4")
         
-        if nome_beneficio:
-            dados = df[df["Nome"] == nome_beneficio].iloc[0]
-            cart_med = str(dados.get("Carteirinha médico", "")).strip()
-            oper_med = str(dados.get("Operadora Médico", "")).strip()
-            cart_odo = str(dados.get("Carteirinha odonto", "")).strip()
-            oper_odo = str(dados.get("Operadora Odonto", "")).strip()
-            situacao = str(dados.get("Situação no plano", "Não informado"))
-
+        if nome_ben:
+            dados = df[df["Nome"] == nome_ben].iloc[0]
             with st.container(border=True):
-                if not cart_med and not cart_odo:
-                    st.warning(f"Este investidor não possui carteirinhas ativas. Status atual: **{situacao}**")
-                else:
-                    c1, c2 = st.columns(2)
-                    c1.markdown(f"**🏥 Saúde ({oper_med})**")
-                    c1.code(cart_med if cart_med else "Não possui", language=None)
-                    
-                    c2.markdown(f"**🦷 Odonto ({oper_odo})**")
-                    c2.code(cart_odo if cart_odo else "Não possui", language=None)
-
+                c1, c2 = st.columns(2)
+                c1.markdown(f"**🏥 Saúde ({dados.get('Operadora Médico', 'N/A')})**")
+                c1.code(str(dados.get("Carteirinha médico", "Não possui")).replace(".0", ""), language=None)
+                c2.markdown(f"**🦷 Odonto ({dados.get('Operadora Odonto', 'N/A')})**")
+                c2.code(str(dados.get("Carteirinha odonto", "Não possui")).replace(".0", ""), language=None)
+        
         st.markdown("---")
         
         # --- TABELA DE ATIVOS ---
@@ -404,52 +462,72 @@ def render(df):
                 st.info("Nenhum investidor com status 'Ativo' encontrado.")
 
     # ----------------------------------------------------
-    # ABA ANALYTICS (Relatórios e Ações)
+    # 3. ABA ANALYTICS
     # ----------------------------------------------------
     with aba_analytics:
-        st.markdown("<div style='height:20px'></div>", unsafe_allow_html=True)
-        col_relatorios, col_divisor, col_acoes = st.columns([7, 0.1, 3])
+        st.markdown("""
+            <div style="background-color: #f1f3f5; padding: 12px; border-radius: 6px; border-left: 5px solid #404040; margin-bottom: 20px;">
+                <span style="color: #404040; font-size: 14px;">Utilize as abas abaixo para extrair relatórios e acompanhar indicadores os processos de inclusão.</span>
+            </div>
+        """, unsafe_allow_html=True)
         
-        with col_divisor:
-            st.markdown("""<div style="height: 100%; border-left: 1px solid #e0e0e0; margin: 0 auto;"></div>""", unsafe_allow_html=True)
+        st.markdown("### 📊 Relatórios Operacionais")
+        tabs_rel = st.tabs(["⏰ Pendentes", "📂 Aguardando docs", "📩 Enviar para DBL", "🆗 Ativação"])
         
-        # COLUNA RELATÓRIOS
-        with col_relatorios:
-            st.markdown("### 📊 Relatórios Operacionais")
-            abas_rel = st.tabs(["⏰ Pendentes", "📂 Aguardando docs", "📩 Enviar para DBL", "🆗 Aguardando ativação"])
-            
-            with abas_rel[0]:
-                st.caption("Investidores com documentação pendente")
-                df_pendentes = df[(df["Situação no plano"] == "Pendente") & (df["Modalidade PJ"] != "MEI")]
-                st.dataframe(df_pendentes[["Nome", "E-mail corporativo", "Modelo de contrato", "Solicitar documentação"]], use_container_width=True, hide_index=True)
-            
-            with abas_rel[1]:
-                st.caption("Aguardando envio da documentação")
-                df_docs = df[df["Situação no plano"] == "Aguardando docs"]
-                st.dataframe(df_docs[["Nome", "E-mail corporativo", "Modelo de contrato", "Enviar no EB"]], use_container_width=True, hide_index=True)
-                
-            with abas_rel[2]:
-                st.caption("Investidores prontos para envio à DBL")
-                df_dbl = df[df["Situação no plano"] == "Enviar à DBL"]
-                st.dataframe(df_dbl[["Nome", "E-mail corporativo", "Modelo de contrato", "Enviar no EB"]], use_container_width=True, hide_index=True)
-                
-            with abas_rel[3]:
-                st.caption("Investidores aguardando retorno da DBL")
-                df_status = df[df["Situação no plano"] == "Aguardando DBL"]
-                st.dataframe(df_status[["Nome", "E-mail corporativo", "Modelo de contrato"]], use_container_width=True, hide_index=True)
+        with tabs_rel[0]:
+            df_p = df[(df["Situação no plano"] == "Pendente") & (df["Modalidade PJ"] != "MEI")]
+            st.dataframe(df_p[["Nome", "E-mail corporativo", "Modelo de contrato", "Solicitar documentação"]], use_container_width=True, hide_index=True)
+        with tabs_rel[1]:
+            df_d = df[df["Situação no plano"] == "Aguardando docs"]
+            st.dataframe(df_d[["Nome", "E-mail corporativo", "Enviar no EB"]], use_container_width=True, hide_index=True)
+        with tabs_rel[2]:
+            df_dbl = df[df["Situação no plano"] == "Enviar à DBL"]
+            st.dataframe(df_dbl[["Nome", "E-mail corporativo", "Enviar no EB"]], use_container_width=True, hide_index=True)
+        with tabs_rel[3]:
+            df_act = df[df["Situação no plano"] == "Aguardando DBL"]
+            st.dataframe(df_act[["Nome", "E-mail corporativo", "Modelo de contrato"]], use_container_width=True, hide_index=True)
 
-        # COLUNA AÇÕES
-        with col_acoes:
-            st.markdown("### ⚙️ Ações")
+    # ----------------------------------------------------
+    # 4. ABA AÇÕES
+    # ----------------------------------------------------
+    with aba_acoes:
+        st.markdown("""
+            <div style="background-color: #f1f3f5; padding: 12px; border-radius: 6px; border-left: 5px solid #404040; margin-bottom: 20px;">
+                <span style="color: #404040; font-size: 14px;">Realize cadastros de benefícios, gere formulários e rascunhos de e-mail pré-preenchidos.</span>
+            </div>
+        """, unsafe_allow_html=True)
+
+        # Divisão em 4 colunas igual ao DP
+        c_cad, c_form, c_mail, c_div = st.columns(4)
+
+        with c_cad:
+            st.markdown("##### 📥 Cadastros")
+            with st.expander("👤 Movimentações", expanded=False):
+                st.caption("Em breve.")
+
+        with c_form:
+            st.markdown("##### 📝 Gerar Formulários")
             
-            if st.button("📄 Gerar Inclusão Subfatura", use_container_width=True):
-                modal_inclusao_subfatura(df)
-                
-            if st.button("📄 Gerar Termo de Subestipulante", use_container_width=True):
-                modal_subestipulante(df)
-                
-            if st.button("📄 Gerar Termo de Não Adesão", use_container_width=True):
-                modal_nao_adesao(df)
+            # Expander 1: Inclusão PJ
+            with st.expander("🌱 Inclusão PJ", expanded=False):
+                if st.button("📄 Inclusão Subfatura", use_container_width=True):
+                    modal_inclusao_subfatura(df)
+                if st.button("📄 Termo Subestipulante", use_container_width=True):
+                    modal_subestipulante(df)
             
-            if st.button("📄 Gerar Exclusão Subfatura", use_container_width=True):
-                modal_exclusao_subfatura()
+            # Expander 2: Exclusão / Não Adesão
+            with st.expander("🚪 Exclusão/Não Adesão PJ", expanded=False):
+                if st.button("📄 Termo de Não Adesão", use_container_width=True):
+                    modal_nao_adesao(df)
+                if st.button("📄 Exclusão Subfatura", use_container_width=True):
+                    modal_exclusao_subfatura()
+
+        with c_mail:
+            st.markdown("##### ✉️ E-mails / Mensagens")
+            with st.expander("📩 Comunicados", expanded=False):
+                st.caption("Em breve.")
+
+        with c_div:
+            st.markdown("##### 📂 Diversos")
+            with st.expander("🛠️ Ferramentas", expanded=False):
+                st.caption("Em breve.")

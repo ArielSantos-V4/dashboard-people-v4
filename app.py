@@ -1,4 +1,5 @@
 import streamlit as st
+from datetime import datetime
 
 # Configuração da página deve ser SEMPRE o primeiro comando Streamlit
 st.set_page_config(
@@ -140,7 +141,91 @@ else:
                 <p style="color: #666; margin-top: 5px;">Selecione um módulo no menu lateral para iniciar.</p>
             </div>
         """, unsafe_allow_html=True)
+    
+        # --- BLOCO DE ANIVERSARIANTES ULTRA COMPACTO (ALINHADO À ESQUERDA) ---
+        if 'df_ativos' in locals() or 'df_ativos' in globals():
+            hoje = datetime.now()
+            
+            df_niver = df_ativos.copy()
+            df_niver['dt_nasc'] = pd.to_datetime(df_niver['Data de nascimento'], dayfirst=True, errors='coerce')
+            df_niver = df_niver[df_niver['dt_nasc'].notna()]
+            df_niver['dia'] = df_niver['dt_nasc'].dt.day
+            df_niver['mes'] = df_niver['dt_nasc'].dt.month
+
+            aniv_hoje = df_niver[(df_niver['dia'] == hoje.day) & (df_niver['mes'] == hoje.month)].to_dict('records')
+
+            if aniv_hoje:
+                if "idx_niver_land" not in st.session_state:
+                    st.session_state.idx_niver_land = 0
                 
+                st.session_state.idx_niver_land = st.session_state.idx_niver_land % len(aniv_hoje)
+                p = aniv_hoje[st.session_state.idx_niver_land]
+                
+                nome_p = p['Nome'].split()[0]
+                nasc_p = p.get('Data de nascimento', '')
+                foto_p = p.get('Foto', '')
+
+                # Espaçamento para não grudar na mensagem de boas-vindas
+                st.markdown("<br>", unsafe_allow_html=True)
+                
+                # Criamos colunas: a primeira é pequena para o card, a segunda sobra para o futuro
+                col_card, col_futuro = st.columns([0.8, 3.2])
+                
+                with col_card:
+                    # Pegamos os dados
+                    p = aniv_hoje[st.session_state.idx_niver_land]
+                    nome_p = p['Nome'].split()[0]
+                    nasc_p = p.get('Data de nascimento', '')
+                    foto_p = p.get('Foto', '')
+        
+                    # 1. Quadrado Superior (HTML)
+                    st.markdown(f"""
+                        <div style="
+                            border: 1px solid #ddd; 
+                            border-radius: 10px 10px 0 0; 
+                            padding: 15px; 
+                            width: 250px; 
+                            background-color: white;
+                            border-bottom: none;
+                            margin-bottom: 0px;
+                        ">
+                            <p style='margin: 0 0 14px 0; font-weight: bold; color: #E30613; font-size: 0.9rem; text-transform: uppercase;'>
+                                🎂 Aniversariantes do dia
+                            </p>
+                            <div style="display: flex; align-items: center;">
+                                <div style="margin-right: 25px;">
+                                    {"<img src='" + foto_p + "' style='width:55px; height:55px; border-radius:9px; object-fit:cover;'>" if foto_p and str(foto_p).startswith("http") else "<div style='width:55px; height:55px; border-radius:9px; background-color:#78909c; display:flex; align-items:center; justify-content:center; color:white; font-weight:bold; font-size:20px;'>" + nome_p[0] + "</div>"}
+                                </div>
+                                <div>
+                                    <p style='margin: 0; font-weight: bold; font-size: 1.1rem; line-height: 1.1;'>{nome_p}</p>
+                                    <p style='margin: 0; font-size: 0.9rem; color: gray;'>📅 {nasc_p}</p>
+                                </div>
+                            </div>
+                        </div>
+                    """, unsafe_allow_html=True)
+        
+                    # 2. Área do Botão (Encaixada perfeitamente)
+                    if len(aniv_hoje) > 1:
+                        # Criamos um container para o botão com a mesma largura do quadrado
+                        with st.container():
+                            st.markdown("""
+                                <style>
+                                    div[data-testid="stButton"] > button {
+                                        width: 250px !important;
+                                        border-radius: 0 0 10px 10px !important;
+                                        border: 1px solid #ddd !important;
+                                        border-top: 1px solid #eee !important;
+                                        height: 35px !important;
+                                        font-size: 0.5rem !important;
+                                        margin-top: -16px !important;
+                                    }
+                                </style>
+                            """, unsafe_allow_html=True)
+                            
+                            if st.button(f"Próximo ({st.session_state.idx_niver_land + 1}/{len(aniv_hoje)}) ➔", key="btn_niver_final_v4"):
+                                st.session_state.idx_niver_land += 1
+                                st.rerun()
+        
     elif pagina == "💼 Departamento Pessoal":
         departamento_pessoal.render(df_ativos, df_desligados)
     
