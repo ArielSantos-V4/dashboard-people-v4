@@ -224,7 +224,7 @@ def modal_cadastro_investidor(lista_nomes_ativos):
                     "Ativo", unid, mod_cont, e_corp.lower(), mod_pj, ini_v4.strftime("%d/%m/%Y"),
                     cnpj, tratar_string_v4(raz_soc), cargo, remun, 
                     re.sub(r'\D', '', cbo_sel) if cbo_sel else "", "", id_vaga, "", "",
-                    senior, lider, "", "", normalizar_cpf(cpf), nasc.strftime("%d/%m/%Y") if nasc else "",
+                    senior, lider, "", "", limpar_numero(cpf), nasc.strftime("%d/%m/%Y") if nasc else "",
                     cep, escolar, e_pess.lower(), tel, "", "", "Pendente", "", "", "", "", drive, ""
                 ]
 
