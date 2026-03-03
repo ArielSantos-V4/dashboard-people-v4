@@ -128,11 +128,10 @@ def gravar_no_google_sheets(dados_lista):
     coluna_a = sheet.col_values(1)
     proxima_linha = len(coluna_a) + 1
     
-    # 2. Define o range correto até a coluna AN (40 colunas)
-    # A coluna AN é a quadragésima coluna da planilha.
-    range_nome = f"A{proxima_linha}:AN{proxima_linha}"
+    # 2. Define o range correto até a coluna AO (41 colunas)
+    range_nome = f"A{proxima_linha}:AO{proxima_linha}" # <-- MUDANÇA AQUI
     
-    # 3. Executa o update usando a variável range_nome que acabamos de criar
+    # 3. Executa o update
     sheet.update(range_name=range_nome, values=[dados_lista], value_input_option="USER_ENTERED")
     
 # ==========================================
