@@ -139,24 +139,33 @@ def gravar_no_google_sheets(dados_lista):
 # ==========================================
 @st.dialog("📝 Cadastro de Novo Investidor", width="large")
 def modal_cadastro_investidor(lista_nomes_ativos):
-    # 1. Gerenciamento de Estado para Reset
+    # 1. Inicialização do Estado de Controle (Reset e Mensagens)
     if "reset_key" not in st.session_state:
         st.session_state.reset_key = 0
-    
-    # Sufixo dinâmico para as chaves (ex: _0, _1, _2...)
+    if "mensagem_sucesso_modal" not in st.session_state:
+        st.session_state.mensagem_sucesso_modal = None
+
+    # Exibe a mensagem de sucesso se ela existir no estado (após o rerun)
+    if st.session_state.mensagem_sucesso_modal:
+        st.success(st.session_state.mensagem_sucesso_modal)
+        st.session_state.mensagem_sucesso_modal = None # Limpa para a próxima interação
+
+    # Sufixo dinâmico para as chaves (ID do formulário atual)
     s = str(st.session_state.reset_key)
 
     # Função interna para limpar acentos (Regra V4)
     def tratar_string_v4(texto):
         if not texto: return ""
-        nfkd = unicodedata.normalize('NFKD', texto)
+        nfkd = unicodedata.normalize('NFKD', str(texto))
         sem_acento = "".join([c for c in nfkd if not unicodedata.combining(c)])
         return sem_acento.title().strip()
 
-    # 2. Interface do Formulário
+    # ==========================================
+    # BLOCO 1: DADOS PRINCIPAIS
+    # ==========================================
     st.markdown("#### 👤 Dados Principais")
+    
     c1, c2, c3 = st.columns([1.5, 1.5, 1])
-    # Note que TODOS os campos agora usam o sufixo 's' na key
     n_curto = c1.text_input("Nome (Sem acentos)", key=f"cad_n_curto_{s}")
     n_completo = c2.text_input("Nome Completo", key=f"cad_n_comp_{s}")
     foto = c3.text_input("URL da Foto", key=f"cad_foto_{s}")
@@ -167,14 +176,15 @@ def modal_cadastro_investidor(lista_nomes_ativos):
     dt_cont = c6.date_input("Data do Contrato", value=datetime.today(), format="DD/MM/YYYY", key=f"cad_dt_cont_{s}")
     
     indet = c_term.checkbox("Indeterminado", value=True, key=f"cad_indet_{s}")
-    dt_term = c_term.date_input("Término", value=datetime.today(), format="DD/MM/YYYY", disabled=indet, key=f"cad_dt_term_{s}")
-    unid = c7.selectbox("Unidade", ["Flagship", "Headquarters", "Híbrido", "Remoto", "Unidade São Leopoldo"], key=f"cad_unid_{s}")
+    dt_term = c_term.date_input("Término de contrato", value=datetime.today(), format="DD/MM/YYYY", disabled=indet, key=f"cad_dt_term_{s}")
+    
+    unid = c7.selectbox("Unidade/Atuação", ["Flagship", "Headquarters", "Híbrido", "Remoto", "Unidade São Leopoldo"], key=f"cad_unid_{s}")
 
     c8, c9, c10, c11, c12 = st.columns([0.5, 1.4, 0.5, 0.8, 1.2])
-    mod_cont = c8.selectbox("Modelo", ["CLT", "PJ", "Estágio"], key=f"cad_mod_cont_{s}")
+    mod_cont = c8.selectbox("Modelo de Contrato", ["CLT", "PJ", "Estágio"], key=f"cad_mod_cont_{s}")
     e_corp = c9.text_input("E-mail Corporativo", key=f"cad_e_corp_{s}")
-    mod_pj = c10.selectbox("Mod. PJ", ["", "MEI", "SLU"], key=f"cad_mod_pj_{s}")
-    ini_v4 = c11.date_input("Início V4", value=datetime.today(), format="DD/MM/YYYY", key=f"cad_ini_v4_{s}")
+    mod_pj = c10.selectbox("Modalidade PJ", ["", "MEI", "SLU"], key=f"cad_mod_pj_{s}")
+    ini_v4 = c11.date_input("Início na V4", value=datetime.today(), format="DD/MM/YYYY", key=f"cad_ini_v4_{s}")
     cnpj = c12.text_input("CNPJ", key=f"cad_cnpj_{s}")
     
     c13, c14, c15, c15b = st.columns([1.5, 1.2, 1, 0.5])
@@ -186,55 +196,86 @@ def modal_cadastro_investidor(lista_nomes_ativos):
     cbo_sel = c15b.selectbox("CBO", options=[""] + lista_cbo_res, key=f"cad_cbo_{s}")
 
     st.markdown("---")
-    st.markdown("#### 🏢 Centro de Custo & Liderança")
-    cv1, cv2, cv3, cv4 = st.columns([0.7, 0.3, 1, 1])
-    id_vaga = cv1.text_input("ID Vaga", key=f"cad_vaga_{s}")
     
-    senior = cv3.selectbox("Senioridade", options=["", "Junior", "Pleno", "Senior", "Coordenador", "Gerente"], key=f"cad_sen_{s}")
-    lider = cv4.selectbox("Liderança Direta", options=[""] + sorted(lista_nomes_ativos), key=f"cad_lid_{s}")
+    # ==========================================
+    # BLOCO 2: CENTRO DE CUSTO & LIDERANÇA
+    # ==========================================
+    st.markdown("#### 🏢 Centro de Custo & Liderança")
+    cv1, cv3, cv4 = st.columns([1, 1, 1])
+    id_vaga = cv1.text_input("ID Vaga", key=f"cad_id_vaga_{s}")
+    
+    lista_senior = ["", "Trainee", "Junior", "Pleno", "Senior", "Coordenador", "Gerente", "Diretor", "C-Level"]
+    senior = cv3.selectbox("Senioridade", options=lista_senior, key=f"cad_senior_{s}")
+    lider = cv4.selectbox("Liderança Direta", options=[""] + sorted(lista_nomes_ativos), key=f"cad_lider_{s}")
 
     st.markdown("---")
+
+    # ==========================================
+    # BLOCO 3: DADOS PESSOAIS
+    # ==========================================
     st.markdown("#### 🏠 Dados Pessoais")
     cp1, cp2, cp3, cp4 = st.columns([1, 0.8, 1, 1.3])
     cpf = cp1.text_input("CPF", key=f"cad_cpf_{s}")
     nasc = cp2.date_input("Nascimento", value=None, format="DD/MM/YYYY", key=f"cad_nasc_{s}")
-    escolar = cp3.selectbox("Escolaridade", ["", "Ensino médio", "Ensino superior", "Pós graduação"], key=f"cad_esc_{s}")
+    
+    lista_escolar = ["", "Ensino médio", "Ensino superior", "Pós graduação", "Mestrado", "Doutorado"]
+    escolar = cp3.selectbox("Escolaridade", options=lista_escolar, key=f"cad_escolar_{s}")
     e_pess = cp4.text_input("E-mail Pessoal", key=f"cad_e_pess_{s}")
 
     cp5, cp6, cp7 = st.columns([1, 2, 1])
-    tel = cp5.text_input("Telefone (DDD+Nº)", key=f"cad_tel_{s}")
-    drive = cp6.text_input("URL Drive", key=f"cad_drive_{s}")
+    tel = cp5.text_input("Telefone Pessoal (DDD+Número)", key=f"cad_tel_{s}")
+    drive = cp6.text_input("URL Drive (Documentos)", key=f"cad_drive_{s}")
     cep = cp7.text_input("CEP", key=f"cad_cep_{s}")
+
+    st.markdown("<br>", unsafe_allow_html=True)
     
-    # 3. Lógica de Gravação
+    # ==========================================
+    # LÓGICA DE GRAVAÇÃO
+    # ==========================================
     if st.button("🚀 Gravar na Planilha", use_container_width=True, type="primary"):
-        # Validações rápidas
-        tel_limpo = re.sub(r'\D', '', str(tel))
-        
+        # Validação de acentos via função local para feedback imediato
+        def tem_acento(texto):
+            return texto != ''.join(c for c in unicodedata.normalize('NFD', str(texto)) if unicodedata.category(c) != 'Mn')
+
+        tel_numeros = re.sub(r'\D', '', str(tel)) if tel else ""
+
+        # --- VALIDAÇÕES ---
         if not n_curto or not cpf:
             st.error("⚠️ Nome e CPF são obrigatórios!")
-        elif len(tel_limpo) > 0 and len(tel_limpo) not in [10, 11]:
-            st.error("🚨 Telefone deve ter 10 ou 11 dígitos.")
+        elif tem_acento(n_curto):
+            st.error("🚨 O campo 'Nome' não pode conter acentos ou cedilha.")
+        elif tel and len(tel_numeros) not in [10, 11]:
+            st.error("🚨 O 'Telefone' deve conter exatamente 10 ou 11 dígitos.")
         else:
             try:
-                # Processamento conforme regras da V4
+                # Formatações automáticas usando funções do topo do seu arquivo
+                n_curto_fmt = tratar_string_v4(n_curto)
+                n_completo_fmt = tratar_string_v4(n_completo)
+                raz_soc_fmt = tratar_string_v4(raz_soc)
+                
+                val_term = "Indeterminado" if indet else dt_term.strftime("%d/%m/%Y")
+                cbo_fmt = re.sub(r'\D', '', cbo_sel) if cbo_sel else ""
+
+                # Montagem da linha com 41 colunas (até AO)
                 linha = [
-                    tratar_string_v4(n_curto), tratar_string_v4(n_completo), foto, bp, matri,
-                    dt_cont.strftime("%d/%m/%Y"), ("Indeterminado" if indet else dt_term.strftime("%d/%m/%Y")),
-                    "Ativo", unid, mod_cont, e_corp.lower(), mod_pj, ini_v4.strftime("%d/%m/%Y"),
-                    cnpj, tratar_string_v4(raz_soc), cargo, remun, 
-                    re.sub(r'\D', '', cbo_sel) if cbo_sel else "", "", id_vaga, "", "",
-                    senior, lider, "", "", limpar_numero(cpf), nasc.strftime("%d/%m/%Y") if nasc else "",
+                    n_curto_fmt, n_completo_fmt, foto, bp, matri, 
+                    dt_cont.strftime("%d/%m/%Y"), val_term, "Ativo", unid, mod_cont, 
+                    e_corp.lower(), mod_pj, ini_v4.strftime("%d/%m/%Y"), cnpj, raz_soc_fmt, 
+                    cargo, remun, cbo_fmt, "", id_vaga, "", "", 
+                    senior, lider, "", "", limpar_numero(cpf), nasc.strftime("%d/%m/%Y") if nasc else "", 
                     cep, escolar, e_pess.lower(), tel, "", "", "Pendente", "", "", "", "", drive, ""
                 ]
 
+                # Chamada da função de gravação
                 gravar_no_google_sheets(linha)
                 
-                # SUCESSO: Incrementa a chave para limpar TUDO e avisa o usuário
+                # SUCESSO: Prepara a mensagem e reseta as chaves
+                st.session_state.mensagem_sucesso_modal = f"✅ Investidor {n_curto_fmt} cadastrado com sucesso!"
                 st.session_state.reset_key += 1
-                st.success("✅ Investidor cadastrado com sucesso! Campos limpos para o próximo.")
-                st.rerun() # O rerun agora apenas recarrega o MODAL com as novas chaves vazias
-
+                
+                # Rerun para limpar campos e mostrar mensagem de sucesso
+                st.rerun()
+                
             except Exception as e:
                 st.error(f"Erro ao gravar: {e}")
                     
