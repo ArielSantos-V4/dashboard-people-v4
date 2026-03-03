@@ -167,7 +167,6 @@ def modal_cadastro_investidor(lista_nomes_ativos):
         
         unid = c7.selectbox("Unidade/Atuação", ["Flagship", "Headquarters", "Híbrido", "Remoto", "Unidade São Leopoldo"])
 
-        st.markdown("---")
         c8, c9, c10, c11, c12 = st.columns([0.5, 1.4, 0.5, 0.8, 1.2])
         mod_cont = c8.selectbox("Modelo de Contrato", ["CLT", "PJ", "Estágio"])
         e_corp = c9.text_input("E-mail Corporativo")
