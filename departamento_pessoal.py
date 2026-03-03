@@ -211,33 +211,53 @@ def modal_cadastro_investidor(lista_nomes_ativos):
         
         # BOTÃO DE GRAVAR
         if st.button("🚀 Gravar na Planilha", use_container_width=True, type="primary"):
-            if not n_curto or not cpf:
-                st.error("⚠️ Nome e CPF são obrigatórios!")
-            else:
-                try:
-                    val_term = "Indeterminado" if indet else dt_term.strftime("%d/%m/%Y")
-                    
-                    linha = [
-                        tratar_string_v4(n_curto), tratar_string_v4(n_completo), foto, bp, matri, 
-                        dt_cont.strftime("%d/%m/%Y"), val_term, "Ativo", unid, mod_cont, 
-                        e_corp.lower(), mod_pj, ini_v4.strftime("%d/%m/%Y"), cnpj, tratar_string_v4(raz_soc), 
-                        cargo, remun, re.sub(r'\D', '', cbo_sel) if cbo_sel else "", "", id_vaga, "", "", 
-                        senior, lider, "", "", limpar_numero(cpf), nasc.strftime("%d/%m/%Y") if nasc else "", 
-                        cep, escolar, e_pess.lower(), tel, "", "", "Pendente", "", "", "", "", drive, ""
-                    ]
+        # Função para verificar acentos
+        def tem_acento(texto):
+            if not texto: return False
+            return texto != ''.join(c for c in unicodedata.normalize('NFD', str(texto)) if unicodedata.category(c) != 'Mn')
 
-                    gravar_no_google_sheets(linha)
-                    
-                    # SUCESSO: Apenas mostramos na tela, sem nenhum comando de rerun.
-                    st.success(f"✅ Investidor {n_curto} cadastrado com sucesso!")
-                    
-                    # BOTÃO PARA LIMPAR (Este é o único que pode dar rerun)
-                    if st.button("➕ Limpar campos para novo cadastro", use_container_width=True):
-                        st.session_state.reset_key += 1
-                        st.rerun()
+        tel_numeros = re.sub(r'\D', '', str(tel)) if tel else ""
 
-                except Exception as e:
-                    st.error(f"Erro ao gravar: {e}")
+        # --- VALIDAÇÕES ---
+        if not n_curto or not cpf:
+            st.warning("⚠️ Nome e CPF são obrigatórios!")
+        elif tem_acento(n_curto):
+            st.error("🚨 O campo 'Nome' não pode conter acentos ou cedilha (Ex: Use 'Joao' em vez de 'João').")
+        elif tel and len(tel_numeros) not in [10, 11]:
+            st.error("🚨 O 'Telefone' deve conter exatamente 10 ou 11 dígitos.")
+        else:
+            # --- FORMATAÇÕES AUTOMÁTICAS ---
+            n_curto_fmt = n_curto.title()
+            n_completo_fmt = n_completo.title()
+            e_corp_fmt = e_corp.lower()
+            e_pess_fmt = e_pess.lower()
+            raz_soc_fmt = raz_soc.title()
+            cbo_fmt = re.sub(r'\D', '', str(cbo_selecionado)) if cbo_selecionado else ""
+            
+            val_term = "Indeterminado" if indet else dt_term.strftime("%d/%m/%Y")
+            matri_final = matri if matri else ""
+            
+            linha = [
+                n_curto_fmt, n_completo_fmt, foto, bp, matri_final, 
+                dt_cont.strftime("%d/%m/%Y"), val_term, "Ativo", unid, mod_cont, 
+                e_corp_fmt, mod_pj, ini_v4.strftime("%d/%m/%Y"), cnpj, raz_soc_fmt, 
+                cargo, remun, cbo_fmt, "", id_vaga, "", "", 
+                senior, lider, "", "", cpf, nasc.strftime("%d/%m/%Y") if nasc else "", 
+                cep, escolar, e_pess_fmt, tel, "", "", "Pendente", "", "", "", "", drive, ""
+            ]
+            
+            try:
+                # 1. Grava no Google Sheets
+                gravar_no_google_sheets(linha)
+                
+                # 2. Exibe o aviso no canto da tela (Toast)
+                st.toast(f"✅ Investidor {n_curto_fmt} cadastrado com sucesso!", icon="🚀")
+                
+                # 3. Reinicia para atualizar a base e fechar o modal
+                st.rerun()
+                
+            except Exception as e:
+                st.error(f"Erro ao gravar: {e}")
                     
 # ==========================================
 # LÓGICA DE ALERTAS (ATIVOS)
