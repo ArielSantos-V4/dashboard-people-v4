@@ -237,43 +237,8 @@ def modal_cadastro_investidor(lista_nomes_ativos):
     if end_info: st.info(f"📍 {end_info}")
 
     st.markdown("---")
-    
+                
     if st.button("🚀 Gravar na Planilha", use_container_width=True, type="primary"):
-        # Funcao rapida para verificar se tem acento
-        def tem_acento(texto):
-            return texto != ''.join(c for c in unicodedata.normalize('NFD', str(texto)) if unicodedata.category(c) != 'Mn')
-
-        tel_numeros = re.sub(r'\D', '', str(tel)) if tel else ""
-
-        # --- VALIDAÇÕES ---
-        if not n_curto or not cpf:
-            st.warning("⚠️ Nome e CPF sao obrigatorios!")
-        elif tem_acento(n_curto):
-            st.error("🚨 O campo 'Nome' não pode conter acentos ou cedilha (Ex: Use 'Joao' em vez de 'João').")
-        elif tel and len(tel_numeros) not in [10, 11]:
-            st.error("🚨 O 'Telefone' deve conter exatamente 10 ou 11 dígitos.")
-        else:
-            # --- FORMATACOES AUTOMATICAS ---
-            n_curto_fmt = n_curto.title()
-            n_completo_fmt = n_completo.title()
-            e_corp_fmt = e_corp.lower()
-            e_pess_fmt = e_pess.lower()
-            raz_soc_fmt = raz_soc.title()
-            cbo_fmt = re.sub(r'\D', '', cbo_selecionado) if cbo_selecionado else ""
-            
-            val_term = "Indeterminado" if indet else dt_term.strftime("%d/%m/%Y")
-            matri_final = matri if matri else ""
-            
-            linha = [
-                n_curto_fmt, n_completo_fmt, foto, bp, matri_final, 
-                dt_cont.strftime("%d/%m/%Y"), val_term, "Ativo", unid, mod_cont, 
-                e_corp_fmt, mod_pj, ini_v4.strftime("%d/%m/%Y"), cnpj, raz_soc_fmt, 
-                cargo, remun, cbo_fmt, "", id_vaga, "", "", 
-                senior, lider, "", "", cpf, nasc.strftime("%d/%m/%Y") if nasc else "", 
-                cep, escolar, e_pess_fmt, tel, "", "", "Pendente", "", "", "", "", drive, ""
-            ]
-            
-            if st.button("🚀 Gravar na Planilha", use_container_width=True, type="primary"):
         # Funcao rapida para verificar se tem acento
         def tem_acento(texto):
             return texto != ''.join(c for c in unicodedata.normalize('NFD', str(texto)) if unicodedata.category(c) != 'Mn')
