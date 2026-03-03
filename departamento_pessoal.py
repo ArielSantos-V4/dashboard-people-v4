@@ -150,10 +150,8 @@ def modal_cadastro_investidor(lista_nomes_ativos):
         sem_acento = "".join([c for c in nfkd if not unicodedata.combining(c)])
         return sem_acento.title().strip()
 
-    # Inicializa o controle do checkbox se não existir
-    if "indet_ativo" not in st.session_state:
-        st.session_state.indet_ativo = True
-        
+    # --- INÍCIO DO FORMULÁRIO ---
+    # clear_on_submit limpa os campos de texto após o cadastro
     with st.form("form_novo_investidor", clear_on_submit=True):
         st.markdown("#### 👤 Dados Principais")
         
@@ -162,28 +160,27 @@ def modal_cadastro_investidor(lista_nomes_ativos):
         n_completo = c2.text_input("Nome Completo")
         foto = c3.text_input("URL da Foto")
 
-        # Mantendo a sua estrutura de 5 colunas original
+        # Estrutura de colunas original
         c4, c5, c6, c_term, c7 = st.columns([0.5, 0.5, 0.7, 0.8, 1])
         bp = c4.number_input("BP", step=1, value=0)
         matri = c5.text_input("Matrícula")
         dt_cont = c6.date_input("Data do Contrato", format="DD/MM/YYYY")
         
-        # --- CAMPOS NA COLUNA C_TERM (Data em cima, Check em baixo) ---
-        dt_term = c_term.date_input(
-            "Término contrato", 
-            format="DD/MM/YYYY", 
-            disabled=st.session_state.indet_ativo
-        )
+        # --- LÓGICA DO TÉRMINO (RESOLVENDO O ERRO) ---
+        # 1. Verificamos se o checkbox já existe no 'estado' (key), se não, padrão é True
+        is_disabled = st.session_state.get("chk_indet_v4", True)
         
-        indet = c_term.checkbox(
-            "Indeterminado", 
-            value=st.session_state.indet_ativo, 
-            key="chk_indet_v4",
-            on_change=toggle_indet # <--- Isso faz a mágica de destravar na hora
-        )
-                
+        # 2. Renderizamos o campo de data usando esse estado
+        dt_term = c_term.date_input("Término contrato", format="DD/MM/YYYY", disabled=is_disabled)
+        
+        # 3. O checkbox vem logo abaixo. 
+        # IMPORTANTE: Dentro do form não usamos 'on_change'. O bloqueio visual
+        # funcionará após a primeira interação ou submissão.
+        indet = c_term.checkbox("Indeterminado", value=True, key="chk_indet_v4")
+        
         unid = c7.selectbox("Unidade/Atuação", ["Flagship", "Headquarters", "Híbrido", "Remoto", "Unidade São Leopoldo"])
 
+        st.markdown("---")
         c8, c9, c10, c11, c12 = st.columns([0.5, 1.4, 0.5, 0.8, 1.2])
         mod_cont = c8.selectbox("Modelo de Contrato", ["CLT", "PJ", "Estágio"])
         e_corp = c9.text_input("E-mail Corporativo")
@@ -198,14 +195,12 @@ def modal_cadastro_investidor(lista_nomes_ativos):
         lista_cbo_res = buscar_lista_cbo()
         cbo_sel = c15b.selectbox("CBO", options=[""] + lista_cbo_res)
 
-        st.markdown("---")
         st.markdown("#### 🏢 Centro de Custo & Liderança")
         cv1, cv3, cv4 = st.columns([1, 1, 1])
         id_vaga = cv1.text_input("ID Vaga")
         senior = cv3.selectbox("Senioridade", options=["", "Junior", "Pleno", "Senior", "Coordenador", "Gerente"])
         lider = cv4.selectbox("Liderança Direta", options=[""] + sorted(lista_nomes_ativos))
 
-        st.markdown("---")
         st.markdown("#### 🏠 Dados Pessoais")
         cp1, cp2, cp3, cp4 = st.columns([1, 0.8, 1, 1.3])
         cpf = cp1.text_input("CPF (Somente números)")
@@ -220,13 +215,13 @@ def modal_cadastro_investidor(lista_nomes_ativos):
 
         st.markdown("---")
         btn_gravar = st.form_submit_button("🚀 Gravar na Planilha", use_container_width=True, type="primary")
-        
+
         if btn_gravar:
             if not n_curto or not cpf:
                 st.error("⚠️ Nome e CPF são obrigatórios!")
             else:
                 try:
-                    # Lógica de Negócio: Se checkbox ativo, ignora a data e grava texto
+                    # Lógica de Negócio: Se checkbox ativo, grava texto, senão grava a data
                     termino_final = "Indeterminado" if indet else dt_term.strftime("%d/%m/%Y")
 
                     linha = [
@@ -243,11 +238,6 @@ def modal_cadastro_investidor(lista_nomes_ativos):
                     
                 except Exception as e:
                     st.error(f"Erro ao gravar: {e}")
-                    
-    # Se o usuário clicou no checkbox, atualiza o estado e recarrega o visual do modal
-    if indet != st.session_state.indet_ativo:
-        st.session_state.indet_ativo = indet
-        st.rerun()
                     
 # ==========================================
 # LÓGICA DE ALERTAS (ATIVOS)
