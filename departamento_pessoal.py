@@ -139,7 +139,7 @@ def gravar_no_google_sheets(dados_lista):
 # ==========================================
 @st.dialog("📝 Cadastro de Novo Investidor", width="large")
 def modal_cadastro_investidor(lista_nomes_ativos):
-    # Função interna para limpar acentos conforme regra V4
+    # Função interna para tratar strings
     def tratar_string_v4(texto):
         if not texto: return ""
         import unicodedata
@@ -147,32 +147,27 @@ def modal_cadastro_investidor(lista_nomes_ativos):
         sem_acento = "".join([c for c in nfkd if not unicodedata.combining(c)])
         return sem_acento.title().strip()
 
-    col_aux1, col_aux2, col_aux3 = st.columns([2, 1, 1])
-    with col_aux3:
-        indet = st.checkbox("Contrato Indeterminado", value=True)
-        dt_term = st.date_input("Término do Contrato", format="DD/MM/YYYY", disabled=indet)
-        
-    # O segredo para não fechar e limpar campos é o st.form com clear_on_submit
     with st.form("form_novo_investidor", clear_on_submit=True):
-
-        # ==========================================
-        # BLOCO 1: DADOS PRINCIPAIS
-        # ==========================================
         st.markdown("#### 👤 Dados Principais")
+        
         c1, c2, c3 = st.columns([1.5, 1.5, 1])
-        n_curto = c1.text_input("Nome (Sem acentos - Ex: Joao)")
+        n_curto = c1.text_input("Nome (Sem acentos)")
         n_completo = c2.text_input("Nome Completo")
         foto = c3.text_input("URL da Foto")
 
+        # Mantendo a sua estrutura de 5 colunas original
         c4, c5, c6, c_term, c7 = st.columns([0.5, 0.5, 0.7, 0.8, 1])
         bp = c4.number_input("BP", step=1, value=0)
         matri = c5.text_input("Matrícula")
         dt_cont = c6.date_input("Data do Contrato", format="DD/MM/YYYY")
         
+        # --- CAMPOS NA COLUNA C_TERM (Original) ---
         dt_term = c_term.date_input("Término contrato", format="DD/MM/YYYY")
         indet = c_term.checkbox("Indeterminado", value=True)
+        
         unid = c7.selectbox("Unidade/Atuação", ["Flagship", "Headquarters", "Híbrido", "Remoto", "Unidade São Leopoldo"])
 
+        st.markdown("---")
         c8, c9, c10, c11, c12 = st.columns([0.5, 1.4, 0.5, 0.8, 1.2])
         mod_cont = c8.selectbox("Modelo de Contrato", ["CLT", "PJ", "Estágio"])
         e_corp = c9.text_input("E-mail Corporativo")
@@ -183,92 +178,52 @@ def modal_cadastro_investidor(lista_nomes_ativos):
         c13, c14, c15, c15b = st.columns([1.5, 1.2, 1, 0.5])
         raz_soc = c13.text_input("Razão Social")
         cargo = c14.text_input("Cargo")
-        remun = c15.text_input("Remuneração (Ex: 5000,00)")
-        
+        remun = c15.text_input("Remuneração")
         lista_cbo_res = buscar_lista_cbo()
         cbo_sel = c15b.selectbox("CBO", options=[""] + lista_cbo_res)
 
-        st.markdown("---")
-        
-        # ==========================================
-        # BLOCO 2: CENTRO DE CUSTO & LIDERANÇA
-        # ==========================================
         st.markdown("#### 🏢 Centro de Custo & Liderança")
         cv1, cv3, cv4 = st.columns([1, 1, 1])
         id_vaga = cv1.text_input("ID Vaga")
-        
-        lista_senior = ["", "Trainee", "Junior", "Pleno", "Senior", "Coordenador", "Gerente", "Diretor", "C-Level"]
-        senior = cv3.selectbox("Senioridade", options=lista_senior)
+        senior = cv3.selectbox("Senioridade", options=["", "Junior", "Pleno", "Senior", "Coordenador", "Gerente"])
         lider = cv4.selectbox("Liderança Direta", options=[""] + sorted(lista_nomes_ativos))
 
-        st.markdown("---")
-
-        # ==========================================
-        # BLOCO 3: DADOS PESSOAIS
-        # ==========================================
         st.markdown("#### 🏠 Dados Pessoais")
         cp1, cp2, cp3, cp4 = st.columns([1, 0.8, 1, 1.3])
         cpf = cp1.text_input("CPF (Somente números)")
         nasc = cp2.date_input("Nascimento", value=None, format="DD/MM/YYYY")
-        
-        lista_escolar = ["", "Ensino médio", "Ensino superior", "Pós graduação", "Mestrado", "Doutorado"]
-        escolar = cp3.selectbox("Escolaridade", options=lista_escolar)
+        escolar = cp3.selectbox("Escolaridade", ["", "Ensino médio", "Ensino superior", "Pós graduação"])
         e_pess = cp4.text_input("E-mail Pessoal")
 
         cp5, cp6, cp7 = st.columns([1, 2, 1])
-        tel = cp5.text_input("Telefone Pessoal (DDD+Número)")
-        drive = cp6.text_input("URL Drive (Documentos)")
+        tel = cp5.text_input("Telefone")
+        drive = cp6.text_input("URL Drive")
         cep = cp7.text_input("CEP")
 
-        st.markdown("<br>", unsafe_allow_html=True)
-        
-        # O botão dentro do formulário deve ser o st.form_submit_button
-        btn_gravar = st.form_submit_button("🚀 Gravar", use_container_width=True, type="primary")
+        btn_gravar = st.form_submit_button("🚀 Gravar na Planilha", use_container_width=True, type="primary")
 
         if btn_gravar:
-            # Validação interna de acentos para o Nome Curto (obrigatório V4)
-            import unicodedata
-            def tem_acento(t):
-                return t != ''.join(c for c in unicodedata.normalize('NFD', str(t)) if unicodedata.category(c) != 'Mn')
-
-            tel_numeros = re.sub(r'\D', '', str(tel)) if tel else ""
-
-            # --- REGRAS DE VALIDAÇÃO ---
             if not n_curto or not cpf:
                 st.error("⚠️ Nome e CPF são obrigatórios!")
-            elif tem_acento(n_curto):
-                st.error("🚨 O campo 'Nome' não pode conter acentos ou cedilha. Use 'Joao' em vez de 'João'.")
-            elif tel and len(tel_numeros) not in [10, 11]:
-                st.error("🚨 O 'Telefone' deve conter exatamente 10 ou 11 dígitos.")
             else:
                 try:
-                    # Formatações automáticas
-                    n_curto_fmt = tratar_string_v4(n_curto)
-                    n_completo_fmt = tratar_string_v4(n_completo)
-                    raz_soc_fmt = tratar_string_v4(raz_soc)
-                    val_term = "Indeterminado" if indet else dt_term.strftime("%d/%m/%Y")
-                    cbo_fmt = re.sub(r'\D', '', cbo_sel) if cbo_sel else ""
+                    # Lógica de Negócio: Se checkbox ativo, ignora a data e grava texto
+                    termino_final = "Indeterminado" if indet else dt_term.strftime("%d/%m/%Y")
 
-                    # Montagem da linha (41 colunas - AO)
                     linha = [
-                        n_curto_fmt, n_completo_fmt, foto, bp, matri, 
-                        dt_cont.strftime("%d/%m/%Y"), val_term, "Ativo", unid, mod_cont, 
-                        e_corp.lower(), mod_pj, ini_v4.strftime("%d/%m/%Y"), cnpj, raz_soc_fmt, 
-                        cargo, remun, cbo_fmt, "", id_vaga, "", "", 
+                        tratar_string_v4(n_curto), tratar_string_v4(n_completo), foto, bp, matri, 
+                        dt_cont.strftime("%d/%m/%Y"), termino_final, "Ativo", unid, mod_cont, 
+                        e_corp.lower(), mod_pj, ini_v4.strftime("%d/%m/%Y"), cnpj, tratar_string_v4(raz_soc), 
+                        cargo, remun, re.sub(r'\D', '', cbo_sel) if cbo_sel else "", "", id_vaga, "", "", 
                         senior, lider, "", "", limpar_numero(cpf), nasc.strftime("%d/%m/%Y") if nasc else "", 
                         cep, escolar, e_pess.lower(), tel, "", "", "Pendente", "", "", "", "", drive, ""
                     ]
 
-                    # Executa a gravação
                     gravar_no_google_sheets(linha)
-                    
-                    # Feedback visual (Como o form limpa, a mensagem aparece no topo ou abaixo do botão)
-                    st.success(f"✅ Investidor {n_curto_fmt} cadastrado com sucesso!")
-                    
-                    # Importante: NÃO damos st.rerun() aqui para o modal não fechar.
+                    st.success(f"✅ Investidor {tratar_string_v4(n_curto)} cadastrado com sucesso!")
                     
                 except Exception as e:
-                    st.error(f"Erro técnico ao gravar: {e}")
+                    st.error(f"Erro ao gravar: {e}")
                     
 # ==========================================
 # LÓGICA DE ALERTAS (ATIVOS)
