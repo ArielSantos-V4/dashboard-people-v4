@@ -142,39 +142,38 @@ def toggle_indet():
 # ==========================================
 @st.dialog("📝 Cadastro de Novo Investidor", width="large")
 def modal_cadastro_investidor(lista_nomes_ativos):
-    # Função interna para tratar strings (Regra V4)
+    # Função de tratamento V4
     def tratar_string_v4(texto):
         if not texto: return ""
         import unicodedata
         nfkd = unicodedata.normalize('NFKD', str(texto))
-        sem_acento = "".join([c for c in nfkd if not unicodedata.combining(c)])
-        return sem_acento.title().strip()
+        return "".join([c for c in nfkd if not unicodedata.combining(c)]).title().strip()
 
-    # --- INÍCIO DO FORMULÁRIO ---
+    # --- FORMULÁRIO PRINCIPAL ---
     with st.form("form_novo_investidor", clear_on_submit=True):
         st.markdown("#### 👤 Dados Principais")
         
+        # LINHA 1
         c1, c2, c3 = st.columns([1.5, 1.5, 1])
         n_curto = c1.text_input("Nome (Sem acentos)")
         n_completo = c2.text_input("Nome Completo")
         foto = c3.text_input("URL da Foto")
 
-        # Linha 2 com o seu layout original
+        # LINHA 2: Onde mora o problema
         c4, c5, c6, c_term, c7 = st.columns([0.5, 0.5, 0.7, 0.8, 1])
         bp = c4.number_input("BP", step=1, value=0)
         matri = c5.text_input("Matrícula")
         dt_cont = c6.date_input("Data do Contrato", format="DD/MM/YYYY")
         
-        # O segredo: usamos o st.session_state associado à key "cad_indet"
-        # Isso permite que o formulário saiba se o campo deve estar bloqueado
-        indet_ativo = st.session_state.get("cad_indet", True)
-        
-        dt_term = c_term.date_input("Término de contrato", format="DD/MM/YYYY", disabled=indet_ativo)
-        indet = c_term.checkbox("Indeterminado", value=True, key="cad_indet")
+        # SOLUÇÃO DEFINITIVA:
+        # 1. Verificamos o estado global da chave. 
+        # 2. Se o usuário clicar, o Streamlit agora vai processar o 'disabled' corretamente
+        indet_check = st.checkbox("Indeterminado", value=st.session_state.get("chk_indet_v4", True), key="chk_indet_v4")
+        dt_term = c_term.date_input("Término contrato", format="DD/MM/YYYY", disabled=indet_check)
         
         unid = c7.selectbox("Unidade/Atuação", ["Flagship", "Headquarters", "Híbrido", "Remoto", "Unidade São Leopoldo"])
-      
-        # ... restante das colunas (c8 até tel/cep) conforme seu código anterior ...
+
+        # ... (Restante dos campos conforme seu código anterior)
         c8, c9, c10, c11, c12 = st.columns([0.5, 1.4, 0.5, 0.8, 1.2])
         mod_cont = c8.selectbox("Modelo de Contrato", ["CLT", "PJ", "Estágio"])
         e_corp = c9.text_input("E-mail Corporativo")
@@ -210,7 +209,7 @@ def modal_cadastro_investidor(lista_nomes_ativos):
         cep = cp7.text_input("CEP")
 
         st.markdown("---")
-        # BOTÃO PRINCIPAL (Término da lógica de gravação)
+        # BOTÃO SUBMIT
         btn_gravar = st.form_submit_button("🚀 Gravar na Planilha", use_container_width=True, type="primary")
 
         if btn_gravar:
@@ -218,8 +217,8 @@ def modal_cadastro_investidor(lista_nomes_ativos):
                 st.error("⚠️ Nome e CPF são obrigatórios!")
             else:
                 try:
-                    # Regra de negócio: Checkbox marcado = texto na planilha
-                    val_termino = "Indeterminado" if indet else dt_term.strftime("%d/%m/%Y")
+                    # Regra de negócio respeitada
+                    val_termino = "Indeterminado" if indet_check else dt_term.strftime("%d/%m/%Y")
 
                     linha = [
                         tratar_string_v4(n_curto), tratar_string_v4(n_completo), foto, bp, matri, 
@@ -235,6 +234,10 @@ def modal_cadastro_investidor(lista_nomes_ativos):
                     
                 except Exception as e:
                     st.error(f"Erro ao gravar: {e}")
+
+    # GATILHO DE ATUALIZAÇÃO: Se o checkbox mudou, força o rerun para aplicar o 'disabled' no campo de data
+    if st.session_state.get("chk_indet_v4") != indet_check:
+        st.rerun()
                         
 # ==========================================
 # LÓGICA DE ALERTAS (ATIVOS)
