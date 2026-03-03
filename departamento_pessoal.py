@@ -234,20 +234,21 @@ def modal_cadastro_investidor(lista_nomes_ativos):
     st.markdown("---")
     
     if st.button("🚀 Gravar na Planilha", use_container_width=True, type="primary"):
+        # Funcao rapida para verificar se tem acento
         def tem_acento(texto):
-            return texto != ''.join(c for c in unicodedata.normalize('NFD', texto) if unicodedata.category(c) != 'Mn')
+            return texto != ''.join(c for c in unicodedata.normalize('NFD', str(texto)) if unicodedata.category(c) != 'Mn')
 
-        tel_numeros = re.sub(r'\D', '', tel) if tel else ""
+        tel_numeros = re.sub(r'\D', '', str(tel)) if tel else ""
 
         # --- VALIDAÇÕES ---
         if not n_curto or not cpf:
-            st.warning("⚠️ Nome e CPF são obrigatórios!")
+            st.warning("⚠️ Nome e CPF sao obrigatorios!")
         elif tem_acento(n_curto):
             st.error("🚨 O campo 'Nome' não pode conter acentos ou cedilha (Ex: Use 'Joao' em vez de 'João').")
         elif tel and len(tel_numeros) not in [10, 11]:
             st.error("🚨 O 'Telefone' deve conter exatamente 10 ou 11 dígitos.")
         else:
-            # --- FORMATAÇÕES AUTOMÁTICAS ---
+            # --- FORMATACOES AUTOMATICAS ---
             n_curto_fmt = n_curto.title()
             n_completo_fmt = n_completo.title()
             e_corp_fmt = e_corp.lower()
@@ -270,8 +271,12 @@ def modal_cadastro_investidor(lista_nomes_ativos):
             try:
                 gravar_no_google_sheets(linha)
                 
-                # --- ZERA OS CAMPOS IMEDIATAMENTE APÓS SALVAR ---
-                # Essa lista é fundamental. Estamos DELETANDO a chave, em vez de modificá-la para vazio
+                # O st.toast mostra a mensagem de sucesso no canto da tela
+                st.toast(f"✅ Investidor {n_curto_fmt} cadastrado com sucesso!")
+                
+                # --- ZERA OS CAMPOS PARA O PROXIMO ---
+                # Importante: Como nao estamos usando st.rerun(),
+                # vamos usar o modo mais agressivo de limpar a sessao
                 chaves_limpar = [
                     "cad_n_curto", "cad_n_comp", "cad_foto", "cad_matri", "cad_e_corp", 
                     "cad_mod_pj", "cad_cnpj", "cad_raz_soc", "cad_cargo", "cad_remun", 
@@ -281,15 +286,13 @@ def modal_cadastro_investidor(lista_nomes_ativos):
                 for k in chaves_limpar:
                     if k in st.session_state:
                         del st.session_state[k]
-
-                # Restaurando padrões para números/booleanos
-                st.session_state["cad_bp"] = 0
-                st.session_state["cad_indet"] = True
-
-                # Define a mensagem que será lida na linha 1 do modal e renderizada
-                st.session_state.msg_sucesso = f"✅ Investidor {n_curto_fmt} cadastrado com sucesso!"
                 
-                # NENHUM ST.RERUN AQUI. O botão natural já força um rerun, e ao encontrar a tela, os campos estarão zerados!
+                # Para os campos numericos e boleanos
+                if "cad_bp" in st.session_state: del st.session_state["cad_bp"]
+                if "cad_indet" in st.session_state: del st.session_state["cad_indet"]
+                
+                # RERUN - O pulo do gato pra limpar sem fechar a modal!
+                st.rerun()
                 
             except Exception as e:
                 st.error(f"Erro ao gravar: {e}")
