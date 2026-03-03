@@ -133,6 +133,9 @@ def gravar_no_google_sheets(dados_lista):
     
     # 3. Executa o update
     sheet.update(range_name=range_nome, values=[dados_lista], value_input_option="USER_ENTERED")
+
+def toggle_indet():
+    st.session_state.indet_ativo = not st.session_state.indet_ativo
     
 # ==========================================
 # MODAL DE CADASTRO
