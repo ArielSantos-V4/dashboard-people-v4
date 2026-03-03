@@ -164,37 +164,42 @@ def modal_cadastro_investidor(lista_nomes_ativos):
         n_completo = c2.text_input("Nome Completo", key=f"n_comp_{s}")
         foto = c3.text_input("URL da Foto", key=f"foto_{s}")
 
-        # LINHA 2 (Design Alinhado)
-        c4, c5, c6, c_term, c7 = st.columns([0.5, 0.5, 0.7, 0.8, 1])
+        # LINHA 2 - Ajuste de Alinhamento e Tamanho
+        # Aumentamos o número de colunas para ter controle fino sobre o tamanho de cada uma
+        c4, c5, c6, c_term, c7 = st.columns([0.5, 0.5, 0.7, 1.2, 1])
         
         c4.number_input("BP", step=1, value=0, key=f"bp_{s}")
         c5.text_input("Matrícula", key=f"matri_{s}")
-        c6.date_input("Data do Contrato", format="DD/MM/YYYY", key=f"dt_cont_{s}")
         
-        # --- AJUSTE FINO DO TÉRMINO ---
+        # Diminuindo visualmente a Data do Contrato (usando micro-coluna interna)
+        with c6:
+            st.markdown("<p style='font-size: 14px; margin-bottom: 5px;'>Data do Contrato</p>", unsafe_allow_html=True)
+            st.date_input("Data do Contrato", format="DD/MM/YYYY", key=f"dt_cont_{s}", label_visibility="collapsed")
+
+        # --- TÉRMINO E CHECKBOX (LADO A LADO E ALINHADO) ---
         with c_term:
-            # CSS Injetado para alinhar o checkbox verticalmente com o label "Término"
+            # Container para Título e Checkbox na mesma linha
+            titulo_col, check_col = st.columns([1, 1.1])
+            titulo_col.markdown("<p style='font-size: 14px; margin-top: 5px;'>Término</p>", unsafe_allow_html=True)
+            
+            # CSS para alinhar o checkbox verticalmente com o título
             st.markdown("""
                 <style>
-                    /* Ajusta a margem do checkbox para alinhar com o texto ao lado */
-                    [data-testid="stCheckbox"] {
-                        margin-bottom: -15px;
-                        margin-top: -5px;
+                    div[data-testid="stCheckbox"] {
+                        margin-top: 2px;
+                        margin-left: -20px;
                     }
-                    /* Diminui a fonte do checkbox */
-                    [data-testid="stCheckbox"] label p {
+                    div[data-testid="stCheckbox"] label p {
                         font-size: 0.85rem !important;
+                        white-space: nowrap;
                     }
                 </style>
             """, unsafe_allow_html=True)
             
-            # Micro-colunas para Título e Checkbox lado a lado
-            ct1, ct2 = st.columns([1, 1.2])
-            ct1.markdown("<p style='margin-bottom: 0px; font-size: 14px; font-weight: 400;'>Término</p>", unsafe_allow_html=True)
-            indet = ct2.checkbox("Indet.", value=True, key=f"indet_{s}")
+            indet = check_col.checkbox("Indeterminado", value=True, key=f"indet_{s}")
             
-            # Campo de data sem label (collapsed) para não criar buracos no layout
-            dt_term = st.date_input("Termino_Label_Hidden", format="DD/MM/YYYY", disabled=indet, key=f"dt_term_{s}", label_visibility="collapsed")
+            # Campo de data ocupando a largura total da coluna c_term, logo abaixo
+            dt_term = st.date_input("Término_Hidden", format="DD/MM/YYYY", disabled=indet, key=f"dt_term_{s}", label_visibility="collapsed")
         
         c7.selectbox("Unidade/Atuação", ["Flagship", "Headquarters", "Híbrido", "Remoto", "Unidade São Leopoldo"], key=f"unid_{s}")
         
