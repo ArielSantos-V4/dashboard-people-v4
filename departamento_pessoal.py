@@ -150,40 +150,31 @@ def modal_cadastro_investidor(lista_nomes_ativos):
         sem_acento = "".join([c for c in nfkd if not unicodedata.combining(c)])
         return sem_acento.title().strip()
 
-    # --- INÍCIO DO FORMULÁRIO (TUDO AQUI DENTRO) ---
+    # --- INÍCIO DO FORMULÁRIO ---
     with st.form("form_novo_investidor", clear_on_submit=True):
         st.markdown("#### 👤 Dados Principais")
         
-        # LINHA 1
         c1, c2, c3 = st.columns([1.5, 1.5, 1])
         n_curto = c1.text_input("Nome (Sem acentos)")
         n_completo = c2.text_input("Nome Completo")
         foto = c3.text_input("URL da Foto")
 
-        # LINHA 2 (Onde está o segredo do alinhamento)
+        # Linha 2 com o seu layout original
         c4, c5, c6, c_term, c7 = st.columns([0.5, 0.5, 0.7, 0.8, 1])
         bp = c4.number_input("BP", step=1, value=0)
         matri = c5.text_input("Matrícula")
         dt_cont = c6.date_input("Data do Contrato", format="DD/MM/YYYY")
         
-        # TRUQUE TÉCNICO: 
-        # Como o checkbox está dentro do form, usamos st.session_state para checar a key dele.
-        # Na primeira vez ele não existe, então usamos o padrão True.
-        foi_marcado = st.session_state.get("chk_indet_v4", True)
+        # O segredo: usamos o st.session_state associado à key "cad_indet"
+        # Isso permite que o formulário saiba se o campo deve estar bloqueado
+        indet_ativo = st.session_state.get("cad_indet", True)
         
-        # Agora o campo fica EXATAMENTE onde você quer, dentro da c_term
-        dt_term = c_term.date_input("Término contrato", format="DD/MM/YYYY", disabled=foi_marcado)
-        indet = c_term.checkbox("Indeterminado", value=True, key="chk_indet_v4")
+        dt_term = c_term.date_input("Término de contrato", format="DD/MM/YYYY", disabled=indet_ativo)
+        indet = c_term.checkbox("Indeterminado", value=True, key="cad_indet")
         
         unid = c7.selectbox("Unidade/Atuação", ["Flagship", "Headquarters", "Híbrido", "Remoto", "Unidade São Leopoldo"])
-
-        # BOTÃO PARA ATUALIZAR O BLOQUEIO (Gatilho visual)
-        # Como o form não atualiza sozinho ao clicar no check, o usuário clica aqui 
-        # ou apenas preenche o resto e o sistema valida no final.
-        if st.form_submit_button("🔄 Validar bloqueio de data"):
-            st.rerun()
-
-        # ... (Restante dos campos: c8 até tel/cep - Mantenha como você já tem)
+      
+        # ... restante das colunas (c8 até tel/cep) conforme seu código anterior ...
         c8, c9, c10, c11, c12 = st.columns([0.5, 1.4, 0.5, 0.8, 1.2])
         mod_cont = c8.selectbox("Modelo de Contrato", ["CLT", "PJ", "Estágio"])
         e_corp = c9.text_input("E-mail Corporativo")
@@ -219,7 +210,7 @@ def modal_cadastro_investidor(lista_nomes_ativos):
         cep = cp7.text_input("CEP")
 
         st.markdown("---")
-        # BOTÃO PRINCIPAL
+        # BOTÃO PRINCIPAL (Término da lógica de gravação)
         btn_gravar = st.form_submit_button("🚀 Gravar na Planilha", use_container_width=True, type="primary")
 
         if btn_gravar:
@@ -227,12 +218,12 @@ def modal_cadastro_investidor(lista_nomes_ativos):
                 st.error("⚠️ Nome e CPF são obrigatórios!")
             else:
                 try:
-                    # Lógica de gravação infalível: Se o check estiver marcado no formulário, ignora a data.
-                    termino_final = "Indeterminado" if indet else dt_term.strftime("%d/%m/%Y")
+                    # Regra de negócio: Checkbox marcado = texto na planilha
+                    val_termino = "Indeterminado" if indet else dt_term.strftime("%d/%m/%Y")
 
                     linha = [
                         tratar_string_v4(n_curto), tratar_string_v4(n_completo), foto, bp, matri, 
-                        dt_cont.strftime("%d/%m/%Y"), termino_final, "Ativo", unid, mod_cont, 
+                        dt_cont.strftime("%d/%m/%Y"), val_termino, "Ativo", unid, mod_cont, 
                         e_corp.lower(), mod_pj, ini_v4.strftime("%d/%m/%Y"), cnpj, tratar_string_v4(raz_soc), 
                         cargo, remun, re.sub(r'\D', '', cbo_sel) if cbo_sel else "", "", id_vaga, "", "", 
                         senior, lider, "", "", limpar_numero(cpf), nasc.strftime("%d/%m/%Y") if nasc else "", 
@@ -241,7 +232,6 @@ def modal_cadastro_investidor(lista_nomes_ativos):
 
                     gravar_no_google_sheets(linha)
                     st.success(f"✅ Investidor {tratar_string_v4(n_curto)} cadastrado com sucesso!")
-                    # O formulário limpa os campos de texto sozinho aqui.
                     
                 except Exception as e:
                     st.error(f"Erro ao gravar: {e}")
