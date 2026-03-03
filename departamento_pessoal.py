@@ -164,19 +164,34 @@ def modal_cadastro_investidor(lista_nomes_ativos):
         n_completo = c2.text_input("Nome Completo", key=f"n_comp_{s}")
         foto = c3.text_input("URL da Foto", key=f"foto_{s}")
 
-        # LINHA 2 (Solta para o bloqueio ser instantâneo)
+        # LINHA 2 (Ajustada para Título e Checkbox lado a lado)
         c4, c5, c6, c_term, c7 = st.columns([0.5, 0.5, 0.7, 0.8, 1])
+        
         bp = c4.number_input("BP", step=1, value=0, key=f"bp_{s}")
         matri = c5.text_input("Matrícula", key=f"matri_{s}")
         dt_cont = c6.date_input("Data do Contrato", format="DD/MM/YYYY", key=f"dt_cont_{s}")
         
-        # O BLOQUEIO AGORA VAI FUNCIONAR NA HORA
-        indet = c_term.checkbox("Indeterminado", value=True, key=f"indet_{s}")
-        dt_term = c_term.date_input("Término contrato", format="DD/MM/YYYY", disabled=indet, key=f"dt_term_{s}")
+        # --- AJUSTE DO TÉRMINO (Título e Check lado a lado) ---
+        with c_term:
+            # CSS para diminuir a fonte apenas do texto do checkbox
+            st.markdown("""
+                <style>
+                    div[data-testid="stCheckbox"] label p {
+                        font-size: 0.8rem !important;
+                        margin-top: 5px;
+                    }
+                </style>
+            """, unsafe_allow_html=True)
+            
+            # Criamos duas micro-colunas: uma para o label e outra para o check
+            ct1, ct2 = st.columns([1.1, 1])
+            ct1.markdown("<p style='font-size: 14px; font-weight: 400; margin-bottom: -10px;'>Término</p>", unsafe_allow_html=True)
+            indet = ct2.checkbox("Indet.", value=True, key=f"indet_{s}")
+            
+            # O campo de data logo abaixo
+            dt_term = st.date_input("Label_Oculto", format="DD/MM/YYYY", disabled=indet, key=f"dt_term_{s}", label_visibility="collapsed")
         
         unid = c7.selectbox("Unidade/Atuação", ["Flagship", "Headquarters", "Híbrido", "Remoto", "Unidade São Leopoldo"], key=f"unid_{s}")
-
-        st.markdown("---")
         
         # LINHA 3 EM DIANTE
         c8, c9, c10, c11, c12 = st.columns([0.5, 1.4, 0.5, 0.8, 1.2])
@@ -192,12 +207,14 @@ def modal_cadastro_investidor(lista_nomes_ativos):
         remun = c15.text_input("Remuneração", key=f"rem_{s}")
         cbo_sel = c15b.selectbox("CBO", options=[""] + buscar_lista_cbo(), key=f"cbo_{s}")
 
+        st.markdown("---")
         st.markdown("#### 🏢 Centro de Custo & Liderança")
         cv1, cv3, cv4 = st.columns([1, 1, 1])
         id_vaga = cv1.text_input("ID Vaga", key=f"vaga_{s}")
         senior = cv3.selectbox("Senioridade", ["", "Junior", "Pleno", "Senior", "Gerente"], key=f"sen_{s}")
         lider = cv4.selectbox("Liderança Direta", [""] + sorted(lista_nomes_ativos), key=f"lid_{s}")
 
+        st.markdown("---")
         st.markdown("#### 🏠 Dados Pessoais")
         cp1, cp2, cp3, cp4 = st.columns([1, 0.8, 1, 1.3])
         cpf = cp1.text_input("CPF", key=f"cpf_{s}")
@@ -211,7 +228,8 @@ def modal_cadastro_investidor(lista_nomes_ativos):
         cep = cp7.text_input("CEP", key=f"cep_{s}")
 
         st.markdown("<br>", unsafe_allow_html=True)
-        
+
+        st.markdown("---")
         # BOTÃO DE GRAVAR (Fora de st.form para não travar a reatividade)
         if st.button("🚀 Gravar na Planilha", use_container_width=True, type="primary"):
             if not n_curto or not cpf:
