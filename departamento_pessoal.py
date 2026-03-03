@@ -245,7 +245,7 @@ def modal_cadastro_investidor(lista_nomes_ativos):
     st.markdown("---")
     
     if st.button("🚀 Gravar na Planilha", use_container_width=True, type="primary"):
-        # Função rápida para verificar se tem acento
+        # Função para verificar acentos
         def tem_acento(texto):
             return texto != ''.join(c for c in unicodedata.normalize('NFD', texto) if unicodedata.category(c) != 'Mn')
 
@@ -282,8 +282,23 @@ def modal_cadastro_investidor(lista_nomes_ativos):
             try:
                 gravar_no_google_sheets(linha)
                 
-                # Apenas liga o gatilho de sucesso e reinicia a tela!
-                st.session_state["sucesso_cadastro"] = True
+                # Deleta os dados do estado para que o rerun renderize campos vazios
+                chaves_limpar = [
+                    "cad_n_curto", "cad_n_comp", "cad_foto", "cad_matri", "cad_e_corp", 
+                    "cad_mod_pj", "cad_cnpj", "cad_raz_soc", "cad_cargo", "cad_remun", 
+                    "cad_cbo_list", "cad_id_vaga", "cad_senior", "cad_lider", "cad_cpf", 
+                    "cad_escolar", "cad_e_pess", "cad_tel", "cad_drive", "cad_cep",
+                    "cad_bp", "cad_indet", "cad_dt_cont", "cad_dt_term", "cad_unid", 
+                    "cad_mod_cont", "cad_ini_v4", "cad_nasc"
+                ]
+                
+                for k in chaves_limpar:
+                    if k in st.session_state:
+                        del st.session_state[k]
+
+                st.toast(f"✅ Investidor {n_curto_fmt} cadastrado com sucesso!")
+                
+                # Reinicia a tela e exibe com os campos em branco
                 st.rerun()
                 
             except Exception as e:
