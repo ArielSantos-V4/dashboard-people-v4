@@ -168,7 +168,7 @@ def modal_cadastro_investidor(lista_nomes_ativos):
         # SOLUÇÃO DEFINITIVA:
         # 1. Verificamos o estado global da chave. 
         # 2. Se o usuário clicar, o Streamlit agora vai processar o 'disabled' corretamente
-        indet_check = st.checkbox("Indeterminado", value=st.session_state.get("chk_indet_v4", True), key="chk_indet_v4")
+        indet_check = st.checkbox("Indeterminado", value=st.session_state.get("chk_indet_v4", False), key="chk_indet_v4")
         dt_term = c_term.date_input("Término contrato", format="DD/MM/YYYY", disabled=indet_check)
         
         unid = c7.selectbox("Unidade/Atuação", ["Flagship", "Headquarters", "Híbrido", "Remoto", "Unidade São Leopoldo"])
