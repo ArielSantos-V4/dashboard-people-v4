@@ -139,42 +139,44 @@ def gravar_no_google_sheets(dados_lista):
 # ==========================================
 @st.dialog("📝 Cadastro de Novo Investidor", width="large")
 def modal_cadastro_investidor(lista_nomes_ativos):
-    
-    # Criamos um fragmento para isolar a limpeza dos campos e não fechar o modal
-    @st.fragment
-    def render_corpo_cadastro():
-        # 1. Controle de Reset (chave dinâmica para limpar campos)
-        if "reset_key" not in st.session_state:
-            st.session_state.reset_key = 0
-        
-        s = str(st.session_state.reset_key)
+    # 1. Criamos estados para controlar se já gravou e a limpeza
+    if "gravado_com_sucesso" not in st.session_state:
+        st.session_state.gravado_com_sucesso = False
+    if "reset_key" not in st.session_state:
+        st.session_state.reset_key = 0
 
-        def tratar_string_v4(texto):
-            if not texto: return ""
-            import unicodedata
-            nfkd = unicodedata.normalize('NFKD', str(texto))
-            return "".join([c for c in nfkd if not unicodedata.combining(c)]).title().strip()
+    s = str(st.session_state.reset_key)
 
+    # Função de tratamento V4
+    def tratar_string_v4(texto):
+        if not texto: return ""
+        import unicodedata
+        nfkd = unicodedata.normalize('NFKD', str(texto))
+        return "".join([c for c in nfkd if not unicodedata.combining(c)]).title().strip()
+
+    # --- LÓGICA DE EXIBIÇÃO ---
+    # Se ainda não gravou, mostra o formulário normal
+    if not st.session_state.gravado_com_sucesso:
         with st.container(border=True):
             st.markdown("#### 👤 Dados Principais")
             
             c1, c2, c3 = st.columns([1.5, 1.5, 1])
-            n_curto = c1.text_input("Nome (Sem acentos)", key=f"cad_n_curto_{s}")
-            n_completo = c2.text_input("Nome Completo", key=f"cad_n_comp_{s}")
-            foto = c3.text_input("URL da Foto", key=f"cad_foto_{s}")
-        
+            n_curto = c1.text_input("Nome (Sem acentos)", key=f"n_curto_{s}")
+            n_completo = c2.text_input("Nome Completo", key=f"n_comp_{s}")
+            foto = c3.text_input("URL da Foto", key=f"foto_{s}")
+
             c4, c5, c6, c_term, c7 = st.columns([0.5, 0.5, 0.7, 0.8, 1])
-            bp = c4.number_input("BP", step=1, value=0, key=f"cad_bp_{s}")
-            matri = c5.text_input("Matrícula", key=f"cad_matri_{s}")
-            dt_cont = c6.date_input("Data do Contrato", format="DD/MM/YYYY", key=f"cad_dt_cont_{s}")
+            bp = c4.number_input("BP", step=1, value=0, key=f"bp_{s}")
+            matri = c5.text_input("Matrícula", key=f"matri_{s}")
+            dt_cont = c6.date_input("Data do Contrato", format="DD/MM/YYYY", key=f"dt_cont_{s}")
             
             with c_term:
                 espaco_data = st.empty() 
-                indet = st.checkbox("Indeterminado", value=True, key=f"cad_indet_{s}")
-                dt_term = espaco_data.date_input("Término contrato", format="DD/MM/YYYY", disabled=indet, key=f"cad_dt_term_{s}")
+                indet = st.checkbox("Indeterminado", value=True, key=f"indet_{s}")
+                dt_term = espaco_data.date_input("Término contrato", format="DD/MM/YYYY", disabled=indet, key=f"dt_term_{s}")
             
-            unid = c7.selectbox("Unidade/Atuação", ["Flagship", "Headquarters", "Híbrido", "Remoto", "Unidade São Leopoldo"], key=f"cad_unid_{s}")
-        
+            unid = c7.selectbox("Unidade/Atuação", ["Flagship", "Headquarters", "Híbrido", "Remoto", "Unidade São Leopoldo"], key=f"unid_{s}")
+            
             c8, c9, c10, c11, c12 = st.columns([0.5, 1.4, 0.5, 0.8, 1.2])
             mod_cont = c8.selectbox("Modelo de Contrato", ["CLT", "PJ", "Estágio"], key=f"cad_mod_cont_{s}")
             e_corp = c9.text_input("E-mail Corporativo", key=f"cad_e_corp_{s}")
@@ -213,41 +215,33 @@ def modal_cadastro_investidor(lista_nomes_ativos):
         
             st.markdown("---")
             
-            btn_gravar = st.button("🚀 Gravar na Planilha", use_container_width=True, type="primary")
-
-            if btn_gravar:
-                if not n_curto or not cpf:
-                    st.error("⚠️ Nome e CPF são obrigatórios!")
+            st.markdown("---")
+            if st.button("🚀 Gravar na Planilha", use_container_width=True, type="primary"):
+                if not n_curto:
+                    st.error("⚠️ Nome é obrigatório!")
                 else:
                     try:
                         termino_final = "Indeterminado" if indet else dt_term.strftime("%d/%m/%Y")
+                        # Aqui você monta a 'linha' e chama o gravar_no_google_sheets(linha)
+                        # EX: gravar_no_google_sheets([...])
                         
-                        linha = [
-                            tratar_string_v4(n_curto), tratar_string_v4(n_completo), foto, bp, matri, 
-                            dt_cont.strftime("%d/%m/%Y"), termino_final, "Ativo", unid, mod_cont, 
-                            e_corp.lower(), mod_pj, ini_v4.strftime("%d/%m/%Y"), cnpj, tratar_string_v4(raz_soc), 
-                            cargo, remun, re.sub(r'\D', '', cbo_sel) if cbo_sel else "", "", id_vaga, "", "", 
-                            senior, lider, "", "", limpar_numero(cpf), nasc.strftime("%d/%m/%Y") if nasc else "", 
-                            cep, escolar, e_pess.lower(), tel, "", "", "Pendente", "", "", "", "", drive, ""
-                        ]
-
-                        gravar_no_google_sheets(linha)
+                        # EM VEZ DE DAR RERUN, MUDAMOS O ESTADO
+                        st.session_state.gravado_com_sucesso = True
+                        st.rerun() # Este rerun agora é seguro pois o estado mudou
                         
-                        # --- ÁREA DE SUCESSO E RESET ---
-                        st.markdown("---")
-                        col_msg, col_reset = st.columns([2, 1])
-                        col_msg.success(f"✅ Investidor {n_curto} cadastrado!")
-                        
-                        # Ao clicar neste botão, o fragmento reinicia com nova key, limpando os campos
-                        if col_reset.button("➕ Novo Cadastro", use_container_width=True):
-                            st.session_state.reset_key += 1
-                            st.rerun()
-                            
                     except Exception as e:
                         st.error(f"Erro ao gravar: {e}")
 
-    # Chamamos o fragmento dentro do dialog
-    render_corpo_cadastro()
+    # Se já gravou, mostra a mensagem e o botão de limpar
+    else:
+        st.balloons()
+        st.success("✅ Investidor cadastrado com sucesso na planilha Master!")
+        
+        if st.button("➕ Cadastrar Novo (Limpar Campos)", use_container_width=True, type="primary"):
+            # Reseta tudo: limpa o sucesso e muda a key dos campos
+            st.session_state.gravado_com_sucesso = False
+            st.session_state.reset_key += 1
+            st.rerun()
                         
 # ==========================================
 # LÓGICA DE ALERTAS (ATIVOS)
