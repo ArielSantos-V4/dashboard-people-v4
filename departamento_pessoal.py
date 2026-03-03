@@ -155,14 +155,17 @@ def modal_cadastro_investidor(lista_nomes_ativos):
     n_completo = c2.text_input("Nome Completo", key="cad_n_comp")
     foto = c3.text_input("URL da Foto", key="cad_foto")
 
-    # Adicionado Término de Contrato com Checkbox
+    # Linha 2: BP; Matrícula; Data contrato; Término; Unidade
     c4, c5, c6, c_term, c7 = st.columns([0.5, 0.5, 0.7, 0.8, 1])
     bp = c4.number_input("BP", step=1, value=0, key="cad_bp")
     matri = c5.text_input("Matrícula", key="cad_matri")
     dt_cont = c6.date_input("Data do Contrato", value=datetime.today(), format="DD/MM/YYYY", key="cad_dt_cont")
     
+    # Truque: Lemos o valor do checkbox (padrão True) antes de renderizar ele para travar a data
+    indet_state = st.session_state.get("cad_indet", True)
+    dt_term = c_term.date_input("Término de contrato", value=datetime.today(), format="DD/MM/YYYY", disabled=indet_state, key="cad_dt_term")
+    # Agora o checkbox fica embaixo!
     indet = c_term.checkbox("Indeterminado", value=True, key="cad_indet")
-    dt_term = c_term.date_input("Término", value=datetime.today(), format="DD/MM/YYYY", disabled=indet, key="cad_dt_term", label_visibility="collapsed")
     
     unid = c7.selectbox("Unidade/Atuação", ["Flagship", "Headquarters", "Híbrido", "Remoto", "Unidade São Leopoldo"], key="cad_unid")
 
