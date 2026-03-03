@@ -161,7 +161,7 @@ def modal_cadastro_investidor(lista_nomes_ativos):
         n_completo = c2.text_input("Nome Completo", key=f"n_comp_{s}")
         foto = c3.text_input("URL da Foto", key=f"foto_{s}")
 
-        # LINHA 2 (Reatividade garantida)
+        # LINHA 2
         c4, c5, c6, c_term, c7 = st.columns([0.5, 0.5, 0.7, 0.8, 1])
         bp = c4.number_input("BP", step=1, value=0, key=f"bp_{s}")
         matri = c5.text_input("Matrícula", key=f"matri_{s}")
@@ -169,50 +169,76 @@ def modal_cadastro_investidor(lista_nomes_ativos):
         
         with c_term:
             espaco_data = st.empty() 
-            indet = st.checkbox("Indeterminado", value=True, key=f"indet_{s}")
+            indet = c_term.checkbox("Indeterminado", value=True, key=f"indet_{s}")
             dt_term = espaco_data.date_input("Término contrato", format="DD/MM/YYYY", disabled=indet, key=f"dt_term_{s}")
         
         unid = c7.selectbox("Unidade/Atuação", ["Flagship", "Headquarters", "Híbrido", "Remoto", "Unidade São Leopoldo"], key=f"unid_{s}")
 
-        # ... (Mantive o restante dos campos conforme seu código original)
-        # [CÓDIGO DOS CAMPOS C8 ATÉ CEP]
+        # LINHA 3
+        c8, c9, c10, c11, c12 = st.columns([0.5, 1.4, 0.5, 0.8, 1.2])
+        mod_cont = c8.selectbox("Modelo de Contrato", ["CLT", "PJ", "Estágio"], key=f"mod_cont_{s}")
+        e_corp = c9.text_input("E-mail Corporativo", key=f"e_corp_{s}")
+        mod_pj = c10.selectbox("Modalidade PJ", ["", "MEI", "SLU"], key=f"mod_pj_{s}")
+        ini_v4 = c11.date_input("Início na V4", format="DD/MM/YYYY", key=f"ini_v4_{s}")
+        cnpj = c12.text_input("CNPJ", key=f"cnpj_{s}")
+        
+        # LINHA 4
+        c13, c14, c15, c15b = st.columns([1.5, 1.2, 1, 0.5])
+        raz_soc = c13.text_input("Razão Social", key=f"raz_soc_{s}")
+        cargo = c14.text_input("Cargo", key=f"cargo_{s}")
+        remun = c15.text_input("Remuneração", key=f"remun_{s}")
+        cbo_sel = c15b.selectbox("CBO", options=[""] + buscar_lista_cbo(), key=f"cbo_list_{s}")
+
+        st.markdown("#### 🏢 Centro de Custo & Liderança")
+        cv1, cv3, cv4 = st.columns([1, 1, 1])
+        id_vaga = cv1.text_input("ID Vaga", key=f"id_vaga_{s}")
+        senior = cv3.selectbox("Senioridade", ["", "Junior", "Pleno", "Senior", "Gerente"], key=f"senior_{s}")
+        lider = cv4.selectbox("Liderança Direta", [""] + sorted(lista_nomes_ativos), key=f"lider_{s}")
+
+        st.markdown("#### 🏠 Dados Pessoais")
+        cp1, cp2, cp3, cp4 = st.columns([1, 0.8, 1, 1.3])
+        cpf = cp1.text_input("CPF (Somente números)", key=f"cpf_{s}")
+        nasc = cp2.date_input("Nascimento", value=None, format="DD/MM/YYYY", key=f"nasc_{s}")
+        escolar = cp3.selectbox("Escolaridade", ["", "Ensino médio", "Ensino superior", "Pós graduação"], key=f"escolar_{s}")
+        e_pess = cp4.text_input("E-mail Pessoal", key=f"e_pess_{s}")
+
+        cp5, cp6, cp7 = st.columns([1, 2, 1])
+        tel = cp5.text_input("Telefone", key=f"tel_{s}")
+        drive = cp6.text_input("URL Drive", key=f"drive_{s}")
+        cep = cp7.text_input("CEP", key=f"cep_{s}")
 
         st.markdown("---")
         
-        # ÁREA DE AÇÃO FINAL
-        btn_gravar = st.button("🚀 Gravar na Planilha", use_container_width=True, type="primary")
-
-        if btn_gravar:
-            if not n_curto or not st.session_state.get(f"cad_cpf"): # Validando via session_state
+        # BOTÃO DE GRAVAR
+        if st.button("🚀 Gravar na Planilha", use_container_width=True, type="primary"):
+            if not n_curto or not cpf:
                 st.error("⚠️ Nome e CPF são obrigatórios!")
             else:
                 try:
-                    termino_final = "Indeterminado" if indet else dt_term.strftime("%d/%m/%Y")
+                    val_term = "Indeterminado" if indet else dt_term.strftime("%d/%m/%Y")
                     
-                    # Captura os dados usando as chaves dinâmicas
                     linha = [
                         tratar_string_v4(n_curto), tratar_string_v4(n_completo), foto, bp, matri, 
-                        dt_cont.strftime("%d/%m/%Y"), termino_final, "Ativo", unid, 
-                        st.session_state.get(f"cad_mod_cont_{s}"), # Exemplo de captura direta
-                        # ... (Restante das colunas conforme seu padrão)
+                        dt_cont.strftime("%d/%m/%Y"), val_term, "Ativo", unid, mod_cont, 
+                        e_corp.lower(), mod_pj, ini_v4.strftime("%d/%m/%Y"), cnpj, tratar_string_v4(raz_soc), 
+                        cargo, remun, re.sub(r'\D', '', cbo_sel) if cbo_sel else "", "", id_vaga, "", "", 
+                        senior, lider, "", "", limpar_numero(cpf), nasc.strftime("%d/%m/%Y") if nasc else "", 
+                        cep, escolar, e_pess.lower(), tel, "", "", "Pendente", "", "", "", "", drive, ""
                     ]
 
                     gravar_no_google_sheets(linha)
                     
-                    # MENSAGEM QUE APARECE LOGO ABAIXO SEM FECHAR NADA
-                    st.success(f"✅ Investidor {n_curto} gravado!")
+                    # SUCESSO: Apenas mostramos na tela, sem nenhum comando de rerun.
+                    st.success(f"✅ Investidor {n_curto} cadastrado com sucesso!")
                     
-                    # BOTÃO PARA LIMPAR QUE VOCÊ SOLICITOU
-                    if st.button("➕ Limpar Tudo para Novo Cadastro", use_container_width=True):
+                    # BOTÃO PARA LIMPAR (Este é o único que pode dar rerun)
+                    if st.button("➕ Limpar campos para novo cadastro", use_container_width=True):
                         st.session_state.reset_key += 1
-                        st.rerun() # Este rerun só acontece quando VOCÊ clica em limpar
+                        st.rerun()
 
                 except Exception as e:
                     st.error(f"Erro ao gravar: {e}")
-
-# Para chamar o modal, use apenas:
-# if st.button("Cadastrar"): modal_cadastro_investidor(lista_nomes)
-                        
+                    
 # ==========================================
 # LÓGICA DE ALERTAS (ATIVOS)
 # ==========================================
