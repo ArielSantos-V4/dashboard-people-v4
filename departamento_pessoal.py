@@ -1647,7 +1647,7 @@ def render(df_ativos, df_desligados):
                     
                     st.info(f"📊 **Total de Admitidos no período:** {len(df_adm_result)} pessoas")
 
-                    cols_exibir_adm = ["Nome", "E-mail corporativo", "Cargo", "Início na V4"]
+                    cols_exibir_adm = ["Nome", "E-mail corporativo", "Cargo", "Modelo de contrato", "Início na V4"]
                     st.dataframe(df_adm_result[cols_exibir_adm], use_container_width=True, hide_index=True)
                 else:
                     st.error("Coluna 'Início na V4' não encontrada.")
@@ -1666,7 +1666,7 @@ def render(df_ativos, df_desligados):
                     
                     st.info(f"📊 **Total de Desligados no período:** {len(df_des_result)} pessoas")
 
-                    cols_exibir_des = ["Nome", "E-mail corporativo", "Cargo", "Início na V4", "Data de rescisão"]
+                    cols_exibir_des = ["Nome", "E-mail corporativo", "Cargo", "Modelo de contrato", "Início na V4", "Data de rescisão"]
                     st.dataframe(df_des_result[cols_exibir_des], use_container_width=True, hide_index=True)
                 else:
                     st.error("Coluna 'Data de rescisão' não encontrada.")
