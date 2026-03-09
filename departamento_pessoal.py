@@ -1626,6 +1626,52 @@ def render(df_ativos, df_desligados):
                     st.error(f"Coluna '{col_lider}' não encontrada na base de dados.")
                     
             # ==========================================
+            # 4. ADMITIDOS NO PERÍODO
+            # ==========================================
+            with st.expander("🌱 Admitidos por Período", expanded=False):
+                c1, c2, c3 = st.columns([1, 1, 1])
+                dt_ini_adm = c1.date_input("Data Inicial (Admissão)", value=date.today() - relativedelta(months=1), format="DD/MM/YYYY", key="adm_ini")
+                dt_fim_adm = c2.date_input("Data Final (Admissão)", value=date.today(), format="DD/MM/YYYY", key="adm_fim")
+                incluir_desligados = c3.checkbox("Incluir investidores já desligados", value=False)
+
+                # Preparação da base
+                if incluir_desligados:
+                    df_base_adm = pd.concat([df_ativos_proc, df_desligados_proc], ignore_index=True)
+                else:
+                    df_base_adm = df_ativos_proc.copy()
+
+                # Filtro por data (usando a coluna _dt criada no render)
+                if "Início na V4_dt" in df_base_adm.columns:
+                    mask_adm = (df_base_adm["Início na V4_dt"] >= pd.Timestamp(dt_ini_adm)) & (df_base_adm["Início na V4_dt"] <= pd.Timestamp(dt_fim_adm))
+                    df_adm_result = df_base_adm[mask_adm].sort_values("Início na V4_dt", ascending=False)
+                    
+                    st.info(f"📊 **Total de Admitidos no período:** {len(df_adm_result)} pessoas")
+
+                    cols_exibir_adm = ["Nome", "E-mail corporativo", "Cargo", "Início na V4"]
+                    st.dataframe(df_adm_result[cols_exibir_adm], use_container_width=True, hide_index=True)
+                else:
+                    st.error("Coluna 'Início na V4' não encontrada.")
+
+            # ==========================================
+            # 5. DESLIGADOS NO PERÍODO
+            # ==========================================
+            with st.expander("🚪 Desligados por Período", expanded=False):
+                cd1, cd2 = st.columns(2)
+                dt_ini_des = cd1.date_input("Data Inicial (Desligamento)", value=date.today() - relativedelta(months=1), format="DD/MM/YYYY", key="des_ini")
+                dt_fim_des = cd2.date_input("Data Final (Desligamento)", value=date.today(), format="DD/MM/YYYY", key="des_fim")
+
+                if "Data de rescisão_dt" in df_desligados_proc.columns:
+                    mask_des = (df_desligados_proc["Data de rescisão_dt"] >= pd.Timestamp(dt_ini_des)) & (df_desligados_proc["Data de rescisão_dt"] <= pd.Timestamp(dt_fim_des))
+                    df_des_result = df_desligados_proc[mask_des].sort_values("Data de rescisão_dt", ascending=False)
+                    
+                    st.info(f"📊 **Total de Desligados no período:** {len(df_des_result)} pessoas")
+
+                    cols_exibir_des = ["Nome", "E-mail corporativo", "Cargo", "Início na V4", "Data de rescisão"]
+                    st.dataframe(df_des_result[cols_exibir_des], use_container_width=True, hide_index=True)
+                else:
+                    st.error("Coluna 'Data de rescisão' não encontrada.")
+                    
+            # ==========================================
             # 2. CONTRATOS A VENCER
             # ==========================================
             with st.expander("⏰ Contratos a vencer", expanded=False):
