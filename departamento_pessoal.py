@@ -1032,8 +1032,8 @@ def render(df_ativos, df_desligados):
     with c_ia:
         st.markdown('<p style="margin-bottom: 25px;"></p>', unsafe_allow_html=True)
         
-        # O Popover só aparece se os dados já tiverem sido carregados
-        if 'df_ativos_proc' in locals() or 'df_ativos' in locals():
+        # Teste de segurança: A chave existe nos segredos?
+        if "GEMINI_API_KEY" in st.secrets:
             with st.popover("🤖 Perguntar à IA", use_container_width=True):
                 st.markdown("### 🧠 Analista V4 (IA)")
                 pergunta = st.chat_input("Ex: Qual a média salarial?")
@@ -1041,25 +1041,30 @@ def render(df_ativos, df_desligados):
                 if pergunta:
                     import google.generativeai as genai
                     try:
-                        genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
+                        # Puxa a chave diretamente
+                        minha_chave = st.secrets["GEMINI_API_KEY"]
+                        genai.configure(api_key=minha_chave)
                         model = genai.GenerativeModel('gemini-1.5-flash')
                         
-                        # Usamos os dados que estiverem disponíveis no momento
-                        df_para_ia = df_ativos_proc if 'df_ativos_proc' in locals() else df_ativos
+                        # Tenta pegar os dados ativos, se não existirem, usa uma lista vazia
+                        df_para_ia = df_ativos_proc if 'df_ativos_proc' in locals() else None
                         
-                        colunas_ia = ["Nome", "Cargo", "Área", "Remuneração", "Modelo de contrato", "Unidade/Atuação"]
-                        dados_para_ia = df_para_ia[colunas_ia].to_string(index=False)
-                        
-                        prompt = f"Você é analista de DP. Dados: {dados_para_ia}. Pergunta: {pergunta}"
-                        
-                        with st.spinner("Analisando..."):
-                            response = model.generate_content(prompt)
-                            st.info(response.text)
+                        if df_para_ia is not None:
+                            colunas_ia = ["Nome", "Cargo", "Área", "Remuneração", "Modelo de contrato", "Unidade/Atuação"]
+                            dados_para_ia = df_para_ia[colunas_ia].to_string(index=False)
+                            prompt = f"Você é analista de DP. Responda com base nestes dados: {dados_para_ia}. Pergunta: {pergunta}"
+                            
+                            with st.spinner("Analisando..."):
+                                response = model.generate_content(prompt)
+                                st.info(response.text)
+                        else:
+                            st.warning("Aguarde o carregamento dos dados da planilha...")
+                            
                     except Exception as e:
-                        st.error("Verifique a chave GEMINI_API_KEY nos Secrets.")
+                        st.error(f"Erro na IA: {e}")
         else:
-            # Se os dados ainda não carregaram, mostra um botão desabilitado
-            st.button("🤖 IA (Carregando...)", disabled=True, use_container_width=True)
+            # Se ele cair aqui, o Streamlit realmente não está lendo a linha do Secrets
+            st.error("Chave não encontrada no sistema.")
                     
     aba_dashboard, aba_rolling, aba_analytics, aba_acoes, aba_conectividade = st.tabs(["📊 Dashboard", "👥 Rolling", "📈 Analytics", "⚡ Ações", "🔗 Conectividade"])
     
