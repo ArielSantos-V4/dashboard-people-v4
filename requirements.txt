@@ -10,3 +10,4 @@ python-docx
 reportlab
 xlsxwriter
 graphviz
+google-generativeai
