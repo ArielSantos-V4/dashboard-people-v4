@@ -1032,39 +1032,36 @@ def render(df_ativos, df_desligados):
     with c_ia:
         st.markdown('<p style="margin-bottom: 25px;"></p>', unsafe_allow_html=True)
         
-        # Teste de segurança: A chave existe nos segredos?
-        if "GEMINI_API_KEY" in st.secrets:
-            with st.popover("🤖 Perguntar à IA", use_container_width=True):
-                st.markdown("### 🧠 Analista V4 (IA)")
-                pergunta = st.chat_input("Ex: Qual a média salarial?")
-                
-                if pergunta:
-                    import google.generativeai as genai
-                    try:
-                        # Puxa a chave diretamente
-                        minha_chave = st.secrets["GEMINI_API_KEY"]
-                        genai.configure(api_key=minha_chave)
+        # Tentamos acessar a chave. Se não achar, ele mostra o erro exato.
+        try:
+            chave_api = st.secrets.get("GEMINI_API_KEY")
+            
+            if chave_api:
+                with st.popover("🤖 Perguntar à IA", use_container_width=True):
+                    st.markdown("### 🧠 Analista V4 (IA)")
+                    pergunta = st.chat_input("Ex: Qual a média salarial?")
+                    
+                    if pergunta:
+                        import google.generativeai as genai
+                        genai.configure(api_key=chave_api)
                         model = genai.GenerativeModel('gemini-1.5-flash')
                         
-                        # Tenta pegar os dados ativos, se não existirem, usa uma lista vazia
-                        df_para_ia = df_ativos_proc if 'df_ativos_proc' in locals() else None
+                        # Verifica se os dados existem
+                        df_ia = df_ativos_proc if 'df_ativos_proc' in locals() else None
                         
-                        if df_para_ia is not None:
-                            colunas_ia = ["Nome", "Cargo", "Área", "Remuneração", "Modelo de contrato", "Unidade/Atuação"]
-                            dados_para_ia = df_para_ia[colunas_ia].to_string(index=False)
-                            prompt = f"Você é analista de DP. Responda com base nestes dados: {dados_para_ia}. Pergunta: {pergunta}"
-                            
+                        if df_ia is not None:
+                            dados_txt = df_ia[["Nome", "Cargo", "Área", "Remuneração"]].to_string(index=False)
+                            prompt = f"Analista de DP V4. Dados: {dados_txt}. Pergunta: {pergunta}"
                             with st.spinner("Analisando..."):
                                 response = model.generate_content(prompt)
                                 st.info(response.text)
                         else:
-                            st.warning("Aguarde o carregamento dos dados da planilha...")
-                            
-                    except Exception as e:
-                        st.error(f"Erro na IA: {e}")
-        else:
-            # Se ele cair aqui, o Streamlit realmente não está lendo a linha do Secrets
-            st.error("Chave não encontrada no sistema.")
+                            st.warning("Carregando base de dados...")
+            else:
+                st.error("Chave 'GEMINI_API_KEY' não lida nos Secrets.")
+                
+        except Exception as e:
+            st.error(f"Erro crítico: {e}")
                     
     aba_dashboard, aba_rolling, aba_analytics, aba_acoes, aba_conectividade = st.tabs(["📊 Dashboard", "👥 Rolling", "📈 Analytics", "⚡ Ações", "🔗 Conectividade"])
     
