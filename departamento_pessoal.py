@@ -189,7 +189,7 @@ def corpo_do_modal(lista_nomes_ativos):
         e_corp = c9.text_input("E-mail Corporativo", key=f"e_corp_{s}")
         mod_pj = c10.selectbox("Modalidade PJ", ["", "MEI", "SLU"], key=f"pj_{s}")
         ini_v4 = c11.date_input("Início na V4", format="DD/MM/YYYY", key=f"ini_{s}")
-        cnpj = c12.text_input("CNPJ", key=f"cnpj_{s}")
+        cnpj = c12.text_input("CNPJ (Sem pontuação)", key=f"cnpj_{s}")
         
         c13, c14, c15, c15b = st.columns([1.5, 1.2, 1, 0.5])
         raz_soc = c13.text_input("Razão Social", key=f"raz_{s}")
@@ -207,7 +207,7 @@ def corpo_do_modal(lista_nomes_ativos):
         st.markdown("---")
         st.markdown("#### 🏠 Dados Pessoais")
         cp1, cp2, cp3, cp4 = st.columns([1, 0.8, 1, 1.3])
-        cpf = cp1.text_input("CPF", key=f"cpf_{s}")
+        cpf = cp1.text_input("CPF (Sem pontuação)", key=f"cpf_{s}")
         # Definimos os limites para o calendário
         data_minima = date(1900, 1, 1)
         data_maxima = date.today()
@@ -225,7 +225,7 @@ def corpo_do_modal(lista_nomes_ativos):
         e_pess = cp4.text_input("E-mail Pessoal", key=f"epess_{s}")
 
         cp5, cp6, cp7 = st.columns([1, 2, 1])
-        tel = cp5.text_input("Telefone", key=f"tel_{s}")
+        tel = cp5.text_input("Telefone (Sem pontuação)", key=f"tel_{s}")
         drive = cp6.text_input("URL Drive", key=f"drive_{s}")
         cep = cp7.text_input("CEP", key=f"cep_{s}")
 
