@@ -336,8 +336,8 @@ def modal_desligamento(df_ativos):
         st.markdown(f"""
             <div style="background-color: #fff3cd; padding: 15px; border-radius: 8px; border-left: 5px solid #ffa000; margin: 10px 0;">
                 <span style="font-size: 16px;">⚠️ <b>CONFIRMAÇÃO DE DESLIGAMENTO</b></span><br>
-                <p style="margin-top: 10px;">Deseja realmente desligar o investidor <b>{nome_sel}</b>?<br>
-                <b>Modelo:</b> {modelo}<br>, em <span style="color: #E30613; font-weight: bold;">{data_formatada}</span></p>
+                <p style="margin-top: 10px;">Deseja realmente desligar o investidor <b>{nome_sel}</b>?
+                <b>Modelo:</b> {modelo}, em <span style="color: #E30613; font-weight: bold;">{data_formatada}</span></p>
             </div>
         """, unsafe_allow_html=True)
         
