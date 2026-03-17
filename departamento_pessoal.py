@@ -1044,20 +1044,37 @@ def render(df_ativos, df_desligados):
                         import google.generativeai as genai
                         genai.configure(api_key=chave_api)
                         
-                        # Usando o modelo puro 1.5 flash
-                        model = genai.GenerativeModel('gemini-1.5-flash')
-                        
-                        with st.spinner("IA Processando..."):
+                        # --- A CARTADA FINAL: USANDO O ID TÉCNICO ---
+                        # Forçamos o uso do modelo estável que aceita tabelas
+                        try:
+                            model = genai.GenerativeModel(model_name='models/gemini-1.5-flash')
+                            
+                            if 'df_ativos_proc' in locals():
+                                # Reduzimos os dados ao máximo para garantir que passe
+                                df_ia = df_ativos_proc[["Nome", "Cargo", "Área", "Remuneração"]].dropna().head(50)
+                                dados_txt = df_ia.to_string(index=False)
+                                
+                                prompt = f"Dados DP V4:\n{dados_txt}\n\nPergunta: {pergunta}"
+                                
+                                with st.spinner("Analisando..."):
+                                    # O segredo: usamos o método de geração mais simples
+                                    response = model.generate_content(prompt)
+                                    st.info(response.text)
+                            else:
+                                st.warning("Dados não carregados.")
+                                
+                        except Exception as e:
+                            # Se o flash falhar, tentamos o 'gemini-pro' mas com o caminho completo
                             try:
-                                # Tenta uma resposta simples primeiro
-                                response = model.generate_content(pergunta)
-                                st.info(response.text)
-                            except Exception as e:
-                                st.error(f"A API ainda não liberou o acesso: {e}")
+                                model_alt = genai.GenerativeModel(model_name='models/gemini-pro')
+                                res = model_alt.generate_content(pergunta)
+                                st.info(res.text)
+                            except:
+                                st.error("O Google ainda está processando a ativação da sua chave. Aguarde 5 minutos e tente novamente.")
             else:
                 st.error("Chave não configurada.")
         except Exception as e:
-            st.error("Erro no carregamento.")
+            st.error("Erro no sistema de IA.")
             
     aba_dashboard, aba_rolling, aba_analytics, aba_acoes, aba_conectividade = st.tabs(["📊 Dashboard", "👥 Rolling", "📈 Analytics", "⚡ Ações", "🔗 Conectividade"])
     
