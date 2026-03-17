@@ -327,8 +327,12 @@ def modal_desligamento(df_ativos):
         dados = df_ativos[df_ativos["Nome"] == nome_sel].iloc[0]
         modelo = dados.get("Modelo de contrato", "Não identificado")
         
-        dt_rescisao = st.date_input("Data de Rescisão:", format="DD/MM/YYYY", key="dt_rescisao_v5")
+        dt_rescisao = st.date_input("Data de Rescisão:", format="DD/MM/YYYY", key="dt_rescisao_vFinal")
         
+        # Formatando a data para o texto
+        data_formatada = dt_rescisao.strftime('%d/%m/%Y')
+        
+        # Alerta visual mais completo
         st.markdown(f"""
             <div style="background-color: #fff3cd; padding: 15px; border-radius: 8px; border-left: 5px solid #ffa000; margin: 10px 0;">
                 <span style="font-size: 16px;">⚠️ <b>CONFIRMAÇÃO DE DESLIGAMENTO</b></span><br>
@@ -338,7 +342,7 @@ def modal_desligamento(df_ativos):
             </div>
         """, unsafe_allow_html=True)
         
-        confirmar = st.checkbox(f"Confirmo que os dados estão corretos", key="chk_conf_v5")
+        confirmar = st.checkbox(f"Eu confirmo que o investidor será desligado em {data_formatada}", key="chk_conf_vFinal")
         
         if confirmar:
             if st.button("🚀 Processar Desligamento Agora", type="primary", use_container_width=True):
