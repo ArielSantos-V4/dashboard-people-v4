@@ -135,31 +135,52 @@ def gravar_no_google_sheets(dados_lista):
     sheet.update(range_name=range_nome, values=[dados_lista], value_input_option="USER_ENTERED")
 
 def desligar_no_google_sheets(nome_investidor, data_rescisao):
-    scope = ["https://www.googleapis.com/auth/spreadsheets", "https://www.googleapis.com/auth/drive"]
-    creds = Credentials.from_service_account_info(st.secrets["gcp_service_account"], scopes=scope)
-    client = gspread.authorize(creds)
-    spreadsheet = client.open_by_key("13EPwhiXgh8BkbhyrEy2aCy3cv1O8npxJ_hA-HmLZ-pY")
-    sheet = spreadsheet.worksheet("Base de investidores")
-    
-    # Busca todos os dados da coluna Nome (A) e Situação (H)
-    nomes = sheet.col_values(1)  # Coluna A
-    situacoes = sheet.col_values(8) # Coluna H
-    
-    linha_encontrada = None
-    
-    # Procura a linha onde o nome bate E a situação é "Ativo"
-    for i, (n, s) in enumerate(zip(nomes, situacoes)):
-        if n == nome_investidor and s == "Ativo":
-            linha_encontrada = i + 1
-            break
+    try:
+        scope = ["https://www.googleapis.com/auth/spreadsheets", "https://www.googleapis.com/auth/drive"]
+        creds = Credentials.from_service_account_info(st.secrets["gcp_service_account"], scopes=scope)
+        client = gspread.authorize(creds)
+        spreadsheet = client.open_by_key("13EPwhiXgh8BkbhyrEy2aCy3cv1O8npxJ_hA-HmLZ-pY")
+        
+        # --- ACESSO PELO GID ---
+        # Procuramos qual aba tem o GID 628096291
+        target_gid = "628096291"
+        sheet = None
+        for s in spreadsheet.worksheets():
+            if str(s.id) == target_gid:
+                sheet = s
+                break
+        
+        if not sheet:
+            st.error(f"Aba com GID {target_gid} não encontrada.")
+            return False
+
+        # Busca as colunas A (Nomes) e H (Situação) de uma vez só
+        # Isso evita que o Google bloqueie por excesso de requisições
+        lista_completa = sheet.get_all_values() 
+        
+        linha_encontrada = None
+        # O gspread usa índice 1, então começamos o enumerate em 1
+        for i, linha in enumerate(lista_completa, 1):
+            # Coluna A é índice 0, Coluna H é índice 7
+            nome_planilha = str(linha[0]).strip()
+            situacao_planilha = str(linha[7]).strip()
             
-    if linha_encontrada:
-        # Atualiza Coluna H (8) para Desligado
-        sheet.update_cell(linha_encontrada, 8, "Desligado")
-        # Atualiza Coluna AP (42) com a data
-        sheet.update_cell(linha_encontrada, 42, data_rescisao.strftime("%d/%m/%Y"))
-        return True
-    return False
+            if nome_planilha == nome_investidor and situacao_planilha == "Ativo":
+                linha_encontrada = i
+                break
+        
+        if linha_encontrada:
+            # Coluna H é a 8ª
+            sheet.update_cell(linha_encontrada, 8, "Desligado")
+            # Coluna AP é a 42ª
+            sheet.update_cell(linha_encontrada, 42, data_rescisao.strftime("%d/%m/%Y"))
+            return True
+        else:
+            return False
+            
+    except Exception as e:
+        st.error(f"Erro na conexão com o Google Sheets: {e}")
+        return False
     
 def toggle_indet():
     st.session_state.indet_ativo = not st.session_state.indet_ativo
