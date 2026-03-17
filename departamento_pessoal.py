@@ -134,6 +134,33 @@ def gravar_no_google_sheets(dados_lista):
     # 3. Executa o update
     sheet.update(range_name=range_nome, values=[dados_lista], value_input_option="USER_ENTERED")
 
+def desligar_no_google_sheets(nome_investidor, data_rescisao):
+    scope = ["https://www.googleapis.com/auth/spreadsheets", "https://www.googleapis.com/auth/drive"]
+    creds = Credentials.from_service_account_info(st.secrets["gcp_service_account"], scopes=scope)
+    client = gspread.authorize(creds)
+    spreadsheet = client.open_by_key("13EPwhiXgh8BkbhyrEy2aCy3cv1O8npxJ_hA-HmLZ-pY")
+    sheet = spreadsheet.worksheet("Base de investidores")
+    
+    # Busca todos os dados da coluna Nome (A) e Situação (H)
+    nomes = sheet.col_values(1)  # Coluna A
+    situacoes = sheet.col_values(8) # Coluna H
+    
+    linha_encontrada = None
+    
+    # Procura a linha onde o nome bate E a situação é "Ativo"
+    for i, (n, s) in enumerate(zip(nomes, situacoes)):
+        if n == nome_investidor and s == "Ativo":
+            linha_encontrada = i + 1
+            break
+            
+    if linha_encontrada:
+        # Atualiza Coluna H (8) para Desligado
+        sheet.update_cell(linha_encontrada, 8, "Desligado")
+        # Atualiza Coluna AP (42) com a data
+        sheet.update_cell(linha_encontrada, 42, data_rescisao.strftime("%d/%m/%Y"))
+        return True
+    return False
+    
 def toggle_indet():
     st.session_state.indet_ativo = not st.session_state.indet_ativo
     
@@ -274,7 +301,41 @@ def corpo_do_modal(lista_nomes_ativos):
 @st.dialog("📝 Cadastro de Novo Investidor", width="large")
 def modal_cadastro_investidor(lista_nomes_ativos):
     corpo_do_modal(lista_nomes_ativos)
+
+# ==========================================
+# MODAL DE DESLIGAR INVESTIDOR
+# ==========================================
+@st.dialog("🚪 Desligar Investidor")
+def modal_desligamento(df_ativos):
+    st.markdown("Selecione o investidor para registrar o desligamento na planilha Master.")
     
+    nome_sel = st.selectbox("Investidor Ativo:", [""] + sorted(df_ativos["Nome"].unique()), key="sel_deslig_v4")
+    
+    if nome_sel:
+        dados = df_ativos[df_ativos["Nome"] == nome_sel].iloc[0]
+        modelo = dados.get("Modelo de contrato", "Não identificado")
+        
+        dt_rescisao = st.date_input("Data de Rescisão:", format="DD/MM/YYYY")
+        
+        st.divider()
+        
+        # Botão de ação com confirmação dupla (popover ou warning)
+        if st.button("Confirmar Desligamento", type="primary", use_container_width=True):
+            st.warning(f"⚠️ **Confirmação:** Deseja realmente desligar **{nome_sel}** ({modelo}) no dia {dt_rescisao.strftime('%d/%m/%Y')}?")
+            
+            c1, c2 = st.columns(2)
+            if c1.button("Sim, Desligar", key="btn_confirm_des"):
+                with st.spinner("Processando na planilha..."):
+                    sucesso = desligar_no_google_sheets(nome_sel, dt_rescisao)
+                    if sucesso:
+                        st.success(f"✅ {nome_sel} foi marcado como Desligado!")
+                        st.cache_data.clear() # Limpa o cache para atualizar o dashboard
+                        st.rerun()
+                    else:
+                        st.error("Erro: Não foi possível localizar o registro 'Ativo' na planilha.")
+            if c2.button("Cancelar", use_container_width=True):
+                st.rerun()
+                
 # ==========================================
 # LÓGICA DE ALERTAS (ATIVOS)
 # ==========================================
@@ -1855,6 +1916,10 @@ def render(df_ativos, df_desligados):
                 
                 if st.button("➕ Cadastrar Novo Investidor", use_container_width=True, type="primary"):
                     modal_cadastro_investidor(nomes_para_lideranca)
+
+                st.markdown("<br>", unsafe_allow_html=True)
+                if st.button("🚪 Desligar Investidor", use_container_width=True):
+                    modal_desligamento(df_ativos_proc)
         
         with c_form:
             st.markdown("##### 📝 Gerar Formulários")
