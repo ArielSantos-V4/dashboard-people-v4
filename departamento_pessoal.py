@@ -1044,39 +1044,20 @@ def render(df_ativos, df_desligados):
                         import google.generativeai as genai
                         genai.configure(api_key=chave_api)
                         
-                        # --- LISTA DE TENTATIVAS DE MODELO ---
-                        # Tentamos do mais moderno ao mais compatível
-                        modelos_para_testar = [
-                            'models/gemini-1.5-flash-latest', 
-                            'models/gemini-1.5-flash',
-                            'gemini-1.5-flash'
-                        ]
+                        # Usando o modelo puro 1.5 flash
+                        model = genai.GenerativeModel('gemini-1.5-flash')
                         
-                        sucesso = False
-                        for nome_modelo in modelos_para_testar:
+                        with st.spinner("IA Processando..."):
                             try:
-                                model = genai.GenerativeModel(nome_modelo)
-                                
-                                if 'df_ativos_proc' in locals():
-                                    df_ia = df_ativos_proc[["Nome", "Cargo", "Área", "Remuneração"]].dropna().head(100)
-                                    dados_txt = df_ia.to_string(index=False)
-                                    
-                                    prompt = f"Você é analista de DP da V4. Use estes dados:\n{dados_txt}\n\nPergunta: {pergunta}"
-                                    
-                                    with st.spinner(f"Analisando com {nome_modelo}..."):
-                                        response = model.generate_content(prompt)
-                                        st.info(response.text)
-                                        sucesso = True
-                                        break # Se funcionou, para de testar outros
-                            except:
-                                continue # Se deu erro, tenta o próximo da lista
-                        
-                        if not sucesso:
-                            st.error("Modelos Gemini indisponíveis para esta chave. Verifique se a API Key está ativa no Google AI Studio.")
+                                # Tenta uma resposta simples primeiro
+                                response = model.generate_content(pergunta)
+                                st.info(response.text)
+                            except Exception as e:
+                                st.error(f"A API ainda não liberou o acesso: {e}")
             else:
-                st.error("Chave API não encontrada.")
-        except Exception as e_geral:
-            st.error("Erro no carregamento da IA.")
+                st.error("Chave não configurada.")
+        except Exception as e:
+            st.error("Erro no carregamento.")
             
     aba_dashboard, aba_rolling, aba_analytics, aba_acoes, aba_conectividade = st.tabs(["📊 Dashboard", "👥 Rolling", "📈 Analytics", "⚡ Ações", "🔗 Conectividade"])
     
