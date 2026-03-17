@@ -1032,7 +1032,6 @@ def render(df_ativos, df_desligados):
     with c_ia:
         st.markdown('<p style="margin-bottom: 25px;"></p>', unsafe_allow_html=True)
         
-        # Tentamos acessar a chave. Se não achar, ele mostra o erro exato.
         try:
             chave_api = st.secrets.get("GEMINI_API_KEY")
             
@@ -1041,34 +1040,40 @@ def render(df_ativos, df_desligados):
                     st.markdown("### 🧠 Analista V4 (IA)")
                     pergunta = st.chat_input("Ex: Qual a média salarial?")
                     
-                    # ... dentro do seu bloco da IA ...
                     if pergunta:
                         import google.generativeai as genai
                         genai.configure(api_key=chave_api)
                         
-                        # Mudamos de 'gemini-1.5-flash' para apenas 'gemini-pro' ou a versão estável
-                        # O 'gemini-pro' é o nome mais compatível universalmente
+                        # Tentativa com o modelo Pro que é mais estável
                         try:
-                            model = genai.GenerativeModel('gemini-pro') 
+                            model = genai.GenerativeModel('gemini-pro')
                             
+                            # Verifica se os dados estão prontos
                             df_ia = df_ativos_proc if 'df_ativos_proc' in locals() else None
                             
                             if df_ia is not None:
-                                # Selecionamos as colunas e removemos valores nulos para o prompt não ficar gigante
                                 dados_txt = df_ia[["Nome", "Cargo", "Área", "Remuneração"]].dropna().to_string(index=False)
-                                
-                                prompt = f"Você é analista de DP da V4. Responda à pergunta com base nestes dados: \n{dados_txt}\n\nPergunta: {pergunta}"
+                                prompt = f"Você é analista de DP da V4. Responda com base nestes dados:\n{dados_txt}\n\nPergunta: {pergunta}"
                                 
                                 with st.spinner("Analisando..."):
                                     response = model.generate_content(prompt)
                                     st.info(response.text)
                             else:
-                                st.warning("Carregando base de dados...")
-                        except Exception as e:
-                            # Se o gemini-pro também falhar, ele tentará o flash com o nome completo
-                            model = genai.GenerativeModel('models/gemini-1.5-flash-latest')
-                            # ... (mesma lógica de resposta abaixo)
-                    
+                                st.warning("Aguarde o carregamento dos dados...")
+                                
+                        except Exception as e_modelo:
+                            # Se o Pro falhar, tenta o Flash com o nome completo
+                            try:
+                                model_flash = genai.GenerativeModel('gemini-1.5-flash-latest')
+                                response = model_flash.generate_content(pergunta)
+                                st.info(response.text)
+                            except:
+                                st.error(f"Erro ao acessar modelos de IA: {e_modelo}")
+            else:
+                st.error("Chave 'GEMINI_API_KEY' não encontrada.")
+        except Exception as e_geral:
+            st.error(f"Erro no componente de IA: {e_geral}")
+            
     aba_dashboard, aba_rolling, aba_analytics, aba_acoes, aba_conectividade = st.tabs(["📊 Dashboard", "👥 Rolling", "📈 Analytics", "⚡ Ações", "🔗 Conectividade"])
     
     # --- PREPARAÇÃO DE DATAS ---
