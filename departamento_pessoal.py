@@ -1044,33 +1044,34 @@ def render(df_ativos, df_desligados):
                         import google.generativeai as genai
                         genai.configure(api_key=chave_api)
                         
-                        # USANDO O MODELO MAIS RECENTE E COMPATÍVEL
+                        # USANDO O MODELO 1.5 FLASH (MAIS MODERNO E COMPATÍVEL)
                         try:
+                            # Tentamos o nome padrão da versão 1.5
                             model = genai.GenerativeModel('gemini-1.5-flash')
                             
-                            if df_ativos_proc is not None:
-                                # Preparamos os dados para a IA
-                                dados_txt = df_ativos_proc[["Nome", "Cargo", "Área", "Remuneração"]].dropna().to_string(index=False)
-                                prompt = f"Você é analista de DP da V4. Responda com base nestes dados:\n{dados_txt}\n\nPergunta: {pergunta}"
+                            if 'df_ativos_proc' in locals() and df_ativos_proc is not None:
+                                # Preparamos apenas o essencial para a IA (Top 100 para não estourar limite)
+                                df_ia = df_ativos_proc[["Nome", "Cargo", "Área", "Remuneração"]].dropna().head(100)
+                                dados_txt = df_ia.to_string(index=False)
+                                
+                                prompt = f"""Você é um analista de DP da V4 Company. 
+                                Responda de forma curta e objetiva usando estes dados:
+                                {dados_txt}
+                                
+                                Pergunta: {pergunta}"""
                                 
                                 with st.spinner("Analisando..."):
                                     response = model.generate_content(prompt)
                                     st.info(response.text)
                             else:
-                                st.warning("Dados ainda não carregados.")
+                                st.warning("Aguarde o carregamento dos dados da planilha...")
                         
                         except Exception as e_mod:
-                            # Se o flash puro falhar, tentamos com o prefixo models/
-                            try:
-                                model_f = genai.GenerativeModel('models/gemini-1.5-flash')
-                                response = model_f.generate_content(pergunta)
-                                st.info(response.text)
-                            except Exception as e_final:
-                                st.error(f"Erro de conexão com a IA: {e_final}")
+                            st.error(f"O modelo de IA ainda não está disponível: {e_mod}")
             else:
-                st.error("Chave 'GEMINI_API_KEY' não configurada.")
+                st.error("Chave 'GEMINI_API_KEY' não encontrada nos Secrets.")
         except Exception as e_ia:
-            st.error(f"IA indisponível no momento.")
+            st.error(f"Erro no componente: {e_ia}")
             
     aba_dashboard, aba_rolling, aba_analytics, aba_acoes, aba_conectividade = st.tabs(["📊 Dashboard", "👥 Rolling", "📈 Analytics", "⚡ Ações", "🔗 Conectividade"])
     
