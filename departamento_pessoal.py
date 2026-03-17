@@ -201,15 +201,27 @@ def corpo_do_modal(lista_nomes_ativos):
         st.markdown("#### 🏢 Centro de Custo & Liderança")
         cv1, cv3, cv4 = st.columns([1, 1, 1])
         id_vaga = cv1.text_input("ID Vaga", key=f"vaga_{s}")
-        senior = cv3.selectbox("Senioridade", ["", "Junior", "Pleno", "Senior", "Gerente"], key=f"sen_{s}")
+        senior = cv3.selectbox("Senioridade", ["", "Trainee", "Junior", "Pleno", "Senior", "Especialista", "Coordenador", "Gerente", "Diretor", "C-Level"], key=f"sen_{s}")
         lider = cv4.selectbox("Liderança Direta", [""] + sorted(lista_nomes_ativos), key=f"lid_{s}")
 
         st.markdown("---")
         st.markdown("#### 🏠 Dados Pessoais")
         cp1, cp2, cp3, cp4 = st.columns([1, 0.8, 1, 1.3])
         cpf = cp1.text_input("CPF", key=f"cpf_{s}")
-        nasc = cp2.date_input("Nascimento", value=None, format="DD/MM/YYYY", key=f"nasc_{s}")
-        escolar = cp3.selectbox("Escolaridade", ["", "Ensino médio", "Ensino superior", "Pós graduação"], key=f"esc_{s}")
+        # Definimos os limites para o calendário
+        data_minima = date(1900, 1, 1)
+        data_maxima = date.today()
+        
+        # Atualize a linha do nascimento para isso:
+        nasc = cp2.date_input(
+            "Nascimento", 
+            value=None, 
+            min_value=data_minima, 
+            max_value=data_maxima, 
+            format="DD/MM/YYYY", 
+            key=f"nasc_{s}"
+        )
+        escolar = cp3.selectbox("Escolaridade", ["", "Ensino médio", "Ensino superior", "Pós graduação", "Mestrado", "Doutorado"], key=f"esc_{s}")
         e_pess = cp4.text_input("E-mail Pessoal", key=f"epess_{s}")
 
         cp5, cp6, cp7 = st.columns([1, 2, 1])
