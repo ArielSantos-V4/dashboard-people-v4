@@ -1044,32 +1044,28 @@ def render(df_ativos, df_desligados):
                         import google.generativeai as genai
                         genai.configure(api_key=chave_api)
                         
-                        # TENTATIVA 1: NOME SIMPLES (O mais comum de funcionar agora)
-                        try:
-                            # Tentamos o modelo 1.5-flash que é o sucessor do pro
-                            model = genai.GenerativeModel('gemini-1.5-flash')
-                            
+                        # Modelo 1.5 Flash é o mais estável para dados
+                        model = genai.GenerativeModel('gemini-1.5-flash')
+                        
+                        # Pegamos os dados ativos para dar contexto
+                        if 'df_ativos_proc' in locals():
                             df_ia = df_ativos_proc[["Nome", "Cargo", "Área", "Remuneração"]].dropna()
                             dados_txt = df_ia.to_string(index=False)
                             
-                            prompt = f"Analista de DP V4. Dados:\n{dados_txt}\n\nPergunta: {pergunta}"
+                            prompt = f"Você é o analista de DP da V4 Company. Use estes dados: \n{dados_txt}\n\nPergunta: {pergunta}"
                             
                             with st.spinner("Analisando..."):
-                                response = model.generate_content(prompt)
-                                st.info(response.text)
-                                
-                        except Exception:
-                            # TENTATIVA 2: NOME LEGACY (Caso sua biblioteca esteja desatualizada)
-                            try:
-                                model = genai.GenerativeModel('gemini-pro')
-                                response = model.generate_content(pergunta)
-                                st.info(response.text)
-                            except Exception as e_final:
-                                st.error(f"Erro de versão do modelo. Tente atualizar o requirements.txt para: google-generativeai>=0.5.0")
+                                try:
+                                    response = model.generate_content(prompt)
+                                    st.info(response.text)
+                                except Exception as e_api:
+                                    st.error(f"Erro na resposta: {e_api}")
+                        else:
+                            st.warning("Aguarde o carregamento da planilha.")
             else:
-                st.error("Chave 'GEMINI_API_KEY' não encontrada.")
-        except Exception as e_ia:
-            st.error(f"Erro no componente: {e_ia}")
+                st.error("Chave API não encontrada nos Secrets.")
+        except Exception as e_geral:
+            st.error("Erro ao carregar componente de IA.")
             
     aba_dashboard, aba_rolling, aba_analytics, aba_acoes, aba_conectividade = st.tabs(["📊 Dashboard", "👥 Rolling", "📈 Analytics", "⚡ Ações", "🔗 Conectividade"])
     
