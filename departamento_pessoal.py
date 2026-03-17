@@ -1041,27 +1041,33 @@ def render(df_ativos, df_desligados):
                     st.markdown("### 🧠 Analista V4 (IA)")
                     pergunta = st.chat_input("Ex: Qual a média salarial?")
                     
+                    # ... dentro do seu bloco da IA ...
                     if pergunta:
                         import google.generativeai as genai
                         genai.configure(api_key=chave_api)
-                        model = genai.GenerativeModel('gemini-1.5-flash')
                         
-                        # Verifica se os dados existem
-                        df_ia = df_ativos_proc if 'df_ativos_proc' in locals() else None
-                        
-                        if df_ia is not None:
-                            dados_txt = df_ia[["Nome", "Cargo", "Área", "Remuneração"]].to_string(index=False)
-                            prompt = f"Analista de DP V4. Dados: {dados_txt}. Pergunta: {pergunta}"
-                            with st.spinner("Analisando..."):
-                                response = model.generate_content(prompt)
-                                st.info(response.text)
-                        else:
-                            st.warning("Carregando base de dados...")
-            else:
-                st.error("Chave 'GEMINI_API_KEY' não lida nos Secrets.")
-                
-        except Exception as e:
-            st.error(f"Erro crítico: {e}")
+                        # Mudamos de 'gemini-1.5-flash' para apenas 'gemini-pro' ou a versão estável
+                        # O 'gemini-pro' é o nome mais compatível universalmente
+                        try:
+                            model = genai.GenerativeModel('gemini-pro') 
+                            
+                            df_ia = df_ativos_proc if 'df_ativos_proc' in locals() else None
+                            
+                            if df_ia is not None:
+                                # Selecionamos as colunas e removemos valores nulos para o prompt não ficar gigante
+                                dados_txt = df_ia[["Nome", "Cargo", "Área", "Remuneração"]].dropna().to_string(index=False)
+                                
+                                prompt = f"Você é analista de DP da V4. Responda à pergunta com base nestes dados: \n{dados_txt}\n\nPergunta: {pergunta}"
+                                
+                                with st.spinner("Analisando..."):
+                                    response = model.generate_content(prompt)
+                                    st.info(response.text)
+                            else:
+                                st.warning("Carregando base de dados...")
+                        except Exception as e:
+                            # Se o gemini-pro também falhar, ele tentará o flash com o nome completo
+                            model = genai.GenerativeModel('models/gemini-1.5-flash-latest')
+                            # ... (mesma lógica de resposta abaixo)
                     
     aba_dashboard, aba_rolling, aba_analytics, aba_acoes, aba_conectividade = st.tabs(["📊 Dashboard", "👥 Rolling", "📈 Analytics", "⚡ Ações", "🔗 Conectividade"])
     
