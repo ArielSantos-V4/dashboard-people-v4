@@ -1044,28 +1044,39 @@ def render(df_ativos, df_desligados):
                         import google.generativeai as genai
                         genai.configure(api_key=chave_api)
                         
-                        # Modelo 1.5 Flash é o mais estável para dados
-                        model = genai.GenerativeModel('gemini-1.5-flash')
+                        # --- LISTA DE TENTATIVAS DE MODELO ---
+                        # Tentamos do mais moderno ao mais compatível
+                        modelos_para_testar = [
+                            'models/gemini-1.5-flash-latest', 
+                            'models/gemini-1.5-flash',
+                            'gemini-1.5-flash'
+                        ]
                         
-                        # Pegamos os dados ativos para dar contexto
-                        if 'df_ativos_proc' in locals():
-                            df_ia = df_ativos_proc[["Nome", "Cargo", "Área", "Remuneração"]].dropna()
-                            dados_txt = df_ia.to_string(index=False)
-                            
-                            prompt = f"Você é o analista de DP da V4 Company. Use estes dados: \n{dados_txt}\n\nPergunta: {pergunta}"
-                            
-                            with st.spinner("Analisando..."):
-                                try:
-                                    response = model.generate_content(prompt)
-                                    st.info(response.text)
-                                except Exception as e_api:
-                                    st.error(f"Erro na resposta: {e_api}")
-                        else:
-                            st.warning("Aguarde o carregamento da planilha.")
+                        sucesso = False
+                        for nome_modelo in modelos_para_testar:
+                            try:
+                                model = genai.GenerativeModel(nome_modelo)
+                                
+                                if 'df_ativos_proc' in locals():
+                                    df_ia = df_ativos_proc[["Nome", "Cargo", "Área", "Remuneração"]].dropna().head(100)
+                                    dados_txt = df_ia.to_string(index=False)
+                                    
+                                    prompt = f"Você é analista de DP da V4. Use estes dados:\n{dados_txt}\n\nPergunta: {pergunta}"
+                                    
+                                    with st.spinner(f"Analisando com {nome_modelo}..."):
+                                        response = model.generate_content(prompt)
+                                        st.info(response.text)
+                                        sucesso = True
+                                        break # Se funcionou, para de testar outros
+                            except:
+                                continue # Se deu erro, tenta o próximo da lista
+                        
+                        if not sucesso:
+                            st.error("Modelos Gemini indisponíveis para esta chave. Verifique se a API Key está ativa no Google AI Studio.")
             else:
-                st.error("Chave API não encontrada nos Secrets.")
+                st.error("Chave API não encontrada.")
         except Exception as e_geral:
-            st.error("Erro ao carregar componente de IA.")
+            st.error("Erro no carregamento da IA.")
             
     aba_dashboard, aba_rolling, aba_analytics, aba_acoes, aba_conectividade = st.tabs(["📊 Dashboard", "👥 Rolling", "📈 Analytics", "⚡ Ações", "🔗 Conectividade"])
     
