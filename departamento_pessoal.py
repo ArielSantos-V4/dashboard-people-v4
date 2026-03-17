@@ -326,7 +326,7 @@ def modal_cadastro_investidor(lista_nomes_ativos):
 # ==========================================
 # MODAL DE DESLIGAR INVESTIDOR
 # ==========================================
-@st.dialog("🚪 Desligar Investidor")
+@st.dialog("Desligar Investidor")
 def modal_desligamento(df_ativos):
     st.markdown("Selecione o investidor para registrar o desligamento na planilha Master.")
     
@@ -1938,8 +1938,7 @@ def render(df_ativos, df_desligados):
                 if st.button("➕ Cadastrar Novo Investidor", use_container_width=True, type="primary"):
                     modal_cadastro_investidor(nomes_para_lideranca)
 
-                st.markdown("<br>", unsafe_allow_html=True)
-                if st.button("🚪 Desligar Investidor", use_container_width=True):
+                if st.button("Desligar Investidor", use_container_width=True):
                     modal_desligamento(df_ativos_proc)
         
         with c_form:
