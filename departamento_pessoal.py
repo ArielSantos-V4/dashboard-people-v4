@@ -141,45 +141,36 @@ def desligar_no_google_sheets(nome_investidor, data_rescisao):
         client = gspread.authorize(creds)
         spreadsheet = client.open_by_key("13EPwhiXgh8BkbhyrEy2aCy3cv1O8npxJ_hA-HmLZ-pY")
         
-        # --- ACESSO PELO GID ---
-        # Procuramos qual aba tem o GID 628096291
+        # Acessa pelo GID fornecido
         target_gid = "628096291"
-        sheet = None
-        for s in spreadsheet.worksheets():
-            if str(s.id) == target_gid:
-                sheet = s
-                break
+        sheet = next((s for s in spreadsheet.worksheets() if str(s.id) == target_gid), None)
         
         if not sheet:
-            st.error(f"Aba com GID {target_gid} não encontrada.")
+            st.error("Aba não encontrada pelo GID.")
             return False
 
-        # Busca as colunas A (Nomes) e H (Situação) de uma vez só
-        # Isso evita que o Google bloqueie por excesso de requisições
-        lista_completa = sheet.get_all_values() 
+        # Busca apenas as colunas necessárias para ser rápido (A e H)
+        nomes = sheet.col_values(1)   # Coluna A
+        situacoes = sheet.col_values(8) # Coluna H
         
         linha_encontrada = None
-        # O gspread usa índice 1, então começamos o enumerate em 1
-        for i, linha in enumerate(lista_completa, 1):
-            # Coluna A é índice 0, Coluna H é índice 7
-            nome_planilha = str(linha[0]).strip()
-            situacao_planilha = str(linha[7]).strip()
-            
-            if nome_planilha == nome_investidor and situacao_planilha == "Ativo":
+        for i, (n, s) in enumerate(zip(nomes, situacoes), 1):
+            if str(n).strip() == str(nome_investidor).strip() and str(s).strip() == "Ativo":
                 linha_encontrada = i
                 break
         
         if linha_encontrada:
-            # Coluna H é a 8ª
+            # Atualiza Situação (H = 8)
             sheet.update_cell(linha_encontrada, 8, "Desligado")
-            # Coluna AP é a 42ª
+            # Atualiza Data Rescisão (AP = 42)
             sheet.update_cell(linha_encontrada, 42, data_rescisao.strftime("%d/%m/%Y"))
             return True
         else:
+            st.warning(f"Não achei '{nome_investidor}' com status 'Ativo' na aba correta.")
             return False
             
     except Exception as e:
-        st.error(f"Erro na conexão com o Google Sheets: {e}")
+        st.error(f"Erro no Google Sheets: {e}")
         return False
     
 def toggle_indet():
@@ -328,34 +319,33 @@ def modal_cadastro_investidor(lista_nomes_ativos):
 # ==========================================
 @st.dialog("Desligar Investidor")
 def modal_desligamento(df_ativos):
-    st.markdown("Selecione o investidor para registrar o desligamento na planilha Master.")
+    st.write("Selecione o investidor para registrar o desligamento.")
     
-    nome_sel = st.selectbox("Investidor Ativo:", [""] + sorted(df_ativos["Nome"].unique()), key="sel_deslig_v4")
+    nome_sel = st.selectbox("Investidor Ativo:", [""] + sorted(df_ativos["Nome"].unique()), key="sel_deslig_v5")
     
     if nome_sel:
         dados = df_ativos[df_ativos["Nome"] == nome_sel].iloc[0]
         modelo = dados.get("Modelo de contrato", "Não identificado")
         
-        dt_rescisao = st.date_input("Data de Rescisão:", format="DD/MM/YYYY")
+        dt_rescisao = st.date_input("Data de Rescisão:", format="DD/MM/YYYY", key="dt_rescisao_v5")
         
-        st.divider()
+        st.markdown(f"""
+            <div style="background-color: #fff3cd; padding: 10px; border-radius: 5px; border-left: 5px solid #ffa000;">
+                ⚠️ <b>Atenção:</b> Você está desligando <b>{nome_sel}</b> ({modelo}).
+            </div>
+        """, unsafe_allow_html=True)
         
-        # Botão de ação com confirmação dupla (popover ou warning)
-        if st.button("Confirmar Desligamento", type="primary", use_container_width=True):
-            st.warning(f"⚠️ **Confirmação:** Deseja realmente desligar **{nome_sel}** ({modelo}) no dia {dt_rescisao.strftime('%d/%m/%Y')}?")
-            
-            c1, c2 = st.columns(2)
-            if c1.button("Sim, Desligar", key="btn_confirm_des"):
-                with st.spinner("Processando na planilha..."):
-                    sucesso = desligar_no_google_sheets(nome_sel, dt_rescisao)
-                    if sucesso:
-                        st.success(f"✅ {nome_sel} foi marcado como Desligado!")
-                        st.cache_data.clear() # Limpa o cache para atualizar o dashboard
+        confirmar = st.checkbox(f"Confirmo que os dados estão corretos", key="chk_conf_v5")
+        
+        if confirmar:
+            if st.button("🚀 Processar Desligamento Agora", type="primary", use_container_width=True):
+                with st.spinner("Salvando na planilha Master..."):
+                    if desligar_no_google_sheets(nome_sel, dt_rescisao):
+                        st.success("✅ Sucesso! O status foi alterado para 'Desligado'.")
+                        st.balloons()
+                        # Limpa cache e recarrega
+                        st.cache_data.clear()
                         st.rerun()
-                    else:
-                        st.error("Erro: Não foi possível localizar o registro 'Ativo' na planilha.")
-            if c2.button("Cancelar", use_container_width=True):
-                st.rerun()
                 
 # ==========================================
 # LÓGICA DE ALERTAS (ATIVOS)
