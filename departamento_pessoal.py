@@ -1166,7 +1166,7 @@ def render(df_ativos, df_desligados):
         except Exception as e:
             st.error("Erro no sistema de IA.")
             
-    aba_dashboard, aba_rolling, aba_analytics, aba_acoes, aba_conectividade = st.tabs(["📊 Dashboard", "👥 Rolling", "📈 Analytics", "⚡ Ações", "🔗 Conectividade"])
+    aba_dashboard, aba_rolling, aba_analytics, aba_acoes, aba_conectividade = st.tabs(["Dashboard", "Rolling", "Analytics", "Ações", "Conectividade"])
     
     # --- PREPARAÇÃO DE DATAS ---
     def preparar_dataframe(df_raw):
