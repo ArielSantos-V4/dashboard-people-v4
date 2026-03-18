@@ -502,7 +502,7 @@ def render(df):
 
         with c_cad:
             st.markdown("##### Cadastros")
-            with st.expander("👤 Movimentações", expanded=False):
+            with st.expander("Movimentações", expanded=False):
                 st.caption("Em breve.")
 
         with c_form:
