@@ -315,10 +315,10 @@ def render(df):
     
     # --- CRIAÇÃO DAS 4 ABAS (Nomes corrigidos para evitar NameError) ---
     aba_dashboard, aba_carteirinhas, aba_analytics, aba_acoes = st.tabs([
-        "📊 Dashboard", 
-        "💳 Carteirinhas", 
-        "📈 Analytics", 
-        "⚡ Ações"
+        "Dashboard", 
+        "Carteirinhas", 
+        "Analytics", 
+        "Ações"
     ])
     
     # ----------------------------------------------------
@@ -471,7 +471,7 @@ def render(df):
             </div>
         """, unsafe_allow_html=True)
         
-        st.markdown("### 📊 Relatórios Operacionais")
+        st.markdown("### Relatórios Operacionais")
         tabs_rel = st.tabs(["⏰ Pendentes", "📂 Aguardando docs", "📩 Enviar para DBL", "🆗 Ativação"])
         
         with tabs_rel[0]:
@@ -501,33 +501,33 @@ def render(df):
         c_cad, c_form, c_mail, c_div = st.columns(4)
 
         with c_cad:
-            st.markdown("##### 📥 Cadastros")
+            st.markdown("##### Cadastros")
             with st.expander("👤 Movimentações", expanded=False):
                 st.caption("Em breve.")
 
         with c_form:
-            st.markdown("##### 📝 Gerar Formulários")
+            st.markdown("##### Gerador de arquivos")
             
             # Expander 1: Inclusão PJ
-            with st.expander("🌱 Inclusão PJ", expanded=False):
+            with st.expander("Inclusão PJ", expanded=False):
                 if st.button("📄 Inclusão Subfatura", use_container_width=True):
                     modal_inclusao_subfatura(df)
                 if st.button("📄 Termo Subestipulante", use_container_width=True):
                     modal_subestipulante(df)
             
             # Expander 2: Exclusão / Não Adesão
-            with st.expander("🚪 Exclusão/Não Adesão PJ", expanded=False):
+            with st.expander("Exclusão/Não Adesão PJ", expanded=False):
                 if st.button("📄 Termo de Não Adesão", use_container_width=True):
                     modal_nao_adesao(df)
                 if st.button("📄 Exclusão Subfatura", use_container_width=True):
                     modal_exclusao_subfatura()
 
         with c_mail:
-            st.markdown("##### ✉️ E-mails / Mensagens")
-            with st.expander("📩 Comunicados", expanded=False):
+            st.markdown("##### Mensagens")
+            with st.expander("Comunicados", expanded=False):
                 st.caption("Em breve.")
 
         with c_div:
-            st.markdown("##### 📂 Diversos")
-            with st.expander("🛠️ Ferramentas", expanded=False):
+            st.markdown("##### Diversos")
+            with st.expander("Ferramentas", expanded=False):
                 st.caption("Em breve.")
