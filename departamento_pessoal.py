@@ -345,7 +345,7 @@ def modal_desligamento(df_ativos):
         
         if confirmar:
             if st.button("🚀 Processar Desligamento Agora", type="primary", use_container_width=True):
-                with st.spinner("Salvando na planilha Master..."):
+                with st.spinner("Salvando na planilha..."):
                     if desligar_no_google_sheets(nome_sel, dt_rescisao):
                         st.success("✅ Sucesso! O status foi alterado para 'Desligado'.")
                         st.balloons()
@@ -1587,7 +1587,7 @@ def render(df_ativos, df_desligados):
 
         # --- SUB-ABA: MASTER ---
         with sub_master:
-            st.markdown("### 📋 Relatório Master")
+            st.markdown("### Relatório Master")
             
             # Layout em colunas para Filtro e Botão ficarem na mesma linha
             c_filtro, c_gerar = st.columns([3, 1])
@@ -1622,7 +1622,7 @@ def render(df_ativos, df_desligados):
         # --- SUB-ABA: DEMOGRÁFICO ---
         with sub_demo:
             # MOVA PARA CÁ: Bloco de Aniversariantes e Tempo de Casa (sem alterar o código interno deles)
-            st.markdown("### 👥 Relatórios Demográficos")
+            st.markdown("### Relatórios Demográficos")
             
             # ==========================================
             # 1. ANIVERSARIANTES DO MÊS
@@ -1709,7 +1709,7 @@ def render(df_ativos, df_desligados):
         # --- SUB-ABA: ESTATÍSTICO ---
         with sub_estat:
             # MOVA PARA CÁ: Bloco de Contratos a vencer e Investidores MEI
-            st.markdown("### 📊 Relatórios Estatísticos")
+            st.markdown("### Relatórios Estatísticos")
 
             # Reutilizando a lógica da coluna numérica
             df_temp_cargo = df_ativos_proc.copy()
@@ -1859,7 +1859,7 @@ def render(df_ativos, df_desligados):
             pass
 
         with sub_finan:
-            st.markdown("### 💰 Relatórios Financeiros")
+            st.markdown("### Relatórios Financeiros")
             
             # Preparando os dados numéricos para os cálculos
             df_temp = df_ativos_proc.copy()
@@ -1905,7 +1905,7 @@ def render(df_ativos, df_desligados):
                 
         # --- SUB-ABA: OPERACIONAL ---
         with sub_oper:
-            st.markdown("### 🔨 Relatórios Operacionais")
+            st.markdown("### Relatórios Operacionais")
             st.markdown("""
                 <div style="padding: 20px; border-radius: 5px; border: 1px solid #dcdfe6; background-color: #f8f9fa; color: #606266; text-align: center;">
                     ⚙️ Esta seção está sendo preparada e será configurada futuramente. Serão incluídos relatórios operacionais do dia a dia que devem ser configurados na parte de alertas da Landing page, como investidores que estão cumprindo aviso, ex-investidores para receber distrato no dia 15, entre outros.
@@ -1926,44 +1926,44 @@ def render(df_ativos, df_desligados):
         c_cad, c_form, c_mail, c_div = st.columns(4)
         
         with c_cad:
-            st.markdown("##### 📥 Cadastros")
-            with st.expander("👤 Investidor", expanded=False):
+            st.markdown("##### Cadastros")
+            with st.expander("Investidor", expanded=False):
                 # Esta linha pega os nomes dos investidores ativos para a lista de liderança
                 nomes_para_lideranca = df_ativos["Nome"].dropna().unique().tolist()
                 
-                if st.button("➕ Cadastrar Novo Investidor", use_container_width=True, type="primary"):
+                if st.button("Cadastrar Novo Investidor", use_container_width=True, type="primary"):
                     modal_cadastro_investidor(nomes_para_lideranca)
 
                 if st.button("Desligar Investidor", use_container_width=True):
                     modal_desligamento(df_ativos_proc)
         
         with c_form:
-            st.markdown("##### 📝 Gerar Formulários")
-            with st.expander("🌱 Admissão", expanded=False):
+            st.markdown("##### Gerador de arquivos")
+            with st.expander("Admissão", expanded=False):
                 if st.button("🚌 Vale Transporte", use_container_width=True, type="primary"): 
                     modal_vale_transporte(df_ativos_proc)
             
-            with st.expander("🚪 Desligamento", expanded=False):
+            with st.expander("Desligamento", expanded=False):
                 if st.button("📄 Demissão Comum Acordo", use_container_width=True, type="primary"): 
                     modal_comum(df_ativos_proc)
                 if st.button("📄 Aviso Prévio", use_container_width=True, type="primary"): 
                     modal_aviso_previo_indenizado(df_ativos_proc)
 
         with c_mail:
-            st.markdown("##### ✉️ E-mail / Mensagens")
-            with st.expander("📩 Rascunhos Admissão", expanded=False):
+            st.markdown("##### Mensagens")
+            with st.expander("Rascunhos Admissão", expanded=False):
                 if st.button("📝 Formalização CLT (Ponto)", use_container_width=True, type="primary"):
                     modal_rascunho_ponto(df_ativos_proc)
-            with st.expander("📩 Rascunhos Desligamento", expanded=False):
+            with st.expander("Rascunhos Desligamento", expanded=False):
                 st.caption("Em breve")
 
         with c_div:
-            st.markdown("##### 📂 Diversos")
-            with st.expander("📋 Checklists / Workflow", expanded=False):
+            st.markdown("##### Diversos")
+            with st.expander("Checklists / Workflow", expanded=False):
                 if st.button("💰 Comissão PJ", use_container_width=True, type="primary"):
                     modal_workflow_comissao(df_ativos_proc, df_desligados_proc)
             
-            with st.expander("🛠️ Ferramentas", expanded=False):
+            with st.expander("Ferramentas", expanded=False):
                 if st.button("📝 Título Doc (Automação)", use_container_width=True, type="primary"): 
                     modal_titulo_doc(df_ativos_proc)
 
