@@ -180,41 +180,43 @@ def integrar_desligamento_salu(cpf_investidor, data_rescisao, modelo_contrato):
     # --- TRAVA DE SEGURANÇA CLT ---
     if str(modelo_contrato).strip().upper() != "CLT":
         st.info(f"ℹ️ O investidor é {modelo_contrato}. Processo na Salú ignorado (apenas para CLT).")
-        return True # Retornamos True para não travar o sucesso da planilha
+        return True 
 
-    # Configurações conforme manual técnico da Salú [cite: 69, 84]
-    BASE_URL = "https://public-api.salu.com.vc/prd/routes" [cite: 69]
+    # Configurações conforme manual técnico da Salú 
+    BASE_URL = "https://public-api.salu.com.vc/prd/routes" 
     headers = {
-        "x-api-key": st.secrets["SALU_API_KEY"], [cite: 88]
-        "Content-Type": "application/json", [cite: 115]
-        "Accept": "application/json" [cite: 111]
+        "x-api-key": st.secrets["SALU_API_KEY"], 
+        "Content-Type": "application/json", 
+        "Accept": "application/json" 
     }
 
     try:
-        # 1. Busca o colaborador pelo CPF (usando o campo de integração) [cite: 76, 133]
-        search_url = f"{BASE_URL}/v0/employee?client_integration_code={cpf_investidor}" [cite: 74, 133]
+        # 1. Busca o colaborador pelo CPF (usando o campo de integração) 
+        # IMPORTANTE: Removendo pontuação do CPF para busca limpa
+        cpf_limpo = re.sub(r'\D', '', str(cpf_investidor))
+        search_url = f"{BASE_URL}/v0/employee?client_integration_code={cpf_limpo}" 
         response_user = requests.get(search_url, headers=headers)
         
-        if response_user.status_code == 200: [cite: 179]
+        if response_user.status_code == 200: 
             dados_salu = response_user.json().get("data", [])
             if not dados_salu:
                 st.warning("⚠️ CPF não localizado na Salú. Verifique se o cadastro está ativo lá.")
                 return False
             
-            salu_id = dados_salu[0]["id"] # UUID interno necessário para criar a pendência [cite: 185]
+            salu_id = dados_salu[0]["id"] 
             
-            # 2. Solicita o Exame Demissional no endpoint de Pendências [cite: 135]
+            # 2. Solicita o Exame Demissional no endpoint de Pendências 
             exam_url = f"{BASE_URL}/v0/pendency"
             payload = {
                 "employee_id": salu_id,
                 "exam_type": "DEMISSIONAL",
                 "resignation_date": data_rescisao.strftime("%Y-%m-%d"),
-                "send_notification": False # "Não enviar" conforme seu processo
+                "send_notification": False 
             }
             
-            response_exam = requests.post(exam_url, headers=headers, json=payload) [cite: 113]
+            response_exam = requests.post(exam_url, headers=headers, json=payload) 
             
-            if response_exam.status_code in [200, 201]: [cite: 179, 180]
+            if response_exam.status_code in [200, 201]: 
                 st.success("✅ Exame Demissional solicitado na Salú com sucesso!")
                 return True
             else:
