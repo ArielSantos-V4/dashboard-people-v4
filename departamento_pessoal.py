@@ -172,7 +172,62 @@ def desligar_no_google_sheets(nome_investidor, data_rescisao):
     except Exception as e:
         st.error(f"Erro no Google Sheets: {e}")
         return False
-    
+
+import requests
+import streamlit as st
+
+def integrar_desligamento_salu(cpf_investidor, data_rescisao, modelo_contrato):
+    # --- TRAVA DE SEGURANÇA CLT ---
+    if str(modelo_contrato).strip().upper() != "CLT":
+        st.info(f"ℹ️ O investidor é {modelo_contrato}. Processo na Salú ignorado (apenas para CLT).")
+        return True # Retornamos True para não travar o sucesso da planilha
+
+    # Configurações conforme manual técnico da Salú [cite: 69, 84]
+    BASE_URL = "https://public-api.salu.com.vc/prd/routes" [cite: 69]
+    headers = {
+        "x-api-key": st.secrets["SALU_API_KEY"], [cite: 88]
+        "Content-Type": "application/json", [cite: 115]
+        "Accept": "application/json" [cite: 111]
+    }
+
+    try:
+        # 1. Busca o colaborador pelo CPF (usando o campo de integração) [cite: 76, 133]
+        search_url = f"{BASE_URL}/v0/employee?client_integration_code={cpf_investidor}" [cite: 74, 133]
+        response_user = requests.get(search_url, headers=headers)
+        
+        if response_user.status_code == 200: [cite: 179]
+            dados_salu = response_user.json().get("data", [])
+            if not dados_salu:
+                st.warning("⚠️ CPF não localizado na Salú. Verifique se o cadastro está ativo lá.")
+                return False
+            
+            salu_id = dados_salu[0]["id"] # UUID interno necessário para criar a pendência [cite: 185]
+            
+            # 2. Solicita o Exame Demissional no endpoint de Pendências [cite: 135]
+            exam_url = f"{BASE_URL}/v0/pendency"
+            payload = {
+                "employee_id": salu_id,
+                "exam_type": "DEMISSIONAL",
+                "resignation_date": data_rescisao.strftime("%Y-%m-%d"),
+                "send_notification": False # "Não enviar" conforme seu processo
+            }
+            
+            response_exam = requests.post(exam_url, headers=headers, json=payload) [cite: 113]
+            
+            if response_exam.status_code in [200, 201]: [cite: 179, 180]
+                st.success("✅ Exame Demissional solicitado na Salú com sucesso!")
+                return True
+            else:
+                st.error(f"❌ Erro na Salú (Status {response_exam.status_code}): {response_exam.text}")
+                return False
+        else:
+            st.error(f"❌ Erro ao buscar CPF na Salú: {response_user.status_code}")
+            return False
+            
+    except Exception as e:
+        st.error(f"💥 Falha crítica de conexão: {e}")
+        return False
+        
 def toggle_indet():
     st.session_state.indet_ativo = not st.session_state.indet_ativo
     
@@ -344,13 +399,22 @@ def modal_desligamento(df_ativos):
         confirmar = st.checkbox(f"Eu confirmo que o investidor será desligado em {data_formatada}", key="chk_conf_vFinal")
         
         if confirmar:
-            if st.button("🚀 Processar Desligamento Agora", type="primary", use_container_width=True):
-                with st.spinner("Salvando na planilha..."):
-                    if desligar_no_google_sheets(nome_sel, dt_rescisao):
-                        st.success("✅ Sucesso! O status foi alterado para 'Desligado'.")
+            if st.button("🚀 Processar Desligamento Agora", type="primary"):
+                with st.spinner("Sincronizando sistemas..."):
+                    # Dados do investidor selecionado
+                    dados_inv = df_ativos[df_ativos["Nome"] == nome_sel].iloc[0]
+                    cpf = dados_inv.get("CPF")
+                    modelo = dados_inv.get("Modelo de contrato") # Ajuste o nome da coluna se necessário
+            
+                    # 1. Atualiza Planilha Google
+                    sucesso_plan = desligar_no_google_sheets(nome_sel, dt_rescisao)
+                    
+                    # 2. Integra com Salú (A função cuida da trava CLT interna)
+                    sucesso_salu = integrar_desligamento_salu(cpf, dt_rescisao, modelo)
+                    
+                    if sucesso_plan and sucesso_salu:
+                        st.success(f"Finalizado! {nome_sel} desligado com sucesso.")
                         st.balloons()
-                        # Limpa cache e recarrega
-                        st.cache_data.clear()
                         st.rerun()
                 
 # ==========================================
