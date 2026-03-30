@@ -835,22 +835,35 @@ def modal_vale_transporte(df_pessoas):
     for i, (t, l, v, it) in enumerate(trans_tra, 1):
         mapa[f"{{transporte_{i}_tra}}"]=t; mapa[f"{{linha_{i}_tra}}"]=l; mapa[f"{{valor_{i}_tra}}"]=f"{v:.2f}"; mapa[f"{{inte_{i}_tra}}"]=f"{it:.2f}"
 
-    # Escolha do modelo de arquivo (Ajustado para bater com o título exato da pasta)
+    import os
+
+    # Define o nome conforme a opção
     if opcao_adesao == "Adesão ao VT":
         modelo_file = "declaracao_vale_transporte_clt.docx"
     else:
-        # Adicionei o espaço que existe no seu arquivo real
-        modelo_file = "declaracao_nao _vale_transporte_clt.docx"
-    import os
-    st.write("🔍 Arquivos encontrados na pasta:", os.listdir("."))
+        modelo_file = "declaracao_nao_vale_transporte_clt.docx"
 
-    try:
-        arquivo = gerar_docx_com_substituicoes(modelo_file, mapa)
-        with c2:
-            st.download_button(f"📄 Baixar {opcao_adesao}", data=arquivo, file_name=f"VT_{opcao_adesao.replace(' ', '_')} - {nome_sel}.docx", use_container_width=True, type="primary")
-            st.link_button("🔃 Converter Doc em PDF", "https://www.ilovepdf.com/pt/word_para_pdf", use_container_width=True)
-    except: 
-        c2.error(f"Modelo '{modelo_file}' não encontrado na pasta.")
+    # Força o caminho absoluto da pasta atual do script
+    diretorio_atual = os.path.dirname(os.path.abspath(__file__))
+    caminho_completo = os.path.join(diretorio_atual, modelo_file)
+
+    if not os.path.exists(caminho_completo):
+        st.error(f"🚨 Erro: O arquivo '{modelo_file}' foi listado na pasta mas não pôde ser aberto. Verifique permissões.")
+    else:
+        try:
+            # Passamos o caminho completo para a função de substituição
+            arquivo = gerar_docx_com_substituicoes(caminho_completo, mapa)
+            with c2:
+                st.download_button(
+                    f"📄 Baixar {opcao_adesao}", 
+                    data=arquivo, 
+                    file_name=f"VT_{opcao_adesao.replace(' ', '_')} - {nome_sel}.docx", 
+                    use_container_width=True, 
+                    type="primary"
+                )
+                st.link_button("🔃 Converter Doc em PDF", "https://www.ilovepdf.com/pt/word_para_pdf", use_container_width=True)
+        except Exception as e:
+            st.error(f"Erro ao processar o documento: {e}")
 
 @st.dialog("📩 Rascunho: Formalização CLT - Sistema Ponto")
 def modal_rascunho_ponto(df_ativos):
