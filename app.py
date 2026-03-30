@@ -15,6 +15,38 @@ import pandas as pd
 import gspread
 from google.oauth2.service_account import Credentials
 
+def gerar_docx_com_substituicoes(modelo_path, mapa_substituicoes):
+    """
+    Carrega um arquivo .docx, substitui as chaves conforme o mapa
+    e retorna o arquivo em memória (BytesIO).
+    """
+    try:
+        # Carrega o template
+        doc = Document(modelo_path)
+        
+        # Substitui no corpo do texto
+        for p in doc.paragraphs:
+            for codigo, valor in mapa_substituicoes.items():
+                if codigo in p.text:
+                    p.text = p.text.replace(codigo, str(valor))
+        
+        # Substitui em tabelas (importante para o layout de VT)
+        for tabela in doc.tables:
+            for linha in tabela.rows:
+                for celula in linha.cells:
+                    for p in celula.paragraphs:
+                        for codigo, valor in mapa_substituicoes.items():
+                            if codigo in p.text:
+                                p.text = p.text.replace(codigo, str(valor))
+        
+        # Salva o resultado em um objeto de bytes para o download do Streamlit
+        conteudo_puro = BytesIO()
+        doc.save(conteudo_puro)
+        conteudo_puro.seek(0)
+        return conteudo_puro
+    except Exception as e:
+        raise Exception(f"Erro ao manipular o arquivo Word: {e}")
+        
 # ==============================
 # CARREGAMENTO DE DADOS (ATUALIZADO)
 # ==============================
