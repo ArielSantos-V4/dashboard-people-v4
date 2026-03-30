@@ -835,8 +835,12 @@ def modal_vale_transporte(df_pessoas):
     for i, (t, l, v, it) in enumerate(trans_tra, 1):
         mapa[f"{{transporte_{i}_tra}}"]=t; mapa[f"{{linha_{i}_tra}}"]=l; mapa[f"{{valor_{i}_tra}}"]=f"{v:.2f}"; mapa[f"{{inte_{i}_tra}}"]=f"{it:.2f}"
 
-    # Escolha do modelo de arquivo
-    modelo_file = "declaracao_vale_transporte_clt.docx" if opcao_adesao == "Adesão ao VT" else "declaracao_nao_vale_transporte_clt.docx"
+    # Escolha do modelo de arquivo (Ajustado para bater com o título exato da pasta)
+    if opcao_adesao == "Adesão ao VT":
+        modelo_file = "declaracao_vale_transporte_clt.docx"
+    else:
+        # Adicionei o espaço que existe no seu arquivo real
+        modelo_file = "declaracao_nao _vale_transporte_clt.docx"
 
     try:
         arquivo = gerar_docx_com_substituicoes(modelo_file, mapa)
