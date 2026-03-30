@@ -841,6 +841,8 @@ def modal_vale_transporte(df_pessoas):
     else:
         # Adicionei o espaço que existe no seu arquivo real
         modelo_file = "declaracao_nao _vale_transporte_clt.docx"
+    import os
+    st.write("🔍 Arquivos encontrados na pasta:", os.listdir("."))
 
     try:
         arquivo = gerar_docx_com_substituicoes(modelo_file, mapa)
